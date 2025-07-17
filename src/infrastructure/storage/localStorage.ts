@@ -7,7 +7,7 @@ type NameSpaceValueMap = {
   circuit: Array<Circuit>;
 };
 
-export interface IStorage<T extends NameSpace> {
+export interface ILocalStorage<T extends NameSpace> {
   save(value: NameSpaceValueMap[T]): Promise<Result<void>>;
   get(): Promise<Result<NameSpaceValueMap[T] | null>>;
   remove(): Promise<Result<void>>;
@@ -34,7 +34,7 @@ export class LocalStorageRemoveError extends Error {
   }
 }
 
-export class LocalStorage<T extends NameSpace> implements IStorage<T> {
+export class LocalStorage<T extends NameSpace> implements ILocalStorage<T> {
   private readonly KEY: string;
 
   constructor(nameSpace: T) {

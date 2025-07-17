@@ -1,3 +1,4 @@
+import { CircuitOverview } from "@/domain/model/entity/circuitOverview";
 import type {
   CircuitOverviewsQueryServiceGetAllOutput,
   ICircuitOverviewsQueryService,
@@ -28,13 +29,15 @@ export class CircuitOverviewsQueryService implements ICircuitOverviewsQueryServi
         const rawCircuits = res.value;
 
         const circuitOverviews =
-          rawCircuits?.map((circuit) => ({
-            id: CircuitId.from(circuit.id),
-            title: CircuitTitle.from(circuit.title),
-            description: CircuitDescription.from(circuit.description),
-            createdAt: CreatedDateTime.fromString(circuit.createdAt),
-            updatedAt: UpdatedDateTime.fromString(circuit.updatedAt),
-          })) ?? [];
+          rawCircuits?.map((circuit) =>
+            CircuitOverview.from({
+              id: CircuitId.from(circuit.id),
+              title: CircuitTitle.from(circuit.title),
+              description: CircuitDescription.from(circuit.description),
+              createdAt: CreatedDateTime.fromString(circuit.createdAt),
+              updatedAt: UpdatedDateTime.fromString(circuit.updatedAt),
+            }),
+          ) ?? [];
 
         return { ok: true, value: circuitOverviews };
       }

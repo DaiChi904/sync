@@ -9,3 +9,18 @@ body {
   padding: 0;
   min-height: 100dvh;
 }
+
+.animated {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition-property: background-color;
+  transition-timing-function: ease-in-out;
+  transition-duration: 100ms;
+}
+.animated:hover {
+  background-color: #e9d5ff;
+}
+.animated:active {
+  background-color: #a78bfa;
+}

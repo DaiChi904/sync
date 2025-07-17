@@ -1,19 +1,23 @@
-import Flex from "@/components/atoms/Flex";
+import Button from "@/components/atoms/Button";
+import Grid from "@/components/atoms/Grid";
 import LayoutContainer from "@/components/layouts/LayoutContainer";
 import { useHomePageHandlerContext } from "@/contexts/HomePageHandlerContext";
+import CircuitList from "./CircuitList";
 
 export default function HomePageLayout() {
   const { error, circuitOverviews } = useHomePageHandlerContext();
 
-  console.log(error);
-  console.log(circuitOverviews);
-
   return (
     <LayoutContainer>
-      <Flex direction="column" alignItems="center" justifyContent="center">
-        <h1>Welcome to the Home Page</h1>
-        <p>This is the main content area.</p>
-      </Flex>
+      <Grid xs={1} ys={12} xfs={12} yfs={1} container grow={1}>
+        <Grid xs={1} ys={1} xfs={1} yfs={8} container grow={1}>
+          <Button>Home</Button>
+          <Button>New</Button>
+        </Grid>
+        <Grid xs={11} ys={1} xfs={1} yfs={1} grow={1}>
+          <CircuitList circuitList={circuitOverviews} error={error.failedToGetCircuitOverviewsError} />
+        </Grid>
+      </Grid>
     </LayoutContainer>
   );
 }

@@ -1,10 +1,16 @@
-import type { Circuit } from "@/domain/model/aggregate/circuit.type";
 import type { Result } from "@/utils/result";
 
 type NameSpace = "circuit";
 
 type NameSpaceValueMap = {
-  circuit: Array<Circuit>;
+  circuit: Array<{
+    id: string;
+    title: string;
+    description: string;
+    circuitData: string;
+    createdAt: string;
+    updatedAt: string;
+  }>;
 };
 
 export interface ILocalStorage<T extends NameSpace> {

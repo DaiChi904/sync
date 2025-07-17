@@ -8,7 +8,7 @@ import { Circuit } from "../../domain/model/aggregate/circuit";
 import type {
   CircuitRepositoryDeleteOutput,
   CircuitRepositoryGetAllOutput,
-  CircuitRepositoryGetByIDOutput,
+  CircuitRepositoryGetByIdOutput,
   CircuitRepositorySaveOutput,
   ICircuitRepository,
 } from "../../domain/model/repository/ICircuitRepository";
@@ -73,7 +73,7 @@ export class CircuitRepository implements ICircuitRepository {
     }
   }
 
-  async getByID(id: CircuitId): Promise<CircuitRepositoryGetByIDOutput> {
+  async getById(id: CircuitId): Promise<CircuitRepositoryGetByIdOutput> {
     const res = await this.localStorage.get();
 
     switch (res.ok) {

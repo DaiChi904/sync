@@ -24,7 +24,7 @@ export default function Flex({
   grow,
   children,
   ...props
-}: Omit<FlexProps, "style">) {
+}: FlexProps) {
   const style: CSSProperties = {
     display: "flex",
     alignItems,
@@ -35,6 +35,7 @@ export default function Flex({
     flexWrap: wrap,
     gap: gap,
     flexGrow: grow,
+    ...props.style,
   };
 
   return (

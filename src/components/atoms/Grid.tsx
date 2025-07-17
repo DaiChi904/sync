@@ -11,10 +11,11 @@ interface GridProps extends HTMLAttributes<HTMLDivElement> {
   container?: boolean;
 }
 
-export default function Grid({ xs, ys, xfs, yfs, gap, grow, container, children, ...props }: Omit<GridProps, "style">) {
+export default function Grid({ xs, ys, xfs, yfs, gap, grow, container, children, ...props }: GridProps) {
   const style: CSSProperties = {
     gridColumn: `span ${xs} / span ${xs}`,
     gridRow: `span ${ys} / span ${ys}`,
+    ...props.style,
   };
 
   if (container) {

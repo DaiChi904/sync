@@ -7,9 +7,12 @@ interface LayoutContainerProps {
 
 export default function LayoutContainer({ padding = 0, children }: LayoutContainerProps) {
   const style: React.CSSProperties = {
-    padding: `${padding}px`,
+    display: "flex",
+    flexDirection: "column",
+    flexGrow: 1,
     width: "100%",
-    height: "100%",
+    minHeight: "100dvh",
+    padding: `${padding}px`,
   };
   return <Box style={style}>{children}</Box>;
 }

@@ -7,8 +7,6 @@ import { CircuitGuiNode } from "../model/entity/circuitGuiNode";
 import type { ICircuitParserService } from "../model/service/ICircuitParserService";
 import { CircuitEdgeId } from "../model/valueObject/circuitEdgeId";
 import { CircuitNodeId } from "../model/valueObject/circuitNodeId";
-import { CircuitNodeInputId } from "../model/valueObject/circuitNodeInputId";
-import { CircuitNodeOutputId } from "../model/valueObject/circuitNodeOutputId";
 import { CircuitNodePinId } from "../model/valueObject/circuitNodePinId";
 import { CircuitNodeSize } from "../model/valueObject/circuitNodeSize";
 import { CircuitNodeType } from "../model/valueObject/circuitNodeType";
@@ -218,7 +216,7 @@ export class CircuitParserService implements ICircuitParserService {
             ok: false,
             error: new CircuitParserServiceParseToGraphDataError(`No target node found: ${targetEdge.from}`),
           };
-        tempRes.inputs.push(CircuitNodeInputId.from(targetNode[0]));
+        tempRes.inputs.push(CircuitNodeId.from(targetNode[0]));
       }
 
       for (const edgeId of connectedOut) {
@@ -231,7 +229,7 @@ export class CircuitParserService implements ICircuitParserService {
             ok: false,
             error: new CircuitParserServiceParseToGraphDataError(`No target node found: ${targetEdge.from}`),
           };
-        tempRes.outputs.push(CircuitNodeOutputId.from(targetNode[0]));
+        tempRes.outputs.push(CircuitNodeId.from(targetNode[0]));
       }
 
       res.push(tempRes);

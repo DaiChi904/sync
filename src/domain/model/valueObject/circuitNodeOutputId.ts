@@ -1,16 +1,15 @@
 import type { Brand } from "@/utils/brand";
-import type { CircuitNodeId } from "./circuitNodeId";
 
 const brandSymbol = Symbol("CircuitNodeOutputId");
 
-export type CircuitNodeOutputId = Brand<CircuitNodeId, typeof brandSymbol>;
+export type CircuitNodeOutputId = Brand<string, typeof brandSymbol>;
 
 export namespace CircuitNodeOutputId {
-  export const from = (value: CircuitNodeId): CircuitNodeOutputId => {
+  export const from = (value: string): CircuitNodeOutputId => {
     return value as CircuitNodeOutputId;
   };
 
-  export const unBrand = (value: CircuitNodeOutputId): CircuitNodeId => {
-    return value as unknown as CircuitNodeId;
+  export const unBrand = (value: CircuitNodeOutputId): string => {
+    return value as unknown as string;
   };
 }

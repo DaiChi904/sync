@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Flex from "@/components/atoms/Flex";
 import LoadingPuls from "@/components/atoms/LoadingPuls";
 import Typography from "@/components/atoms/Typography";
@@ -30,20 +31,26 @@ export default function CircuitListItems({ circuitList, error }: CircuitListProp
       return (
         <Flex direction="column" gap={0}>
           {circuitList?.map((c) => (
-            <Flex key={c.id} style={{ padding: 5, borderBottom: "1px solid #ccc" }} className="animated" gap={5}>
-              <Flex style={{ width: "20%" }} alignItems="center">
-                {c.title}
+            <Link
+              key={c.id}
+              style={{ display: "block", textDecoration: "none", color: "inherit" }}
+              href={`/circuits/${c.id}`}
+            >
+              <Flex style={{ padding: 5, borderBottom: "1px solid #ccc" }} className="animated" gap={5}>
+                <Flex style={{ width: "20%" }} alignItems="center">
+                  {c.title}
+                </Flex>
+                <Flex style={{ width: "40%" }} alignItems="center">
+                  {c.description}
+                </Flex>
+                <Flex style={{ width: "20%" }} alignItems="center">
+                  {c.createdAt}
+                </Flex>
+                <Flex style={{ width: "20%" }} alignItems="center">
+                  {c.updatedAt}
+                </Flex>
               </Flex>
-              <Flex style={{ width: "40%" }} alignItems="center">
-                {c.description}
-              </Flex>
-              <Flex style={{ width: "20%" }} alignItems="center">
-                {c.createdAt}
-              </Flex>
-              <Flex style={{ width: "20%" }} alignItems="center">
-                {c.updatedAt}
-              </Flex>
-            </Flex>
+            </Link>
           ))}
         </Flex>
       );

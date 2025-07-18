@@ -1,11 +1,5 @@
 import type { Brand } from "@/utils/brand";
-
-class ParseStringDateError extends Error {
-  constructor(value: string) {
-    super(`Invalid date string: ${value}`);
-    this.name = "ParseStringDateError";
-  }
-}
+import { ModelValidationError } from "../modelValidationError";
 
 const brandSymbol = Symbol("DateTime");
 
@@ -17,7 +11,7 @@ export namespace DateTime {
   };
 
   export const fromString = (value: string): DateTime => {
-    if (Number.isNaN(Date.parse(value))) throw new ParseStringDateError(value);
+    if (Number.isNaN(Date.parse(value))) throw new ModelValidationError("DateTime", value);
     return new Date(value).toISOString() as DateTime;
   };
 

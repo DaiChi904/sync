@@ -1,7 +1,7 @@
 import type { Brand } from "@/utils/brand";
+import type { CircuitEdgeId } from "../valueObject/circuitEdgeId";
 import type { CircuitNodePinId } from "../valueObject/circuitNodePinId";
 import type { Coordinate } from "../valueObject/coordinate";
-import type { CircuitEdgeId } from "../valueObject/circuitEdgeId";
 
 const brandSymbol = Symbol("CircuitGuiEdge");
 

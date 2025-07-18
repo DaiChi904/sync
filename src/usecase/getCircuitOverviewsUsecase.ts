@@ -4,14 +4,14 @@ import type {
   IGetCircuitOverviewsUsecaseGetOverviewsOutput,
 } from "@/domain/model/usecase/IGetCircuitOverviewsUsecase";
 
-interface LoadCircuitOverviewUsecaseDependencies {
+interface GetCircuitOverviewsUsecaseDependencies {
   circuitOverviewsQueryService: ICircuitOverviewsQueryService;
 }
 
 export class GetCircuitOverviewsUsecase implements IGetCircuitOverviewsUsecase {
   private readonly circuitOverviewsQueryService: ICircuitOverviewsQueryService;
 
-  constructor({ circuitOverviewsQueryService }: LoadCircuitOverviewUsecaseDependencies) {
+  constructor({ circuitOverviewsQueryService }: GetCircuitOverviewsUsecaseDependencies) {
     this.circuitOverviewsQueryService = circuitOverviewsQueryService;
   }
 

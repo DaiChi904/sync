@@ -29,20 +29,15 @@ export class CircuitDetailQueryService implements ICircuitDetailQueryService {
   }
 
   async getById(id: CircuitId): Promise<CircuitDetailQueryServiceGetByIdOutput> {
-    const res = await this.circuitRepository.getAll();
+    const res = await this.circuitRepository.getById(id);
 
     switch (res.ok) {
       case true: {
-        const circuits = res.value;
-
-        const circuit = circuits.find((circuit) => circuit.id === id);
-        if (!circuit) {
-          return { ok: false, error: new CircuitDetailQueryServiceGetByIdError(`Circuit not found. id: ${id}`) };
-        }
+        const circuit = res.value;
 
         const parseRes = this.circuitParserService.parseToGuiData(circuit.circuitData);
         if (!parseRes.ok) {
-          return { ok: false, error: new CircuitDetailQueryServiceGetByIdError(`Circuit parse error. id: ${id}`) };
+          return { ok: false, error: parseRes.error };
         }
 
         const overview = CircuitOverview.from({

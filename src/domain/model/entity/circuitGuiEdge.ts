@@ -1,12 +1,12 @@
 import type { Brand } from "@/utils/brand";
 import type { CircuitNodePinId } from "../valueObject/circuitNodePinId";
 import type { Coordinate } from "../valueObject/coordinate";
-import type { EdgeId } from "../valueObject/edgeID";
+import type { CircuitEdgeId } from "../valueObject/circuitEdgeId";
 
 const brandSymbol = Symbol("CircuitGuiEdge");
 
 interface ICircuitGuiEdge {
-  id: EdgeId;
+  id: CircuitEdgeId;
   from: CircuitNodePinId;
   to: CircuitNodePinId;
   waypoints: Array<Coordinate>;

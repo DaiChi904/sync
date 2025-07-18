@@ -5,14 +5,14 @@ import type {
 } from "@/domain/model/queryService/ICircuitOverviewsQueryService";
 import type { ICircuitRepository } from "@/domain/model/repository/ICircuitRepository";
 
-interface CircuitOverviewQueryServiceDependencies {
+interface CircuitOverviewsQueryServiceDependencies {
   circuitRepository: ICircuitRepository;
 }
 
 export class CircuitOverviewsQueryService implements ICircuitOverviewsQueryService {
   private readonly circuitRepository: ICircuitRepository;
 
-  constructor({ circuitRepository }: CircuitOverviewQueryServiceDependencies) {
+  constructor({ circuitRepository }: CircuitOverviewsQueryServiceDependencies) {
     this.circuitRepository = circuitRepository;
   }
 

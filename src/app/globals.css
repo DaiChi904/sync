@@ -24,3 +24,12 @@ body {
 .animated:active {
   background-color: #a78bfa;
 }
+
+.one-line-clamp {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  line-clamp: 1;
+  -webkit-line-clamp: 1;
+  text-overflow: ellipsis;
+}

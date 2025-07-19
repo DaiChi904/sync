@@ -34,7 +34,7 @@ export default function CircuitListItems({ circuitList, error }: CircuitListProp
             <Link
               key={c.id}
               style={{ display: "block", textDecoration: "none", color: "inherit" }}
-              href={`/circuits/${c.id}`}
+              href={`/circuit/${c.id}`}
             >
               <Flex style={{ padding: 5, borderBottom: "1px solid #ccc" }} className="animated" gap={5}>
                 <Flex style={{ width: "20%" }} alignItems="center">

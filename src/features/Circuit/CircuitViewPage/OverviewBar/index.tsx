@@ -7,14 +7,20 @@ import type { CircuitOverview } from "@/domain/model/entity/circuitOverview";
 interface OverviewBarProps {
   overview: CircuitOverview | undefined;
   error: boolean;
-  xs: number;
 }
 
-export default function OverviewBar({ overview, error, xs }: OverviewBarProps) {
+export default function OverviewBar({ overview, error }: OverviewBarProps) {
   switch (true) {
     case !error && overview !== undefined: {
       return (
-        <Grid xs={xs} ys={1} xfs={12} yfs={1} container style={{ alignItems: "center" }}>
+        <Grid
+          xs={1}
+          ys={1}
+          xfs={12}
+          yfs={1}
+          container
+          style={{ alignItems: "center", borderBottom: "1px solid #ccc", paddingBottom: 10 }}
+        >
           <Grid xs={2} ys={1} xfs={1} yfs={1} className="one-line-clamp">
             <Typography size="large">{overview?.title}</Typography>
           </Grid>
@@ -38,7 +44,14 @@ export default function OverviewBar({ overview, error, xs }: OverviewBarProps) {
     }
     default: {
       return (
-        <Grid xs={xs} ys={1} xfs={12} yfs={1} container style={{ alignItems: "center" }}>
+        <Grid
+          xs={1}
+          ys={1}
+          xfs={12}
+          yfs={1}
+          container
+          style={{ alignItems: "center", borderBottom: "1px solid #ccc", paddingBottom: 10 }}
+        >
           <Grid xs={8} ys={1} xfs={1} yfs={1} />
           <Grid xs={4} ys={1} xfs={2} yfs={1} style={{ justifyItems: "end" }}>
             <Link style={{ display: "block", textDecoration: "none", color: "inherit", width: "50%" }} href={`/`}>

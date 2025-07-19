@@ -6,6 +6,7 @@ import LayoutContainer from "@/components/layouts/LayoutContainer";
 import { useCircuitViewPageHandlerContext } from "@/contexts/CircuitViewPageHandlerContext";
 import CircuitDiagram from "../CircuitDiagram";
 import OverviewBar from "./OverviewBar";
+import ToolBar from "./ToolBar";
 
 export default function CircuitViewPageLayout() {
   const { error, overview, guiData } = useCircuitViewPageHandlerContext();
@@ -19,9 +20,8 @@ export default function CircuitViewPageLayout() {
             grow={1}
             style={{ paddingTop: 10, paddingBottom: 10, paddingLeft: 15, paddingRight: 15 }}
           >
-            <Grid xs={1} ys={1} xfs={1} yfs={1} container style={{ borderBottom: "1px solid #ccc", paddingBottom: 10 }}>
-              <OverviewBar xs={1} error={error.failedToGetCircuitDetailError} overview={overview} />
-            </Grid>
+            <OverviewBar error={error.failedToGetCircuitDetailError} overview={overview} />
+            <ToolBar />
             <Flex
               direction="column"
               alignItems="center"
@@ -43,9 +43,8 @@ export default function CircuitViewPageLayout() {
             grow={1}
             style={{ paddingTop: 10, paddingBottom: 10, paddingLeft: 15, paddingRight: 15 }}
           >
-            <Grid xs={1} ys={1} xfs={1} yfs={1} container style={{ borderBottom: "1px solid #ccc", paddingBottom: 10 }}>
-              <OverviewBar xs={1} error={error.failedToGetCircuitDetailError} overview={overview} />
-            </Grid>
+            <OverviewBar error={error.failedToGetCircuitDetailError} overview={overview} />
+            <ToolBar />
             <Flex
               direction="column"
               alignItems="center"
@@ -67,9 +66,8 @@ export default function CircuitViewPageLayout() {
             grow={1}
             style={{ paddingTop: 10, paddingBottom: 10, paddingLeft: 15, paddingRight: 15 }}
           >
-            <Grid xs={1} ys={1} xfs={1} yfs={1} container style={{ borderBottom: "1px solid #ccc", paddingBottom: 10 }}>
-              <OverviewBar xs={1} error={error.failedToGetCircuitDetailError} overview={overview} />
-            </Grid>
+            <OverviewBar error={error.failedToGetCircuitDetailError} overview={overview} />
+            <ToolBar />
             <Flex
               direction="column"
               alignItems="center"
@@ -91,9 +89,8 @@ export default function CircuitViewPageLayout() {
             grow={1}
             style={{ paddingTop: 10, paddingBottom: 10, paddingLeft: 15, paddingRight: 15 }}
           >
-            <Grid xs={1} ys={1} xfs={1} yfs={1} container style={{ borderBottom: "1px solid #ccc", paddingBottom: 10 }}>
-              <OverviewBar xs={1} error={error.failedToGetCircuitDetailError} overview={overview} />
-            </Grid>
+            <OverviewBar error={error.failedToGetCircuitDetailError} overview={overview} />
+            <ToolBar />
             <Flex
               direction="column"
               alignItems="center"

@@ -1,4 +1,3 @@
-import Button from "@/components/atoms/Button";
 import Flex from "@/components/atoms/Flex";
 import Grid from "@/components/atoms/Grid";
 import LoadingPuls from "@/components/atoms/LoadingPuls";

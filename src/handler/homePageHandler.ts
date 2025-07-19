@@ -11,7 +11,7 @@ interface HomePageHandlerDependencies {
   getCircuitOverviewsUsecase: IGetCircuitOverviewsUsecase;
 }
 
-export const HomePageHandler = ({ getCircuitOverviewsUsecase }: HomePageHandlerDependencies): IHomePageHandler => {
+export const useHomePageHandler = ({ getCircuitOverviewsUsecase }: HomePageHandlerDependencies): IHomePageHandler => {
   const [error, setError] = useObjectState<HomePageError>(homePageError);
 
   const [circuitOverviews, setCircuitOverviews] = useState<Array<CircuitOverview> | undefined>(undefined);

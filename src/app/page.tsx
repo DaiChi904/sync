@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { HomePageHandlerContext } from "@/contexts/HomePageHandlerContext";
 import HomePageLayout from "@/features/Home/HomePageLayout";
-import { HomePageHandler } from "@/handler/homePageHandler";
+import { useHomePageHandler } from "@/handler/homePageHandler";
 import { CircuitOverviewsQueryService } from "@/infrastructure/queryService/circuitOverviewsQueryService";
 import { CircuitRepository } from "@/infrastructure/repository/circuitRepository";
 import { LocalStorage } from "@/infrastructure/storage/localStorage";
@@ -20,7 +20,7 @@ export default function Home() {
     () => new GetCircuitOverviewsUsecase({ circuitOverviewsQueryService }),
     [circuitOverviewsQueryService],
   );
-  const homePageHandler = HomePageHandler({ getCircuitOverviewsUsecase });
+  const homePageHandler = useHomePageHandler({ getCircuitOverviewsUsecase });
 
   return (
     <HomePageHandlerContext.Provider value={homePageHandler}>

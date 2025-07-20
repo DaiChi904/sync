@@ -13,7 +13,7 @@ import type { IGetCircuitDetailUsecase } from "@/domain/model/usecase/IGetCircui
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 import { useObjectState } from "@/hooks/objectState";
 
-interface HomePageHandlerDependencies {
+interface CircuitViewPageHandlerDependencies {
   query: CircuitId;
   getCircuitDetailUsecase: IGetCircuitDetailUsecase;
 }
@@ -21,7 +21,7 @@ interface HomePageHandlerDependencies {
 export const useCircuitViewPageHandler = ({
   query,
   getCircuitDetailUsecase,
-}: HomePageHandlerDependencies): ICircuitViewPageHandler => {
+}: CircuitViewPageHandlerDependencies): ICircuitViewPageHandler => {
   const [error, setError] = useObjectState<CircuitViewPageError>(circuitViewPageError);
 
   const [overview, setOverview] = useState<CircuitOverview | undefined>(undefined);

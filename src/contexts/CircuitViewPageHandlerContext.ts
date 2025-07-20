@@ -9,7 +9,7 @@ export const useCircuitViewPageHandlerContext = () => {
   const ctx = useContext(CircuitViewPageHandlerContext);
   if (ctx === undefined) {
     throw new Error(
-      "useCircuitOverviewQueryServiceContext must be used within a CircuitOverviewQueryServiceContextProvider",
+      "useCircuitViewPageHandlerContext must be used within a CircuitViewPageHandlerContextProvider",
     );
   }
   return ctx;

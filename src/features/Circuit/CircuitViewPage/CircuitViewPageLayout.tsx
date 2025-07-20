@@ -1,5 +1,4 @@
 import Flex from "@/components/atoms/Flex";
-import Grid from "@/components/atoms/Grid";
 import LoadingPuls from "@/components/atoms/LoadingPuls";
 import Typography from "@/components/atoms/Typography";
 import LayoutContainer from "@/components/layouts/LayoutContainer";

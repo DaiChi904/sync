@@ -16,9 +16,9 @@ export class GenerateCircuitEmulatorServiceClientUsecase implements IGenerateCir
     this.circuitEmulatorService = circuitEmulatorService;
   }
 
-  async generate(
+  generate(
     circuitGraphData: CircuitGraphData,
-  ): Promise<IGenerateCircuitEmulatorServiceClientUsecaseGenerateOutput> {
+  ): IGenerateCircuitEmulatorServiceClientUsecaseGenerateOutput {
     const res = this.circuitEmulatorService.from(circuitGraphData);
 
     switch (res.ok) {

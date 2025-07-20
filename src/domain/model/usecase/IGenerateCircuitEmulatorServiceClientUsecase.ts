@@ -5,5 +5,5 @@ import type { ICircuitEmulatorService } from "../service/ICircuitEmulatorService
 export type IGenerateCircuitEmulatorServiceClientUsecaseGenerateOutput = Readonly<Result<ICircuitEmulatorService>>;
 
 export interface IGenerateCircuitEmulatorServiceClientUsecase {
-  generate(circuitGraphData: CircuitGraphData): Promise<IGenerateCircuitEmulatorServiceClientUsecaseGenerateOutput>;
+  generate(circuitGraphData: CircuitGraphData): IGenerateCircuitEmulatorServiceClientUsecaseGenerateOutput;
 }

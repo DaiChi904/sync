@@ -18,9 +18,12 @@ export default function ToolBar({ circuitId }: ToolBarProps) {
         </Link>
       </Grid>
       <Grid xs={1} ys={1} xfs={1} yfs={1} style={{ justifyItems: "center" }}>
-        <Link style={{ display: "block", textDecoration: "none", color: "inherit", width: "100%" }} href={""}>
+        <Link
+          style={{ display: "block", textDecoration: "none", color: "inherit", width: "100%" }}
+          href={`/circuit/${circuitId}/edit`}
+        >
           <Flex style={{ padding: 5 }} className="animated">
-            Go edit (Not Available)
+            Go edit
           </Flex>
         </Link>
       </Grid>

@@ -8,9 +8,7 @@ export const CircuitViewPageHandlerContext = createContext<ICircuitViewPageHandl
 export const useCircuitViewPageHandlerContext = () => {
   const ctx = useContext(CircuitViewPageHandlerContext);
   if (ctx === undefined) {
-    throw new Error(
-      "useCircuitViewPageHandlerContext must be used within a CircuitViewPageHandlerContextProvider",
-    );
+    throw new Error("useCircuitViewPageHandlerContext must be used within a CircuitViewPageHandlerContextProvider");
   }
   return ctx;
 };

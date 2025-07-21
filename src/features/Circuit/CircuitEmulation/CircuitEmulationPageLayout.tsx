@@ -1,14 +1,16 @@
 import Flex from "@/components/atoms/Flex";
+import Grid from "@/components/atoms/Grid";
 import LoadingPuls from "@/components/atoms/LoadingPuls";
 import Typography from "@/components/atoms/Typography";
 import LayoutContainer from "@/components/layouts/LayoutContainer";
-import { useCircuitViewPageHandlerContext } from "@/contexts/CircuitViewPageHandlerContext";
+import { useCircuitEmulationPageHandlerContext } from "@/contexts/CircuitEmulationPageHandlerContext";
 import CircuitDiagram from "../CircuitDiagram";
+import EvalMenu from "./EvalMenu";
 import OverviewBar from "./OverviewBar";
-import ToolBar from "./ToolBar";
 
-export default function CircuitViewPageLayout() {
-  const { error, overview, guiData } = useCircuitViewPageHandlerContext();
+export default function CircuitEmulationPageLayout() {
+  const { error, overview, guiData, currentPhase, entryInputs, outputs, updateEntryInputs, evalCircuit } =
+    useCircuitEmulationPageHandlerContext();
 
   switch (true) {
     case !error.failedToGetCircuitDetailError && overview === undefined && guiData === undefined: {
@@ -20,7 +22,6 @@ export default function CircuitViewPageLayout() {
             style={{ paddingTop: 10, paddingBottom: 10, paddingLeft: 15, paddingRight: 15 }}
           >
             <OverviewBar error={error.failedToGetCircuitDetailError} overview={overview} />
-            <ToolBar />
             <Flex
               direction="column"
               alignItems="center"
@@ -43,16 +44,47 @@ export default function CircuitViewPageLayout() {
             style={{ paddingTop: 10, paddingBottom: 10, paddingLeft: 15, paddingRight: 15 }}
           >
             <OverviewBar error={error.failedToGetCircuitDetailError} overview={overview} />
-            <ToolBar circuitId={overview.id} />
-            <Flex
-              direction="column"
-              alignItems="center"
-              justifyContent="center"
-              grow={1}
-              style={{ width: "100%", marginTop: 10, background: "#222" }}
-            >
-              <CircuitDiagram data={guiData} />
-            </Flex>
+            <Grid xs={1} ys={1} xfs={5} yfs={1} container grow={1}>
+              <Grid
+                xs={2}
+                ys={1}
+                xfs={5}
+                yfs={1}
+                style={{
+                  display: "flex",
+                  width: "100%",
+                  marginTop: 10,
+                }}
+              >
+                <EvalMenu
+                  error={{
+                    failedToSetupError: error.failedToSetupError,
+                    failedToEvalCircuitError: error.failedToEvalCircuitError,
+                  }}
+                  currentPhase={currentPhase}
+                  entryInputs={entryInputs}
+                  outputs={outputs}
+                  updateEntryInputs={updateEntryInputs}
+                  evalCircuit={evalCircuit}
+                />
+              </Grid>
+              <Grid
+                xs={3}
+                ys={1}
+                xfs={5}
+                yfs={1}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "100%",
+                  marginTop: 10,
+                  background: "#222",
+                }}
+              >
+                <CircuitDiagram data={guiData} />
+              </Grid>
+            </Grid>
           </Flex>
         </LayoutContainer>
       );
@@ -66,7 +98,6 @@ export default function CircuitViewPageLayout() {
             style={{ paddingTop: 10, paddingBottom: 10, paddingLeft: 15, paddingRight: 15 }}
           >
             <OverviewBar error={error.failedToGetCircuitDetailError} overview={overview} />
-            <ToolBar />
             <Flex
               direction="column"
               alignItems="center"
@@ -89,7 +120,6 @@ export default function CircuitViewPageLayout() {
             style={{ paddingTop: 10, paddingBottom: 10, paddingLeft: 15, paddingRight: 15 }}
           >
             <OverviewBar error={error.failedToGetCircuitDetailError} overview={overview} />
-            <ToolBar />
             <Flex
               direction="column"
               alignItems="center"

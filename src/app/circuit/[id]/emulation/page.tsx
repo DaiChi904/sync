@@ -2,14 +2,16 @@
 
 import { useParams } from "next/navigation";
 import { useMemo } from "react";
-import { CircuitViewPageHandlerContext } from "@/contexts/CircuitViewPageHandlerContext";
+import { CircuitEmulationPageHandlerContext } from "@/contexts/CircuitEmulationPageHandlerContext";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
+import { CircuitEmulatorService } from "@/domain/service/circuitEmulatorService";
 import { CircuitParserService } from "@/domain/service/circuitParserService";
-import CircuitViewPageLayout from "@/features/Circuit/CircuitViewPage/CircuitViewPageLayout";
-import { useCircuitViewPageHandler } from "@/handler/circuitViewPageHandler";
+import CircuitEmulationPageLayout from "@/features/Circuit/CircuitEmulation/CircuitEmulationPageLayout";
+import { useCircuitEmulationPageHandler } from "@/handler/circuitEmulationPageHandler";
 import { CircuitDetailQueryService } from "@/infrastructure/queryService/circuitDetailQueryService";
 import { CircuitRepository } from "@/infrastructure/repository/circuitRepository";
 import { LocalStorage } from "@/infrastructure/storage/localStorage";
+import { GenerateCircuitEmulatorServiceClientUsecase } from "@/usecase/generateCircuitEmulatorServiceClientUsecase";
 import { GetCircuitDetailUsecase } from "@/usecase/getCircuitDetailUsecase";
 
 export default function CircuitView() {
@@ -23,15 +25,24 @@ export default function CircuitView() {
     () => new CircuitDetailQueryService({ circuitRepository, circuitParserService }),
     [circuitRepository, circuitParserService],
   );
+  const circuitEmulatorService = useMemo(() => CircuitEmulatorService, []);
   const getCircuitDetailUsecase = useMemo(
     () => new GetCircuitDetailUsecase({ circuitDetailQueryService }),
     [circuitDetailQueryService],
   );
-  const circuitViewPageHandler = useCircuitViewPageHandler({ query, getCircuitDetailUsecase });
+  const generateCircuitEmulatorServiceClientUsecase = useMemo(
+    () => new GenerateCircuitEmulatorServiceClientUsecase({ circuitEmulatorService }),
+    [circuitEmulatorService],
+  );
+  const circuitEmulationPageHandler = useCircuitEmulationPageHandler({
+    query,
+    getCircuitDetailUsecase,
+    generateCircuitEmulatorServiceClientUsecase,
+  });
 
   return (
-    <CircuitViewPageHandlerContext.Provider value={circuitViewPageHandler}>
-      <CircuitViewPageLayout />
-    </CircuitViewPageHandlerContext.Provider>
+    <CircuitEmulationPageHandlerContext.Provider value={circuitEmulationPageHandler}>
+      <CircuitEmulationPageLayout />
+    </CircuitEmulationPageHandlerContext.Provider>
   );
 }

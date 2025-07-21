@@ -35,9 +35,14 @@ export class CircuitDetailQueryService implements ICircuitDetailQueryService {
       case true: {
         const circuit = res.value;
 
-        const parseRes = this.circuitParserService.parseToGuiData(circuit.circuitData);
-        if (!parseRes.ok) {
-          return { ok: false, error: parseRes.error };
+        const guiDataRes = this.circuitParserService.parseToGuiData(circuit.circuitData);
+        if (!guiDataRes.ok) {
+          return { ok: false, error: guiDataRes.error };
+        }
+
+        const graphDataRes = this.circuitParserService.parseToGraphData(circuit.circuitData);
+        if (!graphDataRes.ok) {
+          return { ok: false, error: graphDataRes.error };
         }
 
         const overview = CircuitOverview.from({
@@ -48,7 +53,10 @@ export class CircuitDetailQueryService implements ICircuitDetailQueryService {
           updatedAt: circuit.updatedAt,
         });
 
-        return { ok: true, value: { circuitOverview: overview, guiData: parseRes.value } };
+        return {
+          ok: true,
+          value: { circuitOverview: overview, guiData: guiDataRes.value, graphData: graphDataRes.value },
+        };
       }
       case false: {
         return { ok: false, error: res.error };

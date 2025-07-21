@@ -1,15 +1,12 @@
-import { CircuitOverview } from "@/domain/model/entity/circuitOverview";
 import type {
   CircuitDetailQueryServiceGetByIdOutput,
   ICircuitDetailQueryService,
 } from "@/domain/model/queryService/ICircuitDetailQueryService";
 import type { ICircuitRepository } from "@/domain/model/repository/ICircuitRepository";
-import type { ICircuitParserService } from "@/domain/model/service/ICircuitParserService";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 
 interface CircuitDetailQueryServiceDependencies {
   circuitRepository: ICircuitRepository;
-  circuitParserService: ICircuitParserService;
 }
 
 export class CircuitDetailQueryServiceGetByIdError extends Error {
@@ -21,11 +18,9 @@ export class CircuitDetailQueryServiceGetByIdError extends Error {
 
 export class CircuitDetailQueryService implements ICircuitDetailQueryService {
   private readonly circuitRepository: ICircuitRepository;
-  private readonly circuitParserService: ICircuitParserService;
 
-  constructor({ circuitRepository, circuitParserService }: CircuitDetailQueryServiceDependencies) {
+  constructor({ circuitRepository }: CircuitDetailQueryServiceDependencies) {
     this.circuitRepository = circuitRepository;
-    this.circuitParserService = circuitParserService;
   }
 
   async getById(id: CircuitId): Promise<CircuitDetailQueryServiceGetByIdOutput> {
@@ -35,27 +30,9 @@ export class CircuitDetailQueryService implements ICircuitDetailQueryService {
       case true: {
         const circuit = res.value;
 
-        const guiDataRes = this.circuitParserService.parseToGuiData(circuit.circuitData);
-        if (!guiDataRes.ok) {
-          return { ok: false, error: guiDataRes.error };
-        }
-
-        const graphDataRes = this.circuitParserService.parseToGraphData(circuit.circuitData);
-        if (!graphDataRes.ok) {
-          return { ok: false, error: graphDataRes.error };
-        }
-
-        const overview = CircuitOverview.from({
-          id: circuit.id,
-          title: circuit.title,
-          description: circuit.description,
-          createdAt: circuit.createdAt,
-          updatedAt: circuit.updatedAt,
-        });
-
         return {
           ok: true,
-          value: { circuitOverview: overview, guiData: guiDataRes.value, graphData: graphDataRes.value },
+          value: circuit,
         };
       }
       case false: {

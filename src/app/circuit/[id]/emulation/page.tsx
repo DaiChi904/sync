@@ -20,10 +20,9 @@ export default function CircuitView() {
 
   const localStorage = useMemo(() => new LocalStorage("circuit"), []);
   const circuitRepository = useMemo(() => new CircuitRepository({ localStorage }), [localStorage]);
-  const circuitParserService = useMemo(() => new CircuitParserService(), []);
   const circuitDetailQueryService = useMemo(
-    () => new CircuitDetailQueryService({ circuitRepository, circuitParserService }),
-    [circuitRepository, circuitParserService],
+    () => new CircuitDetailQueryService({ circuitRepository }),
+    [circuitRepository],
   );
   const circuitEmulatorService = useMemo(() => CircuitEmulatorService, []);
   const getCircuitDetailUsecase = useMemo(
@@ -34,10 +33,12 @@ export default function CircuitView() {
     () => new GenerateCircuitEmulatorServiceClientUsecase({ circuitEmulatorService }),
     [circuitEmulatorService],
   );
+  const circuitParserUsecase = useMemo(() => new CircuitParserService(), []);
   const circuitEmulationPageHandler = useCircuitEmulationPageHandler({
     query,
     getCircuitDetailUsecase,
     generateCircuitEmulatorServiceClientUsecase,
+    circuitParserUsecase,
   });
 
   return (

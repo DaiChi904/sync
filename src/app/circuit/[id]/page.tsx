@@ -18,16 +18,16 @@ export default function CircuitView() {
 
   const localStorage = useMemo(() => new LocalStorage("circuit"), []);
   const circuitRepository = useMemo(() => new CircuitRepository({ localStorage }), [localStorage]);
-  const circuitParserService = useMemo(() => new CircuitParserService(), []);
   const circuitDetailQueryService = useMemo(
-    () => new CircuitDetailQueryService({ circuitRepository, circuitParserService }),
-    [circuitRepository, circuitParserService],
+    () => new CircuitDetailQueryService({ circuitRepository }),
+    [circuitRepository],
   );
   const getCircuitDetailUsecase = useMemo(
     () => new GetCircuitDetailUsecase({ circuitDetailQueryService }),
     [circuitDetailQueryService],
   );
-  const circuitViewPageHandler = useCircuitViewPageHandler({ query, getCircuitDetailUsecase });
+  const circuitParserUsecase = useMemo(() => new CircuitParserService(), []);
+  const circuitViewPageHandler = useCircuitViewPageHandler({ query, getCircuitDetailUsecase, circuitParserUsecase });
 
   return (
     <CircuitViewPageHandlerContext.Provider value={circuitViewPageHandler}>

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { CircuitGuiData } from "@/domain/model/entity/circuitGuiData";
-import type { CircuitOverview } from "@/domain/model/entity/circuitOverview";
+import { CircuitOverview } from "@/domain/model/entity/circuitOverview";
 import {
   type CircuitEmulationPageError,
   circuitEmulationPageError,
@@ -17,18 +17,21 @@ import { CircuitNodeType } from "@/domain/model/valueObject/circuitNodeType";
 import { EvalResult } from "@/domain/model/valueObject/evalResult";
 import { InputRecord } from "@/domain/model/valueObject/inputRecord";
 import { Phase } from "@/domain/model/valueObject/phase";
+import type { CircuitParserService } from "@/domain/service/circuitParserService";
 import { useObjectState } from "@/hooks/objectState";
 
 interface CircuitEmulationPageHandlerDependencies {
   query: CircuitId;
   getCircuitDetailUsecase: IGetCircuitDetailUsecase;
   generateCircuitEmulatorServiceClientUsecase: IGenerateCircuitEmulatorServiceClientUsecase;
+  circuitParserUsecase: CircuitParserService;
 }
 
 export const useCircuitEmulationPageHandler = ({
   query,
   getCircuitDetailUsecase,
   generateCircuitEmulatorServiceClientUsecase,
+  circuitParserUsecase,
 }: CircuitEmulationPageHandlerDependencies): ICircuitEmulationPageHandler => {
   const [error, setError] = useObjectState<CircuitEmulationPageError>(circuitEmulationPageError);
 
@@ -48,30 +51,49 @@ export const useCircuitEmulationPageHandler = ({
         if (!circuitDetail.ok) {
           console.error(circuitDetail.error);
           setError("failedToGetCircuitDetailError", true);
-          setError("failedToGenerateEmulatorServiceError", true);
           return;
         }
 
-        const circuitEmulatorService = generateCircuitEmulatorServiceClientUsecase.generate(
-          circuitDetail.value.graphData,
-        );
+        const circuitGuiData = circuitParserUsecase.parseToGuiData(circuitDetail.value.circuitData);
+        if (!circuitGuiData.ok) {
+          console.error(circuitGuiData.error);
+          setError("failedToParseCircuitDataError", true);
+          return;
+        }
+
+        const circuitGraphData = circuitParserUsecase.parseToGraphData(circuitDetail.value.circuitData);
+        if (!circuitGraphData.ok) {
+          console.error(circuitGraphData.error);
+          setError("failedToParseCircuitDataError", true);
+          return;
+        }
+
+        const circuitEmulatorService = generateCircuitEmulatorServiceClientUsecase.generate(circuitGraphData.value);
         if (!circuitEmulatorService.ok) {
           console.error(circuitEmulatorService.error);
           setError("failedToGenerateEmulatorServiceError", true);
           return;
         }
 
-        setOverview(circuitDetail.value.circuitOverview);
-        setGuiData(circuitDetail.value.guiData);
+        setOverview(
+          CircuitOverview.from({
+            id: circuitDetail.value.id,
+            title: circuitDetail.value.title,
+            description: circuitDetail.value.description,
+            createdAt: circuitDetail.value.createdAt,
+            updatedAt: circuitDetail.value.updatedAt,
+          }),
+        );
+        setGuiData(circuitGuiData.value);
         setClient(circuitEmulatorService.value);
-        setAvailableNodeIds(circuitDetail.value.graphData.map((node) => node.id));
+        setAvailableNodeIds(circuitGraphData.value.map((node) => node.id));
       },
       () => {
         setError("failedToGetCircuitDetailError", true);
         setError("failedToGenerateEmulatorServiceError", true);
       },
     );
-  }, [query, getCircuitDetailUsecase, generateCircuitEmulatorServiceClientUsecase, setError]);
+  }, [query, getCircuitDetailUsecase, circuitParserUsecase, generateCircuitEmulatorServiceClientUsecase, setError]);
 
   const setupCircuitEmulatorServiceClient = useCallback((): void => {
     if (!guiData || !client) return;

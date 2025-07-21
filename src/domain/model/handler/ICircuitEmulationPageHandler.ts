@@ -7,6 +7,7 @@ import type { Phase } from "../valueObject/phase";
 
 export interface CircuitEmulationPageError {
   failedToGetCircuitDetailError: boolean;
+  failedToParseCircuitDataError: boolean;
   failedToGenerateEmulatorServiceError: boolean;
   failedToSetupError: boolean;
   failedToEvalCircuitError: boolean;
@@ -14,6 +15,7 @@ export interface CircuitEmulationPageError {
 
 export const circuitEmulationPageError: CircuitEmulationPageError = {
   failedToGetCircuitDetailError: false,
+  failedToParseCircuitDataError: false,
   failedToGenerateEmulatorServiceError: false,
   failedToSetupError: false,
   failedToEvalCircuitError: false,

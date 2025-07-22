@@ -56,22 +56,7 @@ export const useCircuitEditorPageHandler = ({
       },
       () => setError("failedToGetCircuitDetailError", true),
     );
-    handleValidationError(
-      () => {
-        if (circuit === undefined) return;
-
-        const circuitGuiData = circuitParserUsecase.parseToGuiData(circuit.circuitData);
-        if (!circuitGuiData.ok) {
-          console.error(circuitGuiData.error);
-          setError("failedToParseCircuitDataError", true);
-          return;
-        }
-
-        setGuiData(circuitGuiData.value);
-      },
-      () => setError("failedToGetCircuitDetailError", true),
-    );
-  }, [query, getCircuitDetailUsecase, circuitParserUsecase, circuit, setError]);
+  }, [query, getCircuitDetailUsecase, setError]);
 
   const save = useCallback((): void => {
     handleValidationError(
@@ -276,6 +261,24 @@ export const useCircuitEditorPageHandler = ({
   useEffect(() => {
     fetch();
   }, [fetch]);
+
+  useEffect(() => {
+    handleValidationError(
+      () => {
+        if (circuit === undefined) return;
+
+        const circuitGuiData = circuitParserUsecase.parseToGuiData(circuit.circuitData);
+        if (!circuitGuiData.ok) {
+          console.error(circuitGuiData.error);
+          setError("failedToParseCircuitDataError", true);
+          return;
+        }
+
+        setGuiData(circuitGuiData.value);
+      },
+      () => setError("failedToGetCircuitDetailError", true),
+    );
+  }, [circuit, circuitParserUsecase, setError]);
 
   return {
     error,

@@ -49,7 +49,8 @@ export class CircuitEditorUsecase implements ICircuitEditorUsecase {
             const backward = [...splited.slice(nodeLastIdx + 1)];
             const newData =
               foward.map((line) => line.join(", ")).join(";\n") +
-              `Node, ${payload.nodeId}, ${payload.type}, [${payload.inputs.join(" | ")}], [${payload.outputs.join(" | ")}], [${payload.coordinate.x}:${payload.coordinate.y}], [${payload.size.x}:${payload.size.y}];\n` +
+              ";\n" +
+              `Node, ${payload.nodeId}, ${payload.nodeType}, [${payload.inputs.join(" | ")}], [${payload.outputs.join(" | ")}], [${payload.coordinate.x}:${payload.coordinate.y}], [${payload.size.x}:${payload.size.y}];\n` +
               backward.map((line) => line.join(", ")).join(";\n");
             return { ok: true, value: CircuitData.from(newData) };
           }
@@ -59,7 +60,8 @@ export class CircuitEditorUsecase implements ICircuitEditorUsecase {
             const backward = [...splited.slice(edgeLastIdx + 1)];
             const newData =
               foward.map((line) => line.join(", ")).join(";\n") +
-              `Edge, ${payload.edgeId}, ${payload.type}, [${payload.from} -> ${payload.to}], [${payload.waypoints.length > 0 ? payload.waypoints.map((waypoint) => `[${waypoint.x}:${waypoint.y}]`).join(" -> ") : "NONE"}];\n` +
+              ";\n" +
+              `Edge, ${payload.edgeId}, [${payload.from} -> ${payload.to}], [${payload.waypoints.length > 0 ? payload.waypoints.map((waypoint) => `[${waypoint.x}:${waypoint.y}]`).join(" -> ") : "NONE"}];\n` +
               backward.map((line) => line.join(", ")).join(";\n");
             return { ok: true, value: CircuitData.from(newData) };
           }
@@ -80,7 +82,8 @@ export class CircuitEditorUsecase implements ICircuitEditorUsecase {
             const backward = [...filtered.slice(nodeLastIdx + 1)];
             const newData =
               foward.map((line) => line.join(", ")).join(";\n") +
-              `Node, ${payload.nodeId}, ${payload.type}, [${payload.inputs.join(" | ")}], [${payload.outputs.join(" | ")}], [${payload.coordinate.x}:${payload.coordinate.y}], [${payload.size.x}:${payload.size.y}];\n` +
+              ";\n" +
+              `Node, ${payload.nodeId}, ${payload.nodeType}, [${payload.inputs.join(" | ")}], [${payload.outputs.join(" | ")}], [${payload.coordinate.x}:${payload.coordinate.y}], [${payload.size.x}:${payload.size.y}];\n` +
               backward.map((line) => line.join(", ")).join(";\n");
             return { ok: true, value: CircuitData.from(newData) };
           }
@@ -91,6 +94,7 @@ export class CircuitEditorUsecase implements ICircuitEditorUsecase {
             const backward = [...filtered.slice(nodeLastIdx + 1)];
             const newData =
               foward.map((line) => line.join(", ")).join(";\n") +
+              ";\n" +
               `Edge, ${payload.edgeId}, ${payload.type}, [${payload.from} -> ${payload.to}], [${payload.waypoints.length > 0 ? payload.waypoints.map((waypoint) => `[${waypoint.x}:${waypoint.y}]`).join(" -> ") : "NONE"}];\n` +
               backward.map((line) => line.join(", ")).join(";\n");
             return { ok: true, value: CircuitData.from(newData) };

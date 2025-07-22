@@ -14,8 +14,8 @@ export const mockCircuitData: Array<Circuit> = [
       "【正しさが保証されているデータです】単純なSRラッチ回路です。セット(S)とリセット(R)の2つの入力を持ち、QとQ_の2つの出力を持ちます。",
     ),
     circuitData: CircuitData.from(`
-    Node, S, ENTRY, [], [S_output0], [50:50], [60:40];
-    Node, R, ENTRY, [], [R_output0], [50:150], [60:40];
+    Node, S, ENTRY, [NONE], [S_output0], [50:50], [60:40];
+    Node, R, ENTRY, [NONE], [R_output0], [50:150], [60:40];
     Node, NOT1, NOT, [NOT1_input0], [NOT1_output0], [150:50], [60:40];
     Node, NOT2, NOT, [NOT2_input0], [NOT2_output0], [150:150], [60:40];
     Node, AND1, AND, [AND1_input0 | AND1_input1], [AND1_output0], [250:50], [60:40];
@@ -24,8 +24,8 @@ export const mockCircuitData: Array<Circuit> = [
     Node, AND2, AND, [AND2_input0 | AND2_input1], [AND2_output0], [250:150], [60:40];
     Node, NOT4, NOT, [NOT4_input0], [NOT4_output0], [350:150], [60:40];
     Node, JUNCTION2, JUNCTION, [JUNCTION2_input0], [JUNCTION2_output0 | JUNCTION2_output1], [450:150], [60:40];
-    Node, Q, EXIT, [Q_input0], [], [550:50], [60:40];
-    Node, Q_, EXIT, [Q__input0], [], [550:150], [60:40];
+    Node, Q, EXIT, [Q_input0], [NONE], [550:50], [60:40];
+    Node, Q_, EXIT, [Q__input0], [NONE], [550:150], [60:40];
     Edge, edge_0, [S_output0 -> NOT1_input0], [NONE];
     Edge, edge_1, [R_output0 -> NOT2_input0], [NONE];
     Edge, edge_2, [NOT1_output0 -> AND1_input0], [NONE];

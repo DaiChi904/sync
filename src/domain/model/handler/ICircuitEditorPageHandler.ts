@@ -25,6 +25,26 @@ export interface ICircuitEditorPageHandler {
   error: CircuitEditorPageError;
   circuit: Circuit | undefined;
   guiData: CircuitGuiData | undefined;
+  circuitEditorData:
+    | {
+        node: Array<{
+          type: "Node";
+          nodeId: CircuitNodeId;
+          nodeType: CircuitNodeType;
+          inputs: CircuitNodePinId[];
+          outputs: CircuitNodePinId[];
+          coordinate: Coordinate;
+          size: CircuitNodeSize;
+        }>;
+        edge: Array<{
+          type: "Edge";
+          edgeId: CircuitEdgeId;
+          from: CircuitNodePinId;
+          to: CircuitNodePinId;
+          waypoints: Coordinate[];
+        }>;
+      }
+    | undefined;
   save: () => void;
   addCircuitNode: (newNode: {
     type: "Node";

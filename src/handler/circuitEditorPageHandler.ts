@@ -13,13 +13,13 @@ import type { ICircuitRepository } from "@/domain/model/repository/ICircuitRepos
 import type { ICircuitParserService } from "@/domain/model/service/ICircuitParserService";
 import type { ICircuitEditorUsecase } from "@/domain/model/usecase/ICircuitEditorUsecase";
 import type { IGetCircuitDetailUsecase } from "@/domain/model/usecase/IGetCircuitDetailUsecase";
-import type { CircuitEdgeId } from "@/domain/model/valueObject/circuitEdgeId";
+import { CircuitEdgeId } from "@/domain/model/valueObject/circuitEdgeId";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
-import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
-import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
-import type { CircuitNodeSize } from "@/domain/model/valueObject/circuitNodeSize";
-import type { CircuitNodeType } from "@/domain/model/valueObject/circuitNodeType";
-import type { Coordinate } from "@/domain/model/valueObject/coordinate";
+import { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
+import { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
+import { CircuitNodeSize } from "@/domain/model/valueObject/circuitNodeSize";
+import { CircuitNodeType } from "@/domain/model/valueObject/circuitNodeType";
+import { Coordinate } from "@/domain/model/valueObject/coordinate";
 import { useObjectState } from "@/hooks/objectState";
 
 interface CircuitEditorPageHandlerDependencies {
@@ -42,6 +42,28 @@ export const useCircuitEditorPageHandler = ({
   const [circuit, setCircuit] = useState<Circuit | undefined>(undefined);
   const [guiData, setGuiData] = useState<CircuitGuiData | undefined>(undefined);
 
+  const [circuitEditorData, setCircuitEditorData] = useState<
+    | {
+        node: Array<{
+          type: "Node";
+          nodeId: CircuitNodeId;
+          nodeType: CircuitNodeType;
+          inputs: CircuitNodePinId[];
+          outputs: CircuitNodePinId[];
+          coordinate: Coordinate;
+          size: CircuitNodeSize;
+        }>;
+        edge: Array<{
+          type: "Edge";
+          edgeId: CircuitEdgeId;
+          from: CircuitNodePinId;
+          to: CircuitNodePinId;
+          waypoints: Coordinate[];
+        }>;
+      }
+    | undefined
+  >(undefined);
+
   const fetch = useCallback((): void => {
     handleValidationError(
       async () => {
@@ -57,6 +79,96 @@ export const useCircuitEditorPageHandler = ({
       () => setError("failedToGetCircuitDetailError", true),
     );
   }, [query, getCircuitDetailUsecase, setError]);
+
+  const genCircuitEditorData = useCallback(() => {
+    if (circuit === undefined) return;
+
+    const lines = circuit.circuitData
+      .split(/;\s*/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    const nodes: Array<{
+      type: "Node";
+      nodeId: CircuitNodeId;
+      nodeType: CircuitNodeType;
+      inputs: CircuitNodePinId[];
+      outputs: CircuitNodePinId[];
+      coordinate: Coordinate;
+      size: CircuitNodeSize;
+    }> = [];
+    const edges: Array<{
+      type: "Edge";
+      edgeId: CircuitEdgeId;
+      from: CircuitNodePinId;
+      to: CircuitNodePinId;
+      waypoints: Coordinate[];
+    }> = [];
+
+    lines.forEach((line) => {
+      if (line.startsWith("Node")) {
+        const parts = line.split(/,\s*/);
+        const nodeId = parts[1];
+        const nodeType = parts[2];
+        const inputs = parts[3]
+          .replace(/[[\]]/g, "")
+          .split(/\s*\|\s*|\s*,\s*/)
+          .filter(Boolean);
+        const outputs = parts[4]
+          .replace(/[[\]]/g, "")
+          .split(/\s*\|\s*|\s*,\s*/)
+          .filter(Boolean);
+        const coordinate = parts[5].replace(/[[\]]/g, "").split(":").map(Number) as [number, number];
+        const size = parts[6].replace(/[[\]]/g, "").split(":").map(Number) as [number, number];
+
+        nodes.push({
+          type: "Node",
+          nodeId: CircuitNodeId.from(nodeId),
+          nodeType: CircuitNodeType.from(nodeType),
+          inputs: inputs.map((input) => CircuitNodePinId.from(input)),
+          outputs: outputs.map((output) => CircuitNodePinId.from(output)),
+          coordinate: Coordinate.from({
+            x: coordinate[0],
+            y: coordinate[1],
+          }),
+          size: CircuitNodeSize.from({
+            x: size[0],
+            y: size[1],
+          }),
+        });
+      } else if (line.startsWith("Edge")) {
+        const parts = line.split(/,\s*/);
+        const edgeId = parts[1];
+        const from = parts[2].replace(/[[\]]/g, "").split("->")[0];
+        const to = parts[2].replace(/[[\]]/g, "").split("->")[1];
+        const rawWaypoints = parts[3]
+          .replace("[", "")
+          .replace("]", "")
+          .trim()
+          .split("|")
+          .map((point) => point.trim());
+        const waypoints =
+          rawWaypoints[0] !== "NONE"
+            ? rawWaypoints.map((raw) => {
+                const rawCoordinate = raw.split(":");
+                return Coordinate.from({ x: Number(rawCoordinate[0]), y: Number(rawCoordinate[1]) });
+              })
+            : [];
+
+        edges.push({
+          type: "Edge",
+          edgeId: CircuitEdgeId.from(edgeId),
+          from: CircuitNodePinId.from(from),
+          to: CircuitNodePinId.from(to),
+          waypoints: waypoints,
+        });
+      }
+    });
+
+    setCircuitEditorData({
+      node: nodes,
+      edge: edges,
+    });
+  }, [circuit?.circuitData.split, circuit]);
 
   const save = useCallback((): void => {
     handleValidationError(
@@ -263,6 +375,10 @@ export const useCircuitEditorPageHandler = ({
   }, [fetch]);
 
   useEffect(() => {
+    genCircuitEditorData();
+  }, [genCircuitEditorData]);
+
+  useEffect(() => {
     handleValidationError(
       () => {
         if (circuit === undefined) return;
@@ -284,6 +400,7 @@ export const useCircuitEditorPageHandler = ({
     error,
     circuit,
     guiData,
+    circuitEditorData,
     save,
     addCircuitNode,
     updateCircuitNode,

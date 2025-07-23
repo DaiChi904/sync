@@ -11,7 +11,7 @@ import { CircuitNodeId } from "../model/valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "../model/valueObject/circuitNodePinId";
 import type { CircuitNodeType } from "../model/valueObject/circuitNodeType";
 import { Coordinate } from "../model/valueObject/coordinate";
-import type { Waypoint } from "../model/valueObject/waypoint";
+import { Waypoint } from "../model/valueObject/waypoint";
 
 export class CircuitParserServiceParseToGuiDataError extends Error {
   constructor(message: string) {
@@ -30,14 +30,6 @@ export class CircuitParserServiceParseToGraphDataError extends Error {
 export class CircuitParserService implements ICircuitParserService {
   parseToGuiData(circuitData: CircuitData): Result<CircuitGuiData> {
     const { nodes, edges } = circuitData;
-
-    const retrieveWaypoints = (waypoint: Waypoint | null): Array<Coordinate> => {
-      if (waypoint === null) return [];
-
-      return waypoint.next !== null
-        ? [waypoint.coordinate, ...retrieveWaypoints(waypoint.next)]
-        : [waypoint.coordinate];
-    };
 
     const guiNodes = nodes.map((node) => {
       const { id, type, inputs: _inputs_, outputs: _outputs_, coordinate, size } = node;
@@ -86,7 +78,7 @@ export class CircuitParserService implements ICircuitParserService {
     const guiEdge = edges.map((edge) => {
       const { id, from, to, waypoints: _waypoints_ } = edge;
 
-      const waypoints = retrieveWaypoints(_waypoints_);
+      const waypoints = Waypoint.waypointsToCoordinateArray(_waypoints_);
 
       return CircuitGuiEdge.from({
         id,

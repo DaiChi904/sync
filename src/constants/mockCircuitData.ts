@@ -82,7 +82,9 @@ export const mockCircuitData: Array<Circuit> = [
   Circuit.from({
     id: CircuitId.from("t-flipflop-circuit-01"),
     title: CircuitTitle.from("Tフリップフロップ"),
-    description: CircuitDescription.from("【正しさが保証されていないデータです】T入力でトグル動作するフリップフロップの簡易モデル。"),
+    description: CircuitDescription.from(
+      "【正しさが保証されていないデータです】T入力でトグル動作するフリップフロップの簡易モデル。",
+    ),
     circuitData: CircuitData.from(`
     Node, T, ENTRY, [], [T_output0], [50:100], [60:40];
     Node, CLK, ENTRY, [], [CLK_output0], [50:200], [60:40];

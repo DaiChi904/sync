@@ -17,8 +17,8 @@ export class CircuitParserUsecase implements ICircuitParserUsecase {
     this.circuitParserService = circuitParserService;
   }
 
-  parseToGuiData(textData: CircuitData): ICircuitParserUsecaseParseToGuiDataOutput {
-    const res = this.circuitParserService.parseToGuiData(textData);
+  parseToGuiData(circuitData: CircuitData): ICircuitParserUsecaseParseToGuiDataOutput {
+    const res = this.circuitParserService.parseToGuiData(circuitData);
 
     switch (res.ok) {
       case true: {
@@ -30,8 +30,8 @@ export class CircuitParserUsecase implements ICircuitParserUsecase {
     }
   }
 
-  parseToGraphData(textData: CircuitData): ICircuitParserUsecaseParseToGraphDataOutput {
-    const res = this.circuitParserService.parseToGraphData(textData);
+  parseToGraphData(circuitData: CircuitData): ICircuitParserUsecaseParseToGraphDataOutput {
+    const res = this.circuitParserService.parseToGraphData(circuitData);
 
     switch (res.ok) {
       case true: {

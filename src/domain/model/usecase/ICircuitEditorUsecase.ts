@@ -56,7 +56,7 @@ export type GenerateNewCircuitDataRequest =
   | { method: "DELETE"; payload: GenerateNewCircuitDataDeletePayload };
 
 export interface ICircuitEditorUsecase {
-  generateNewCircuitData(textData: CircuitData, request: GenerateNewCircuitDataRequest): Result<CircuitData>;
-  generateNewGuiData(textData: CircuitData): Result<CircuitGuiData>;
+  generateNewCircuitData(circuitData: CircuitData, request: GenerateNewCircuitDataRequest): Result<CircuitData>;
+  generateNewGuiData(circuitData: CircuitData): Result<CircuitGuiData>;
   saveCircuit(newCircuit: Circuit): Promise<Result<void>>;
 }

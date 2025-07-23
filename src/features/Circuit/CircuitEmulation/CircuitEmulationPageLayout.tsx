@@ -82,7 +82,7 @@ export default function CircuitEmulationPageLayout() {
                   background: "#222",
                 }}
               >
-                <CircuitDiagram data={guiData} />
+                <CircuitDiagram data={guiData} outputRecord={outputs} />
               </Grid>
             </Grid>
           </Flex>

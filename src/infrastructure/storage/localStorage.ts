@@ -1,3 +1,4 @@
+import type { PrimitiveWaypoint } from "@/domain/model/valueObject/waypoint";
 import type { Result } from "@/utils/result";
 
 type NameSpace = "circuit";
@@ -7,7 +8,28 @@ type NameSpaceValueMap = {
     id: string;
     title: string;
     description: string;
-    circuitData: string;
+    circuitData: {
+      nodes: Array<{
+        id: string;
+        type: string;
+        inputs: Array<string>;
+        outputs: Array<string>;
+        coordinate: {
+          x: number;
+          y: number;
+        };
+        size: {
+          x: number;
+          y: number;
+        };
+      }>;
+      edges: Array<{
+        id: string;
+        from: string;
+        to: string;
+        waypoints: PrimitiveWaypoint | null;
+      }>;
+    };
     createdAt: string;
     updatedAt: string;
   }>;

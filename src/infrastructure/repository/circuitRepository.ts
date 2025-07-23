@@ -1,9 +1,16 @@
 import { CircuitData } from "@/domain/model/valueObject/circuitData";
 import { CircuitDescription } from "@/domain/model/valueObject/circuitDescription";
+import { CircuitEdgeId } from "@/domain/model/valueObject/circuitEdgeId";
 import { CircuitId } from "@/domain/model/valueObject/circuitId";
+import { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
+import { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
+import { CircuitNodeSize } from "@/domain/model/valueObject/circuitNodeSize";
+import { CircuitNodeType } from "@/domain/model/valueObject/circuitNodeType";
 import { CircuitTitle } from "@/domain/model/valueObject/circuitTitle";
+import { Coordinate } from "@/domain/model/valueObject/coordinate";
 import { CreatedDateTime } from "@/domain/model/valueObject/createdDateTime";
 import { UpdatedDateTime } from "@/domain/model/valueObject/updatedDateTime";
+import { Waypoint } from "@/domain/model/valueObject/waypoint";
 import { Circuit } from "../../domain/model/aggregate/circuit";
 import type {
   CircuitRepositoryDeleteOutput,
@@ -59,7 +66,22 @@ export class CircuitRepository implements ICircuitRepository {
               id: CircuitId.from(circuit.id),
               title: CircuitTitle.from(circuit.title),
               description: CircuitDescription.from(circuit.description),
-              circuitData: CircuitData.from(circuit.circuitData),
+              circuitData: CircuitData.from({
+                nodes: circuit.circuitData.nodes.map((n) => ({
+                  id: CircuitNodeId.from(n.id),
+                  type: CircuitNodeType.from(n.type),
+                  inputs: n.inputs.map(CircuitNodePinId.from),
+                  outputs: n.outputs.map(CircuitNodePinId.from),
+                  coordinate: Coordinate.from(n.coordinate),
+                  size: CircuitNodeSize.from(n.size),
+                })),
+                edges: circuit.circuitData.edges.map((e) => ({
+                  id: CircuitEdgeId.from(e.id),
+                  from: CircuitNodePinId.from(e.from),
+                  to: CircuitNodePinId.from(e.to),
+                  waypoints: Waypoint.fromPrimitive(e.waypoints),
+                })),
+              }),
               createdAt: CreatedDateTime.fromString(circuit.createdAt),
               updatedAt: UpdatedDateTime.fromString(circuit.updatedAt),
             }),
@@ -87,7 +109,22 @@ export class CircuitRepository implements ICircuitRepository {
           id: CircuitId.from(rawCircuit.id),
           title: CircuitTitle.from(rawCircuit.title),
           description: CircuitDescription.from(rawCircuit.description),
-          circuitData: CircuitData.from(rawCircuit.circuitData),
+          circuitData: CircuitData.from({
+            nodes: rawCircuit.circuitData.nodes.map((n) => ({
+              id: CircuitNodeId.from(n.id),
+              type: CircuitNodeType.from(n.type),
+              inputs: n.inputs.map(CircuitNodePinId.from),
+              outputs: n.outputs.map(CircuitNodePinId.from),
+              coordinate: Coordinate.from(n.coordinate),
+              size: CircuitNodeSize.from(n.size),
+            })),
+            edges: rawCircuit.circuitData.edges.map((e) => ({
+              id: CircuitEdgeId.from(e.id),
+              from: CircuitNodePinId.from(e.from),
+              to: CircuitNodePinId.from(e.to),
+              waypoints: Waypoint.fromPrimitive(e.waypoints),
+            })),
+          }),
           createdAt: CreatedDateTime.fromString(rawCircuit.createdAt),
           updatedAt: UpdatedDateTime.fromString(rawCircuit.updatedAt),
         });

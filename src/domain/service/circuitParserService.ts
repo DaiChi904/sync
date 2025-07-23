@@ -5,12 +5,13 @@ import { CircuitGuiData } from "../model/entity/circuitGuiData";
 import { CircuitGuiEdge } from "../model/entity/circuitGuiEdge";
 import { CircuitGuiNode } from "../model/entity/circuitGuiNode";
 import type { ICircuitParserService } from "../model/service/ICircuitParserService";
-import { CircuitEdgeId } from "../model/valueObject/circuitEdgeId";
+import type { CircuitData } from "../model/valueObject/circuitData";
+import type { CircuitEdgeId } from "../model/valueObject/circuitEdgeId";
 import { CircuitNodeId } from "../model/valueObject/circuitNodeId";
-import { CircuitNodePinId } from "../model/valueObject/circuitNodePinId";
-import { CircuitNodeSize } from "../model/valueObject/circuitNodeSize";
-import { CircuitNodeType } from "../model/valueObject/circuitNodeType";
+import type { CircuitNodePinId } from "../model/valueObject/circuitNodePinId";
+import type { CircuitNodeType } from "../model/valueObject/circuitNodeType";
 import { Coordinate } from "../model/valueObject/coordinate";
+import type { Waypoint } from "../model/valueObject/waypoint";
 
 export class CircuitParserServiceParseToGuiDataError extends Error {
   constructor(message: string) {
@@ -27,214 +28,132 @@ export class CircuitParserServiceParseToGraphDataError extends Error {
 }
 
 export class CircuitParserService implements ICircuitParserService {
-  parseToGuiData(textData: string): Result<CircuitGuiData> {
-    const lines = textData
-      .split(";")
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0);
+  parseToGuiData(circuitData: CircuitData): Result<CircuitGuiData> {
+    const { nodes, edges } = circuitData;
 
-    const nodes: Array<CircuitGuiNode> = [];
-    const edges: Array<CircuitGuiEdge> = [];
+    const retrieveWaypoints = (waypoint: Waypoint | null): Array<Coordinate> => {
+      if (waypoint === null) return [];
 
-    for (const line of lines) {
-      const parts = line.split(",").map((part) => part.trim());
-      const token = parts[0];
+      return waypoint.next !== null
+        ? [waypoint.coordinate, ...retrieveWaypoints(waypoint.next)]
+        : [waypoint.coordinate];
+    };
 
-      switch (token) {
-        case "Node": {
-          const id = CircuitNodeId.from(parts[1]);
-          const type = CircuitNodeType.from(parts[2]);
-          // The positional relationship on the GUI is guaranteed by the order of definition in the data.
-          const rawInputs = parts[3]
-            .replace("[", "")
-            .replace("]", "")
-            .trim()
-            .split("|")
-            .map((input) => CircuitNodePinId.from(input.trim()));
-          const rawOutputs = parts[4]
-            .replace("[", "")
-            .replace("]", "")
-            .trim()
-            .split("|")
-            .map((output) => CircuitNodePinId.from(output.trim()));
-          const rawCoordinate = parts[5].replace("[", "").replace("]", "").trim().split(":");
-          const coordinate = Coordinate.from({ x: Number(rawCoordinate[0]), y: Number(rawCoordinate[1]) });
-          const rawSize = parts[6].replace("[", "").replace("]", "").trim().split(":");
-          const size = CircuitNodeSize.from({ x: Number(rawSize[0]), y: Number(rawSize[1]) });
+    const guiNodes = nodes.map((node) => {
+      const { id, type, inputs: _inputs_, outputs: _outputs_, coordinate, size } = node;
 
-          const inputs =
-            type !== "ENTRY" && type !== "EXIT" && type !== "JUNCTION"
-              ? rawInputs.map((input, idx) => ({
-                  id: input,
-                  coordinate: Coordinate.from({
-                    x: coordinate.x - size.x / 2,
-                    y:
-                      rawInputs.length === 1
-                        ? coordinate.y
-                        : coordinate.y - size.y / 2 + (size.y / (rawInputs.length + 1)) * (1 + idx),
-                  }),
-                }))
-              : rawInputs.map((input) => ({
-                  id: input,
-                  coordinate: Coordinate.from({
-                    x: coordinate.x,
-                    y: coordinate.y,
-                  }),
-                }));
-          const outputs =
-            type !== "ENTRY" && type !== "EXIT" && type !== "JUNCTION"
-              ? rawOutputs.map((output, idx) => ({
-                  id: output,
-                  coordinate: Coordinate.from({
-                    x: coordinate.x + size.x / 2,
-                    y:
-                      rawInputs.length === 1
-                        ? coordinate.y
-                        : coordinate.y - size.y / 2 + (size.y / (rawOutputs.length + 1)) * (1 + idx),
-                  }),
-                }))
-              : rawOutputs.map((output) => ({
-                  id: output,
-                  coordinate: Coordinate.from({
-                    x: coordinate.x,
-                    y: coordinate.y,
-                  }),
-                }));
-
-          nodes.push(
-            CircuitGuiNode.from({
-              id,
-              type,
-              inputs: type !== "ENTRY" ? inputs : [],
-              outputs: type !== "EXIT" ? outputs : [],
-              coordinate,
-              size,
+      const inputs = _inputs_.map((input, idx) => ({
+        id: input,
+        coordinate: !["ENTRY", "EXIT", "JUNCTION"].includes(type)
+          ? Coordinate.from({
+              x: coordinate.x - size.x / 2,
+              y:
+                _inputs_.length === 1
+                  ? coordinate.y
+                  : coordinate.y - size.y / 2 + (size.y / (_inputs_.length + 1)) * (1 + idx),
+            })
+          : Coordinate.from({
+              x: coordinate.x,
+              y: coordinate.y,
             }),
-          );
-          break;
-        }
-        case "Edge": {
-          const id = CircuitEdgeId.from(parts[1]);
-          const edge = parts[2].replace("[", "").replace("]", "").trim().split("->");
-          const from = CircuitNodePinId.from(edge[0].trim());
-          const to = CircuitNodePinId.from(edge[1].trim());
-          const rawWaypoints = parts[3]
-            .replace("[", "")
-            .replace("]", "")
-            .trim()
-            .split("|")
-            .map((point) => point.trim());
-          const waypoints =
-            rawWaypoints[0] !== "NONE"
-              ? rawWaypoints.map((raw) => {
-                  const rawCoordinate = raw.split(":");
-                  return Coordinate.from({ x: Number(rawCoordinate[0]), y: Number(rawCoordinate[1]) });
-                })
-              : [];
-          edges.push(CircuitGuiEdge.from({ id, from, to, waypoints }));
-          break;
-        }
-        default:
-          return { ok: false, error: new CircuitParserServiceParseToGuiDataError(`Unknown token: ${token}`) };
-      }
-    }
+      }));
+      const outputs = _outputs_.map((output, idx) => ({
+        id: output,
+        coordinate: !["ENTRY", "EXIT", "JUNCTION"].includes(type)
+          ? Coordinate.from({
+              x: coordinate.x + size.x / 2,
+              y:
+                _outputs_.length === 1
+                  ? coordinate.y
+                  : coordinate.y - size.y / 2 + (size.y / (_outputs_.length + 1)) * (1 + idx),
+            })
+          : Coordinate.from({
+              x: coordinate.x,
+              y: coordinate.y,
+            }),
+      }));
 
-    return { ok: true, value: CircuitGuiData.from({ nodes, edges }) };
+      return CircuitGuiNode.from({
+        id,
+        type,
+        inputs,
+        outputs,
+        coordinate,
+        size,
+      });
+    });
+
+    const guiEdge = edges.map((edge) => {
+      const { id, from, to, waypoints: _waypoints_ } = edge;
+
+      const waypoints = retrieveWaypoints(_waypoints_);
+
+      return CircuitGuiEdge.from({
+        id,
+        from,
+        to,
+        waypoints,
+      });
+    });
+
+    return { ok: true, value: CircuitGuiData.from({ nodes: guiNodes, edges: guiEdge }) };
   }
 
-  parseToGraphData(textData: string): Result<CircuitGraphData> {
-    const lines = textData
-      .split(";")
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0);
-
-    const res: Array<CircuitGraphNode> = [];
+  parseToGraphData(circuitData: CircuitData): Result<CircuitGraphData> {
     const nodes = new Map<
       CircuitNodeId,
       { type: CircuitNodeType; inputs: Array<CircuitNodePinId>; outputs: Array<CircuitNodePinId> }
     >();
     const edges = new Map<CircuitEdgeId, { from: CircuitNodePinId; to: CircuitNodePinId }>();
 
-    for (const line of lines) {
-      const parts = line.split(",").map((part) => part.trim());
-      const token = parts[0];
-
-      switch (token) {
-        case "Node": {
-          const id = CircuitNodeId.from(parts[1]);
-          const type = CircuitNodeType.from(parts[2]);
-          const inputs = parts[3]
-            .replace("[", "")
-            .replace("]", "")
-            .trim()
-            .split("|")
-            .map((input) => CircuitNodePinId.from(input.trim()));
-          const outputs = parts[4]
-            .replace("[", "")
-            .replace("]", "")
-            .trim()
-            .split("|")
-            .map((output) => CircuitNodePinId.from(output.trim()));
-          nodes.set(id, { type, inputs, outputs });
-          break;
-        }
-        case "Edge": {
-          const id = CircuitEdgeId.from(parts[1]);
-          const edge = parts[2].replace("[", "").replace("]", "").trim().split("->");
-          const from = CircuitNodePinId.from(edge[0].trim());
-          const to = CircuitNodePinId.from(edge[1].trim());
-          edges.set(id, { from, to });
-          break;
-        }
-        default:
-          return { ok: false, error: new CircuitParserServiceParseToGraphDataError(`Unknown token: ${token}`) };
-      }
+    for (const node of circuitData.nodes) {
+      const { id, type, inputs, outputs } = node;
+      nodes.set(id, { type, inputs, outputs });
+    }
+    for (const edge of circuitData.edges) {
+      const { id, from, to } = edge;
+      edges.set(id, { from, to });
     }
 
-    for (const [nodeId, nodeValue] of nodes.entries()) {
-      const tempRes: CircuitGraphNode = CircuitGraphNode.from({
-        id: CircuitNodeId.from(nodeId),
-        type: CircuitNodeType.from(nodeValue.type),
-        inputs: [],
-        outputs: [],
+    try {
+      const graphData = circuitData.nodes.map((node) => {
+        const connectedInEdge = Array.from(edges.entries())
+          .filter((edge) => node.inputs.includes(edge[1].to))
+          .map((edge) => edge[0]);
+        const connectedOutEdge = Array.from(edges.entries())
+          .filter((edge) => node.outputs.includes(edge[1].from))
+          .map((edge) => edge[0]);
+
+        const inputs = connectedInEdge.map((edgeId) => {
+          const targetEdge = edges.get(edgeId);
+          if (!targetEdge) throw new CircuitParserServiceParseToGraphDataError(`No target edge found: ${edgeId}`);
+          const targetNode = Array.from(nodes.entries()).find((node) => node[1].outputs.includes(targetEdge.from));
+          if (!targetNode)
+            throw new CircuitParserServiceParseToGraphDataError(`No target node found: ${targetEdge.from}`);
+          return CircuitNodeId.from(targetNode[0]);
+        });
+
+        const outputs = connectedOutEdge.map((edgeId) => {
+          const targetEdge = edges.get(edgeId);
+          if (!targetEdge) throw new CircuitParserServiceParseToGraphDataError(`No target edge found: ${edgeId}`);
+          const targetNode = Array.from(nodes.entries()).find((node) => node[1].inputs.includes(targetEdge.to));
+          if (!targetNode)
+            throw new CircuitParserServiceParseToGraphDataError(`No target node found: ${targetEdge.from}`);
+          return CircuitNodeId.from(targetNode[0]);
+        });
+
+        return CircuitGraphNode.from({
+          id: node.id,
+          type: node.type,
+          inputs: inputs.map(CircuitNodeId.from),
+          outputs: outputs.map(CircuitNodeId.from),
+        });
       });
 
-      const connectedIn = Array.from(edges.entries())
-        .filter((edge) => nodeValue.inputs.includes(edge[1].to))
-        .map((edge) => edge[0]);
-      const connectedOut = Array.from(edges.entries())
-        .filter((edge) => nodeValue.outputs.includes(edge[1].from))
-        .map((edge) => edge[0]);
-
-      for (const edgeId of connectedIn) {
-        const targetEdge = edges.get(edgeId);
-        if (!targetEdge)
-          return { ok: false, error: new CircuitParserServiceParseToGraphDataError(`No target edge found: ${edgeId}`) };
-        const targetNode = Array.from(nodes.entries()).find((node) => node[1].outputs.includes(targetEdge.from));
-        if (!targetNode)
-          return {
-            ok: false,
-            error: new CircuitParserServiceParseToGraphDataError(`No target node found: ${targetEdge.from}`),
-          };
-        tempRes.inputs.push(CircuitNodeId.from(targetNode[0]));
-      }
-
-      for (const edgeId of connectedOut) {
-        const targetEdge = edges.get(edgeId);
-        if (!targetEdge)
-          return { ok: false, error: new CircuitParserServiceParseToGraphDataError(`No target edge found: ${edgeId}`) };
-        const targetNode = Array.from(nodes.entries()).find((node) => node[1].inputs.includes(targetEdge.to));
-        if (!targetNode)
-          return {
-            ok: false,
-            error: new CircuitParserServiceParseToGraphDataError(`No target node found: ${targetEdge.from}`),
-          };
-        tempRes.outputs.push(CircuitNodeId.from(targetNode[0]));
-      }
-
-      res.push(tempRes);
+      return { ok: true, value: CircuitGraphData.from(graphData) };
+    } catch (err: unknown) {
+      console.error(err);
+      return { ok: false, error: err };
     }
-
-    return { ok: true, value: CircuitGraphData.from(res) };
   }
 }

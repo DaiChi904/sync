@@ -17,7 +17,15 @@ export default function Edge({ edge, pinMap, outputMap }: EdgeProps) {
   return (
     <g>
       {/** biome-ignore lint/style/noNonNullAssertion: This is fine. */}
-      <line key={edge.id} x1={from.x} y1={from.y} x2={to.x} y2={to.y} stroke={outputMap!.get(edge.from) === true ? "#00a120" : "#9ca19d"} strokeWidth={2} />
+      <line
+        key={edge.id}
+        x1={from.x}
+        y1={from.y}
+        x2={to.x}
+        y2={to.y}
+        stroke={outputMap!.get(edge.from) === true ? "#00a120" : "#9ca19d"}
+        strokeWidth={2}
+      />
     </g>
   );
 }

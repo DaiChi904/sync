@@ -23,11 +23,11 @@ export default function CircuitDiagram({ data, outputRecord }: CircuitDiagramPro
   data?.nodes.forEach((node) => {
     node.inputs.forEach((pin) => {
       const output = outputRecord?.[node.id];
-        outputMap.set(pin.id, output ?? EvalResult.from(true))
+      outputMap.set(pin.id, output ?? EvalResult.from(true));
     });
     node.outputs.forEach((pin) => {
       const output = outputRecord?.[node.id];
-        outputMap.set(pin.id, output ?? EvalResult.from(true));
+      outputMap.set(pin.id, output ?? EvalResult.from(true));
     });
   });
 

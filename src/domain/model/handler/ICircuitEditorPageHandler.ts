@@ -6,6 +6,7 @@ import type { CircuitNodePinId } from "../valueObject/circuitNodePinId";
 import type { CircuitNodeSize } from "../valueObject/circuitNodeSize";
 import type { CircuitNodeType } from "../valueObject/circuitNodeType";
 import type { Coordinate } from "../valueObject/coordinate";
+import type { Waypoint } from "../valueObject/waypoint";
 
 export interface CircuitEditorPageError {
   failedToGetCircuitDetailError: boolean;
@@ -25,40 +26,18 @@ export interface ICircuitEditorPageHandler {
   error: CircuitEditorPageError;
   circuit: Circuit | undefined;
   guiData: CircuitGuiData | undefined;
-  circuitEditorData:
-    | {
-        node: Array<{
-          type: "Node";
-          nodeId: CircuitNodeId;
-          nodeType: CircuitNodeType;
-          inputs: CircuitNodePinId[];
-          outputs: CircuitNodePinId[];
-          coordinate: Coordinate;
-          size: CircuitNodeSize;
-        }>;
-        edge: Array<{
-          type: "Edge";
-          edgeId: CircuitEdgeId;
-          from: CircuitNodePinId;
-          to: CircuitNodePinId;
-          waypoints: Coordinate[];
-        }>;
-      }
-    | undefined;
   save: () => void;
   addCircuitNode: (newNode: {
-    type: "Node";
-    nodeId: CircuitNodeId;
-    nodeType: CircuitNodeType;
+    id: CircuitNodeId;
+    type: CircuitNodeType;
     inputs: CircuitNodePinId[];
     outputs: CircuitNodePinId[];
     coordinate: Coordinate;
     size: CircuitNodeSize;
   }) => void;
   updateCircuitNode: (newNode: {
-    type: "Node";
-    nodeId: CircuitNodeId;
-    nodeType: CircuitNodeType;
+    id: CircuitNodeId;
+    type: CircuitNodeType;
     inputs: CircuitNodePinId[];
     outputs: CircuitNodePinId[];
     coordinate: Coordinate;
@@ -66,18 +45,16 @@ export interface ICircuitEditorPageHandler {
   }) => void;
   deleteCircuitNode: (nodeId: CircuitNodeId) => void;
   addCircuitEdge: (newEdge: {
-    type: "Edge";
-    edgeId: CircuitEdgeId;
+    id: CircuitEdgeId;
     from: CircuitNodePinId;
     to: CircuitNodePinId;
-    waypoints: Coordinate[];
+    waypoints: Waypoint | null;
   }) => void;
   updateCircuitEdge: (newEdge: {
-    type: "Edge";
-    edgeId: CircuitEdgeId;
+    id: CircuitEdgeId;
     from: CircuitNodePinId;
     to: CircuitNodePinId;
-    waypoints: Coordinate[];
+    waypoints: Waypoint | null;
   }) => void;
-  deleteCircuitEdge: (nodeId: CircuitEdgeId) => void;
+  deleteCircuitEdge: (edgeId: CircuitEdgeId) => void;
 }

@@ -13,7 +13,6 @@ export default function CircuitEditorPageLayout() {
     error,
     circuit,
     guiData,
-    circuitEditorData,
     save,
     addCircuitNode,
     updateCircuitNode,
@@ -73,7 +72,7 @@ export default function CircuitEditorPageLayout() {
                   }}
                 >
                   <CircuitEditor
-                    circuitEditorData={circuitEditorData}
+                    circuitEditorData={circuit.circuitData}
                     save={save}
                     addCircuitNode={addCircuitNode}
                     updateCircuitNode={updateCircuitNode}

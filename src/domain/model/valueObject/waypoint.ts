@@ -33,12 +33,12 @@ export namespace Waypoint {
   };
 
   export const waypointsToCoordinateArray = (waypoint: Waypoint | null): Array<Coordinate> => {
-      if (waypoint === null) return [];
+    if (waypoint === null) return [];
 
-      return waypoint.next !== null
-        ? [waypoint.coordinate, ...waypointsToCoordinateArray(waypoint.next)]
-        : [waypoint.coordinate];
-    };
+    return waypoint.next !== null
+      ? [waypoint.coordinate, ...waypointsToCoordinateArray(waypoint.next)]
+      : [waypoint.coordinate];
+  };
 
   export const coordinatesToWaypoints = (coordinates: Array<Coordinate>): Waypoint | null => {
     if (coordinates.length === 0) return null;

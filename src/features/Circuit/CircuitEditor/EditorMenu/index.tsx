@@ -2,48 +2,29 @@ import Box from "@/components/atoms/Box";
 import Flex from "@/components/atoms/Flex";
 import Grid from "@/components/atoms/Grid";
 import Typography from "@/components/atoms/Typography";
+import type { CircuitData } from "@/domain/model/valueObject/circuitData";
 import { CircuitEdgeId } from "@/domain/model/valueObject/circuitEdgeId";
 import { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 import { CircuitNodeSize } from "@/domain/model/valueObject/circuitNodeSize";
 import { CircuitNodeType } from "@/domain/model/valueObject/circuitNodeType";
 import { Coordinate } from "@/domain/model/valueObject/coordinate";
+import { Waypoint } from "@/domain/model/valueObject/waypoint";
 
 interface CircuitEditorProps {
-  circuitEditorData:
-    | {
-        node: Array<{
-          type: "Node";
-          nodeId: CircuitNodeId;
-          nodeType: CircuitNodeType;
-          inputs: CircuitNodePinId[];
-          outputs: CircuitNodePinId[];
-          coordinate: Coordinate;
-          size: CircuitNodeSize;
-        }>;
-        edge: Array<{
-          type: "Edge";
-          edgeId: CircuitEdgeId;
-          from: CircuitNodePinId;
-          to: CircuitNodePinId;
-          waypoints: Coordinate[];
-        }>;
-      }
-    | undefined;
+  circuitEditorData: CircuitData | undefined;
   save: () => void;
   addCircuitNode: (newNode: {
-    type: "Node";
-    nodeId: CircuitNodeId;
-    nodeType: CircuitNodeType;
+    id: CircuitNodeId;
+    type: CircuitNodeType;
     inputs: CircuitNodePinId[];
     outputs: CircuitNodePinId[];
     coordinate: Coordinate;
     size: CircuitNodeSize;
   }) => void;
   updateCircuitNode: (newNode: {
-    type: "Node";
-    nodeId: CircuitNodeId;
-    nodeType: CircuitNodeType;
+    id: CircuitNodeId;
+    type: CircuitNodeType;
     inputs: CircuitNodePinId[];
     outputs: CircuitNodePinId[];
     coordinate: Coordinate;
@@ -51,20 +32,18 @@ interface CircuitEditorProps {
   }) => void;
   deleteCircuitNode: (nodeId: CircuitNodeId) => void;
   addCircuitEdge: (newEdge: {
-    type: "Edge";
-    edgeId: CircuitEdgeId;
+    id: CircuitEdgeId;
     from: CircuitNodePinId;
     to: CircuitNodePinId;
-    waypoints: Coordinate[];
+    waypoints: Waypoint | null;
   }) => void;
   updateCircuitEdge: (newEdge: {
-    type: "Edge";
-    edgeId: CircuitEdgeId;
+    id: CircuitEdgeId;
     from: CircuitNodePinId;
     to: CircuitNodePinId;
-    waypoints: Coordinate[];
+    waypoints: Waypoint | null;
   }) => void;
-  deleteCircuitEdge: (nodeId: CircuitEdgeId) => void;
+  deleteCircuitEdge: (edgeId: CircuitEdgeId) => void;
 }
 
 export default function CircuitEditor({
@@ -77,8 +56,8 @@ export default function CircuitEditor({
   updateCircuitEdge,
   deleteCircuitEdge,
 }: CircuitEditorProps) {
-  const nodes = circuitEditorData?.node;
-  const edges = circuitEditorData?.edge;
+  const nodes = circuitEditorData?.nodes;
+  const edges = circuitEditorData?.edges;
 
   return (
     <Box className="p-4 space-y-8">
@@ -90,10 +69,7 @@ export default function CircuitEditor({
           Nodes
         </Typography>
         <Flex direction="column" gap={5}>
-          <Grid xs={1} ys={1} xfs={8} yfs={1} container gap={5}>
-            <Grid xs={1} ys={1} xfs={1} yfs={1}>
-              Type
-            </Grid>
+          <Grid xs={1} ys={1} xfs={7} yfs={1} container gap={5}>
             <Grid xs={1} ys={1} xfs={1} yfs={1}>
               Id
             </Grid>
@@ -117,18 +93,15 @@ export default function CircuitEditor({
             </Grid>
           </Grid>
           {nodes?.map((node) => (
-            <Grid key={node.nodeId} xs={1} ys={1} xfs={8} yfs={1} container gap={5}>
+            <Grid key={node.id} xs={1} ys={1} xfs={7} yfs={1} container gap={5}>
               <Grid xs={1} ys={1} xfs={1} yfs={1}>
-                {node.type}
-              </Grid>
-              <Grid xs={1} ys={1} xfs={1} yfs={1}>
-                {node.nodeId}
+                {node.id}
               </Grid>
               <Grid xs={1} ys={1} xfs={1} yfs={1}>
                 <select
-                  defaultValue={node.nodeType}
+                  defaultValue={node.type}
                   onChange={(ev) => {
-                    node.nodeType = ev.target.value as CircuitNodeType;
+                    node.type = CircuitNodeType.from(ev.target.value);
                   }}
                 >
                   <option value="ENTRY">ENTRY</option>
@@ -255,7 +228,7 @@ export default function CircuitEditor({
                 <Box onClick={() => updateCircuitNode({ ...node })} className="animated">
                   Update
                 </Box>
-                <Box onClick={() => deleteCircuitNode(node.nodeId)} className="animated">
+                <Box onClick={() => deleteCircuitNode(node.id)} className="animated">
                   Delete
                 </Box>
               </Grid>
@@ -264,9 +237,8 @@ export default function CircuitEditor({
           <Box
             onClick={() => {
               addCircuitNode({
-                type: "Node",
-                nodeId: CircuitNodeId.from("new_node"),
-                nodeType: CircuitNodeType.from("ENTRY"),
+                id: CircuitNodeId.from("new_node"),
+                type: CircuitNodeType.from("ENTRY"),
                 inputs: [],
                 outputs: [],
                 coordinate: Coordinate.from({ x: 0, y: 0 }),
@@ -285,10 +257,7 @@ export default function CircuitEditor({
           Edges
         </Typography>
         <Flex direction="column" gap={5}>
-          <Grid xs={1} ys={1} xfs={6} yfs={1} container gap={5}>
-            <Grid xs={1} ys={1} xfs={1} yfs={1}>
-              Type
-            </Grid>
+          <Grid xs={1} ys={1} xfs={5} yfs={1} container gap={5}>
             <Grid xs={1} ys={1} xfs={1} yfs={1}>
               Id
             </Grid>
@@ -303,16 +272,13 @@ export default function CircuitEditor({
             </Grid>
           </Grid>
           {edges?.map((edge) => (
-            <Grid key={edge.edgeId} xs={1} ys={1} xfs={6} yfs={1} container gap={5}>
-              <Grid xs={1} ys={1} xfs={1} yfs={1}>
-                {edge.type}
-              </Grid>
+            <Grid key={edge.id} xs={1} ys={1} xfs={5} yfs={1} container gap={5}>
               <Grid xs={1} ys={1} xfs={1} yfs={1}>
                 <input
                   type="text"
-                  defaultValue={edge.edgeId}
+                  defaultValue={edge.id}
                   onChange={(ev) => {
-                    edge.edgeId = CircuitEdgeId.from(ev.target.value);
+                    edge.id = CircuitEdgeId.from(ev.target.value);
                   }}
                 />
               </Grid>
@@ -336,7 +302,7 @@ export default function CircuitEditor({
               </Grid>
               <Grid xs={1} ys={1} xfs={1} yfs={1}>
                 <Flex direction="row">
-                  {edge.waypoints?.map((point, idx) => (
+                  {Waypoint.waypointsToCoordinateArray(edge.waypoints)?.map((point, idx) => (
                     <>
                       <Flex key={point.x + point.y} direction="column" style={{ display: "flex", width: "100%" }}>
                         <input
@@ -344,7 +310,9 @@ export default function CircuitEditor({
                           defaultValue={point.x}
                           onChange={(ev) => {
                             point.x = Number(ev.target.value);
-                            edge.waypoints[idx] = point;
+                            const waypoints = Waypoint.waypointsToCoordinateArray(edge.waypoints);
+                            waypoints[idx] = point;
+                            edge.waypoints = Waypoint.coordinatesToWaypoints(waypoints);
                           }}
                         />
                         <input
@@ -352,14 +320,19 @@ export default function CircuitEditor({
                           defaultValue={point.y}
                           onChange={(ev) => {
                             point.y = Number(ev.target.value);
-                            edge.waypoints[idx] = point;
+                            const waypoints = Waypoint.waypointsToCoordinateArray(edge.waypoints);
+                            waypoints[idx] = point;
+                            edge.waypoints = Waypoint.coordinatesToWaypoints(waypoints);
                           }}
                         />
                       </Flex>
                       <Flex
                         style={{ width: "20%", fontSize: "10px", margin: "1px" }}
                         onClick={() => {
-                          edge.waypoints = edge.waypoints.filter((_, oldIdx) => oldIdx !== idx);
+                          const waypoints = Waypoint.waypointsToCoordinateArray(edge.waypoints).filter(
+                            (_, oldIdx) => oldIdx !== idx,
+                          );
+                          edge.waypoints = Waypoint.coordinatesToWaypoints(waypoints);
                           updateCircuitEdge({ ...edge });
                         }}
                         className="animated"
@@ -382,7 +355,7 @@ export default function CircuitEditor({
                 <Box onClick={() => updateCircuitEdge({ ...edge })} className="animated">
                   Update
                 </Box>
-                <Box onClick={() => deleteCircuitEdge(edge.edgeId)} className="animated">
+                <Box onClick={() => deleteCircuitEdge(edge.id)} className="animated">
                   Delete
                 </Box>
               </Grid>
@@ -391,11 +364,10 @@ export default function CircuitEditor({
           <Box
             onClick={() => {
               addCircuitEdge({
-                type: "Edge",
-                edgeId: CircuitEdgeId.from("new_edge"),
+                id: CircuitEdgeId.from("new_edge"),
                 from: CircuitNodePinId.from("new_edge"),
                 to: CircuitNodePinId.from("new_edge"),
-                waypoints: [],
+                waypoints: null,
               });
             }}
             className="animated"

@@ -13,11 +13,19 @@ interface CircuitDiagramProps {
 
 export default function CircuitDiagram({ data, outputRecord }: CircuitDiagramProps) {
   const pinMap = new Map<CircuitNodePinId, Coordinate>();
+  const waypointsMap = new Map<CircuitNodePinId, Coordinate[]>();
   const outputMap = new Map<CircuitNodePinId, EvalResult>();
 
-  data?.nodes.forEach((node) => {
+  data.nodes.forEach((node) => {
     node.inputs.forEach((pin) => pinMap.set(pin.id, pin.coordinate));
     node.outputs.forEach((pin) => pinMap.set(pin.id, pin.coordinate));
+  });
+
+  data.edges.forEach((edge) => {
+    if (edge.waypoints) {
+      waypointsMap.set(edge.from, edge.waypoints);
+      waypointsMap.set(edge.to, edge.waypoints);
+    }
   });
 
   data?.nodes.forEach((node) => {
@@ -40,7 +48,7 @@ export default function CircuitDiagram({ data, outputRecord }: CircuitDiagramPro
     <svg width={maxX + minX} height={maxY + minY} style={{ background: "#222" }}>
       <title>Circuit Diagram</title>
       {data?.edges.map((edge) => (
-        <Edge key={edge.id} edge={edge} pinMap={pinMap} outputMap={outputMap} />
+        <Edge key={edge.id} edge={edge} pinMap={pinMap} outputMap={outputMap} waypointsMap={waypointsMap} />
       ))}
       {data?.nodes.map((node) => (
         <Node key={node.id} node={node} />

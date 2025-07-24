@@ -11,6 +11,7 @@ import { CircuitTitle } from "@/domain/model/valueObject/circuitTitle";
 import { Coordinate } from "@/domain/model/valueObject/coordinate";
 import { CreatedDateTime } from "@/domain/model/valueObject/createdDateTime";
 import { UpdatedDateTime } from "@/domain/model/valueObject/updatedDateTime";
+import { Waypoint } from "@/domain/model/valueObject/waypoint";
 
 export const mockCircuitData: Array<Circuit> = [
   Circuit.from({
@@ -26,7 +27,7 @@ export const mockCircuitData: Array<Circuit> = [
           type: CircuitNodeType.from("ENTRY"),
           inputs: [],
           outputs: [CircuitNodePinId.from("S_output0")],
-          coordinate: Coordinate.from({ x: 50, y: 50 }),
+          coordinate: Coordinate.from({ x: 50, y: 44 }),
           size: CircuitNodeSize.from({ x: 60, y: 40 }),
         },
         {
@@ -34,7 +35,7 @@ export const mockCircuitData: Array<Circuit> = [
           type: CircuitNodeType.from("ENTRY"),
           inputs: [],
           outputs: [CircuitNodePinId.from("R_output0")],
-          coordinate: Coordinate.from({ x: 50, y: 150 }),
+          coordinate: Coordinate.from({ x: 50, y: 156 }),
           size: CircuitNodeSize.from({ x: 60, y: 40 }),
         },
         {
@@ -42,7 +43,7 @@ export const mockCircuitData: Array<Circuit> = [
           type: CircuitNodeType.from("NOT"),
           inputs: [CircuitNodePinId.from("NOT1_input0")],
           outputs: [CircuitNodePinId.from("NOT1_output0")],
-          coordinate: Coordinate.from({ x: 150, y: 50 }),
+          coordinate: Coordinate.from({ x: 150, y: 44 }),
           size: CircuitNodeSize.from({ x: 60, y: 40 }),
         },
         {
@@ -50,7 +51,7 @@ export const mockCircuitData: Array<Circuit> = [
           type: CircuitNodeType.from("NOT"),
           inputs: [CircuitNodePinId.from("NOT2_input0")],
           outputs: [CircuitNodePinId.from("NOT2_output0")],
-          coordinate: Coordinate.from({ x: 150, y: 150 }),
+          coordinate: Coordinate.from({ x: 150, y: 156 }),
           size: CircuitNodeSize.from({ x: 60, y: 40 }),
         },
         {
@@ -140,14 +141,19 @@ export const mockCircuitData: Array<Circuit> = [
         {
           id: CircuitEdgeId.from("edge_3"),
           from: CircuitNodePinId.from("NOT2_output0"),
-          to: CircuitNodePinId.from("AND2_input0"),
+          to: CircuitNodePinId.from("AND2_input1"),
           waypoints: null,
         },
         {
           id: CircuitEdgeId.from("edge_4"),
           from: CircuitNodePinId.from("JUNCTION2_output0"),
           to: CircuitNodePinId.from("AND1_input1"),
-          waypoints: null,
+          waypoints: Waypoint.coordinatesToWaypoints([
+            Coordinate.from({ x: 450, y: 150 }),
+            Coordinate.from({ x: 450, y: 125 }),
+            Coordinate.from({ x: 200, y: 75 }),
+            Coordinate.from({ x: 200, y: 57 }),
+          ]),
         },
         {
           id: CircuitEdgeId.from("edge_5"),
@@ -164,8 +170,13 @@ export const mockCircuitData: Array<Circuit> = [
         {
           id: CircuitEdgeId.from("edge_7"),
           from: CircuitNodePinId.from("JUNCTION1_output0"),
-          to: CircuitNodePinId.from("AND2_input1"),
-          waypoints: null,
+          to: CircuitNodePinId.from("AND2_input0"),
+          waypoints: Waypoint.coordinatesToWaypoints([
+            Coordinate.from({ x: 450, y: 50 }),
+            Coordinate.from({ x: 450, y: 75 }),
+            Coordinate.from({ x: 200, y: 125 }),
+            Coordinate.from({ x: 200, y: 143 }),
+          ]),
         },
         {
           id: CircuitEdgeId.from("edge_8"),

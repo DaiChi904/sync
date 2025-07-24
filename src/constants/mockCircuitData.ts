@@ -574,7 +574,6 @@ export const mockCircuitData: Array<Circuit> = [
         },
       ],
     }),
-
     createdAt: CreatedDateTime.fromDate(new Date("2023-10-26T10:00:00Z")),
     updatedAt: UpdatedDateTime.fromDate(new Date("2023-10-26T12:00:00Z")),
   }),

@@ -9,7 +9,7 @@ export const useHomePageHandlerContext = () => {
   const ctx = useContext(HomePageHandlerContext);
   if (ctx === undefined) {
     throw new Error(
-      "useCircuitOverviewQueryServiceContext must be used within a CircuitOverviewQueryServiceContextProvider",
+      "useHomePageHandlerContext must be used within a HomePageHandlerContext",
     );
   }
   return ctx;

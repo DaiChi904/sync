@@ -24,8 +24,6 @@ export default function Edge({ edge, pinMap, waypointsMap, outputMap }: EdgeProp
     return point;
   });
 
-  console.log(edges);
-
   return edges.map((from, idx) => {
     if (idx === edges.length - 1) return null;
     const to = edges[idx + 1];

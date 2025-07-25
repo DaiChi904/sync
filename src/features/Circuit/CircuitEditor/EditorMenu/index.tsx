@@ -301,7 +301,7 @@ export default function CircuitEditor({
                 />
               </Grid>
               <Grid xs={1} ys={1} xfs={1} yfs={1}>
-                <Flex direction="row">
+                <Flex direction="column">
                   {Waypoint.waypointsToCoordinateArray(edge.waypoints)?.map((point, idx) => (
                     <>
                       <Flex key={point.x + point.y} direction="column" style={{ display: "flex", width: "100%" }}>
@@ -343,11 +343,15 @@ export default function CircuitEditor({
                   ))}
                   <Box
                     onClick={() => {
-                      console.log("not implemented yet");
+                      edge.waypoints = Waypoint.coordinatesToWaypoints([
+                        ...Waypoint.waypointsToCoordinateArray(edge.waypoints),
+                        Coordinate.from({ x: 0, y: 0 }),
+                      ]);
+                      updateCircuitEdge({ ...edge });
                     }}
                     className="animated"
                   >
-                    Add (Not implemented yet)
+                    Add
                   </Box>
                 </Flex>
               </Grid>

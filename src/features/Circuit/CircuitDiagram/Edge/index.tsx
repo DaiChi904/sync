@@ -20,7 +20,7 @@ export default function Edge({ edge, pinMap, waypointsMap, outputMap }: EdgeProp
       ? waypointsMap.get(edge.from)
       : [];
 
-  const edges = [from, ...(waypoints ?? []), to].map((point, idx) => {
+  const edges = [from, ...(waypoints ?? []), to].map((point) => {
     return point;
   });
 

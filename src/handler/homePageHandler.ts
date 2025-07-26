@@ -21,7 +21,7 @@ export const useHomePageHandler = ({ getCircuitOverviewsUsecase }: HomePageHandl
       async () => {
         const circuitOverviews = await getCircuitOverviewsUsecase.getOverviews();
         if (!circuitOverviews.ok) {
-          throw new Attempt.Abort("Failed to get circuit overviews.", circuitOverviews.error);
+          throw new Attempt.Abort("Failed to get circuit overviews.", { cause: circuitOverviews.error});
         }
 
         setCircuitOverviews(circuitOverviews.value);

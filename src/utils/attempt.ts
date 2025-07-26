@@ -15,7 +15,7 @@ export class ModelValidationError extends Error {
 export namespace Attempt {
   export const proceed = async (
     successCallback: () => void | Promise<void>,
-    failureCallback: () => void | Promise<void>,
+    failureCallback: (err?: unknown) => void | Promise<void>,
   ): Promise<void> => {
     try {
       await Promise.resolve(successCallback());
@@ -35,14 +35,21 @@ export namespace Attempt {
         }
       }
 
-      await Promise.resolve(failureCallback());
+      await Promise.resolve(failureCallback(err));
     }
   };
 
   export class Abort extends Error {
-    constructor(message: string, cause?: unknown) {
-      super(message, { cause });
+    readonly tag: string | undefined;
+
+    constructor(message: string, options?: {cause?: unknown, tag?: string}) {
+      super(message, { cause: options?.cause ?? undefined });
       this.name = "Abort";
+      this.tag = options?.tag ?? undefined;
     }
   }
+
+  export const isAborted = (err: unknown): err is Abort => {
+    return err instanceof Abort;
+  };
 }

@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useState } from "react";
 import type { CircuitOverview } from "@/domain/model/entity/circuitOverview";
 import { type HomePageError, homePageError, type IHomePageHandler } from "@/domain/model/handler/IHomePageHandler";
-import { handleValidationError } from "@/domain/model/modelValidationError";
 import type { IGetCircuitOverviewsUsecase } from "@/domain/model/usecase/IGetCircuitOverviewsUsecase";
 import { useObjectState } from "@/hooks/objectState";
+import { Attempt } from "@/utils/attempt";
 
 interface HomePageHandlerDependencies {
   getCircuitOverviewsUsecase: IGetCircuitOverviewsUsecase;
@@ -16,23 +16,21 @@ export const useHomePageHandler = ({ getCircuitOverviewsUsecase }: HomePageHandl
 
   const [circuitOverviews, setCircuitOverviews] = useState<Array<CircuitOverview> | undefined>(undefined);
 
-  const fetch = useCallback((): void => {
-    handleValidationError(
+  const fetch = useCallback(async (): Promise<void> => {
+    await Attempt.proceed(
       async () => {
-        const res = await getCircuitOverviewsUsecase.getOverviews();
-
-        switch (res.ok) {
-          case true: {
-            setCircuitOverviews(res.value);
-            break;
-          }
-          case false: {
-            console.error(res.error);
-            setError("failedToGetCircuitOverviewsError", true);
-          }
+        const circuitOverviews = await getCircuitOverviewsUsecase.getOverviews();
+        if (!circuitOverviews.ok) {
+          throw new Attempt.Abort("Failed to get circuit overviews.", {
+            cause: circuitOverviews.error,
+          });
         }
+
+        setCircuitOverviews(circuitOverviews.value);
       },
-      () => setError("failedToGetCircuitOverviewsError", true),
+      () => {
+        setError("failedToGetCircuitOverviewsError", true);
+      },
     );
   }, [getCircuitOverviewsUsecase, setError]);
 

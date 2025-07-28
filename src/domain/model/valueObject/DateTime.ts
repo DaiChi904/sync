@@ -1,5 +1,5 @@
+import { ModelValidationError } from "@/utils/attempt";
 import type { Brand } from "@/utils/brand";
-import { ModelValidationError } from "../modelValidationError";
 
 const brandSymbol = Symbol("DateTime");
 

@@ -22,7 +22,6 @@ import type { CircuitNodeType } from "@/domain/model/valueObject/circuitNodeType
 import type { Coordinate } from "@/domain/model/valueObject/coordinate";
 import type { Waypoint } from "@/domain/model/valueObject/waypoint";
 import { useObjectState } from "@/hooks/objectState";
-import { useSkipFirstRenderEffect } from "@/hooks/skipFirstRenderEffect";
 import { Attempt } from "@/utils/attempt";
 
 interface CircuitEditorPageHandlerDependencies {
@@ -39,8 +38,6 @@ export const useCircuitEditorPageHandler = ({
   circuitParserUsecase,
   circuitEditorUsecase,
 }: CircuitEditorPageHandlerDependencies): ICircuitEditorPageHandler => {
-  const shouldExecute = useSkipFirstRenderEffect();
-
   const [error, setError] = useObjectState<CircuitEditorPageError>(circuitEditorPageError);
 
   const [circuit, setCircuit] = useState<Circuit | undefined>(undefined);
@@ -271,10 +268,10 @@ export const useCircuitEditorPageHandler = ({
   }, [fetch]);
 
   useEffect(() => {
-    if (!shouldExecute) return;
+    if (!circuit) return;
 
     updateCircuitGuiData();
-  }, [updateCircuitGuiData, shouldExecute]);
+  }, [updateCircuitGuiData, circuit]);
 
   return {
     error,

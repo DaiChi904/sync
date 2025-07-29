@@ -39,7 +39,7 @@ export const useCircuitEditorPageHandler = ({
   circuitParserUsecase,
   circuitEditorUsecase,
 }: CircuitEditorPageHandlerDependencies): ICircuitEditorPageHandler => {
-  const shoudExecute = useSkipFirstRenderEffect();
+  const shouldExecute = useSkipFirstRenderEffect();
 
   const [error, setError] = useObjectState<CircuitEditorPageError>(circuitEditorPageError);
 
@@ -47,7 +47,7 @@ export const useCircuitEditorPageHandler = ({
   const [guiData, setGuiData] = useState<CircuitGuiData | undefined>(undefined);
 
   const fetch = useCallback(async (): Promise<void> => {
-    await Attempt.proceed(
+    await Attempt.asyncProceed(
       async () => {
         const circuitDetail = await getCircuitDetailUsecase.getById(query);
         if (!circuitDetail.ok) {
@@ -83,7 +83,7 @@ export const useCircuitEditorPageHandler = ({
   }, [setError, circuit, circuitParserUsecase]);
 
   const save = useCallback(async (): Promise<void> => {
-    await Attempt.proceed(
+    await Attempt.asyncProceed(
       async () => {
         if (!circuit) throw new Attempt.Abort("Circuit is not defined.", { tag: "noCircuit" });
 
@@ -271,10 +271,10 @@ export const useCircuitEditorPageHandler = ({
   }, [fetch]);
 
   useEffect(() => {
-    if (!shoudExecute) return;
+    if (!shouldExecute) return;
 
     updateCircuitGuiData();
-  }, [updateCircuitGuiData, shoudExecute]);
+  }, [updateCircuitGuiData, shouldExecute]);
 
   return {
     error,

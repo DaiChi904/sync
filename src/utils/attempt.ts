@@ -15,13 +15,13 @@ export class ModelValidationError extends Error {
 export namespace Attempt {
   export const proceed = <
     // biome-ignore lint/suspicious/noExplicitAny: This is appropriate implementation
-    S extends (...args: any) => any | Promise<any>,
+    S extends (...args: any) => any,
     // biome-ignore lint/suspicious/noExplicitAny: This is appropriate implementation
-    F extends (err: unknown) => any | Promise<any>,
+    F extends (err: unknown) => any,
   >(
     successCallback: S,
     failureCallback: F,
-  ): ReturnType<S> | Promise<ReturnType<S>> | ReturnType<F> | Promise<ReturnType<F>> => {
+  ): ReturnType<S> | ReturnType<F> => {
     const logger = (err: unknown) => {
       switch (true) {
         case err instanceof ModelValidationError:
@@ -36,21 +36,65 @@ export namespace Attempt {
       }
     };
 
+    if (successCallback.constructor.name === "AsyncFunction") {
+      console.error("SuccessCallback has to be syncrouns function. But received async function.");
+    }
+    if (failureCallback.constructor.name === "AsyncFunction") {
+      console.error("FailureCallback has to be syncrouns function. But received async function.");
+    }
+
     // If successCallback is an async function, try-catch cannot directly catch asynchronous errors (only synchronous throws are caught).
     // Therefore, catch errors and handle them by returning failureCallback in catch of successCallback.
     // if successCallback is a synchronous function, use try-catch as usual.
     try {
-      return successCallback.constructor.name === "AsyncFunction"
-        ? Promise.resolve(successCallback()).catch((err) => {
-            logger(err);
-            return failureCallback(err);
-          })
-        : successCallback();
+      return successCallback();
     } catch (err: unknown) {
       logger(err);
-      return failureCallback.constructor.name === "AsyncFunction"
-        ? Promise.resolve(failureCallback(err))
-        : failureCallback(err);
+      return failureCallback(err);
+    }
+  };
+
+  export const asyncProceed = <
+    // biome-ignore lint/suspicious/noExplicitAny: This is appropriate implementation
+    S extends (...args: any) => Promise<any>,
+    // biome-ignore lint/suspicious/noExplicitAny: This is appropriate implementation
+    F extends (err: unknown) => any,
+  >(
+    successCallback: S,
+    failureCallback: F,
+  ): Promise<ReturnType<S>> | ReturnType<F> => {
+    const logger = (err: unknown) => {
+      switch (true) {
+        case err instanceof ModelValidationError:
+        case err instanceof Abort: {
+          console.error(err);
+          break;
+        }
+        default: {
+          console.error("Unhandled error:", err);
+          break;
+        }
+      }
+    };
+
+    if (successCallback.constructor.name !== "AsyncFunction") {
+      console.error("SuccessCallback has to be async function. But received syncrouns function.");
+    }
+    if (failureCallback.constructor.name === "AsyncFunction") {
+      console.error("FailureCallback has to be syncrouns function. But received async function.");
+    }
+
+    // If successCallback is an async function, try-catch cannot directly catch asynchronous errors (only synchronous throws are caught).
+    // Therefore, catch errors and handle them by returning failureCallback in catch of successCallback.
+    // if successCallback is a synchronous function, use try-catch as usual.
+    try {
+      return Promise.resolve(successCallback()).catch((err) => {
+        logger(err);
+        return failureCallback(err);
+      });
+    } catch (err: unknown) {
+      logger(err);
+      return failureCallback(err);
     }
   };
 

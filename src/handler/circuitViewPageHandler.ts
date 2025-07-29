@@ -31,7 +31,7 @@ export const useCircuitViewPageHandler = ({
   const [guiData, setGuiData] = useState<CircuitGuiData | undefined>(undefined);
 
   const fetch = useCallback(async (): Promise<void> => {
-    await Attempt.proceed(
+    await Attempt.asyncProceed(
       async () => {
         const circuitDetail = await getCircuitDetailUsecase.getById(query);
         if (!circuitDetail.ok) {

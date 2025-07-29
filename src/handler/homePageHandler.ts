@@ -17,7 +17,7 @@ export const useHomePageHandler = ({ getCircuitOverviewsUsecase }: HomePageHandl
   const [circuitOverviews, setCircuitOverviews] = useState<Array<CircuitOverview> | undefined>(undefined);
 
   const fetch = useCallback(async (): Promise<void> => {
-    await Attempt.proceed(
+    await Attempt.asyncProceed(
       async () => {
         const circuitOverviews = await getCircuitOverviewsUsecase.getOverviews();
         if (!circuitOverviews.ok) {

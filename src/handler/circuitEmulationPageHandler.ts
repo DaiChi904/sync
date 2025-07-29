@@ -45,7 +45,7 @@ export const useCircuitEmulationPageHandler = ({
   const [outputs, setOutputs] = useState<Record<CircuitNodeId, EvalResult>>({});
 
   const fetch = useCallback(async (): Promise<void> => {
-    await Attempt.proceed(
+    await Attempt.asyncProceed(
       async () => {
         const circuitDetail = await getCircuitDetailUsecase.getById(query);
         if (!circuitDetail.ok) {

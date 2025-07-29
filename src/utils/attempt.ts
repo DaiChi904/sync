@@ -63,7 +63,7 @@ export namespace Attempt {
     }
   }
 
-  export const isAborted = (err: unknown): boolean => {
+  export const isAborted = (err: unknown): err is Abort => {
     return err instanceof Abort;
   };
 }

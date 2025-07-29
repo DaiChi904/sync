@@ -7,17 +7,15 @@ import type { Phase } from "../valueObject/phase";
 
 export interface CircuitEmulationPageError {
   failedToGetCircuitDetailError: boolean;
-  failedToParseCircuitDataError: boolean;
-  failedToGenerateEmulatorServiceError: boolean;
-  failedToSetupError: boolean;
+  failedToGenGuiCircuitDataError: boolean;
+  failedToSetupEmulatorServiceError: boolean;
   failedToEvalCircuitError: boolean;
 }
 
 export const circuitEmulationPageError: CircuitEmulationPageError = {
   failedToGetCircuitDetailError: false,
-  failedToParseCircuitDataError: false,
-  failedToGenerateEmulatorServiceError: false,
-  failedToSetupError: false,
+  failedToGenGuiCircuitDataError: false,
+  failedToSetupEmulatorServiceError: false,
   failedToEvalCircuitError: false,
 };
 

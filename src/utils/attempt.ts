@@ -36,6 +36,9 @@ export namespace Attempt {
       }
     };
 
+    // If successCallback is an async function, try-catch cannot directly catch asynchronous errors (only synchronous throws are caught).
+    // Therefore, catch errors and handle them by returning failureCallback in catch of successCallback.
+    // if successCallback is a synchronous function, use try-catch as usual.
     try {
       return successCallback.constructor.name === "AsyncFunction"
         ? Promise.resolve(successCallback()).catch((err) => {

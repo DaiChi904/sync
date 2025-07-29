@@ -8,7 +8,6 @@ import {
   circuitEditorPageError,
   type ICircuitEditorPageHandler,
 } from "@/domain/model/handler/ICircuitEditorPageHandler";
-import { handleValidationError } from "@/domain/model/modelValidationError";
 import type { ICircuitRepository } from "@/domain/model/repository/ICircuitRepository";
 import type { ICircuitParserService } from "@/domain/model/service/ICircuitParserService";
 import type { ICircuitEditorUsecase } from "@/domain/model/usecase/ICircuitEditorUsecase";
@@ -23,6 +22,8 @@ import type { CircuitNodeType } from "@/domain/model/valueObject/circuitNodeType
 import type { Coordinate } from "@/domain/model/valueObject/coordinate";
 import type { Waypoint } from "@/domain/model/valueObject/waypoint";
 import { useObjectState } from "@/hooks/objectState";
+import { useSkipFirstRenderEffect } from "@/hooks/skipFirstRenderEffect";
+import { Attempt } from "@/utils/attempt";
 
 interface CircuitEditorPageHandlerDependencies {
   query: CircuitId;
@@ -38,19 +39,21 @@ export const useCircuitEditorPageHandler = ({
   circuitParserUsecase,
   circuitEditorUsecase,
 }: CircuitEditorPageHandlerDependencies): ICircuitEditorPageHandler => {
+  const shoudExecute = useSkipFirstRenderEffect();
+
   const [error, setError] = useObjectState<CircuitEditorPageError>(circuitEditorPageError);
 
   const [circuit, setCircuit] = useState<Circuit | undefined>(undefined);
   const [guiData, setGuiData] = useState<CircuitGuiData | undefined>(undefined);
 
-  const fetch = useCallback((): void => {
-    handleValidationError(
+  const fetch = useCallback(async (): Promise<void> => {
+    await Attempt.proceed(
       async () => {
         const circuitDetail = await getCircuitDetailUsecase.getById(query);
         if (!circuitDetail.ok) {
-          console.error(circuitDetail.error);
-          setError("failedToGetCircuitDetailError", true);
-          return;
+          throw new Attempt.Abort("Failed to get circuit detail.", {
+            cause: circuitDetail.error,
+          });
         }
 
         setCircuit(circuitDetail.value);
@@ -59,16 +62,36 @@ export const useCircuitEditorPageHandler = ({
     );
   }, [query, getCircuitDetailUsecase, setError]);
 
-  const save = useCallback((): void => {
-    handleValidationError(
+  const updateCircuitGuiData = useCallback((): void => {
+    Attempt.proceed(
+      () => {
+        if (!circuit) throw new Attempt.Abort("Circuit is not defined.", { tag: "noCircuit" });
+
+        const circuitGuiData = circuitParserUsecase.parseToGuiData(circuit.circuitData);
+        if (!circuitGuiData.ok) {
+          throw new Attempt.Abort("Failed to parse circuit data to gui data.", {
+            cause: circuitGuiData.error,
+          });
+        }
+
+        setGuiData(circuitGuiData.value);
+      },
+      () => {
+        setError("failedToParseCircuitDataError", true);
+      },
+    );
+  }, [setError, circuit, circuitParserUsecase]);
+
+  const save = useCallback(async (): Promise<void> => {
+    await Attempt.proceed(
       async () => {
-        if (circuit === undefined) return;
+        if (!circuit) throw new Attempt.Abort("Circuit is not defined.", { tag: "noCircuit" });
 
         const res = await circuitEditorUsecase.save(circuit);
         if (!res.ok) {
-          console.error(res.error);
-          setError("failedToSaveCircuitError", true);
-          return;
+          throw new Attempt.Abort("Failed to save circuit.", {
+            cause: res.error,
+          });
         }
       },
       () => setError("failedToSaveCircuitError", true),
@@ -84,12 +107,10 @@ export const useCircuitEditorPageHandler = ({
       coordinate: Coordinate;
       size: CircuitNodeSize;
     }): void => {
-      handleValidationError(
+      Attempt.proceed(
         () => {
-          if (!circuit) return;
-
           setCircuit((prev) => {
-            if (!prev) return prev;
+            if (!prev) throw new Attempt.Abort("Circuit is not defined.", { tag: "noCircuit" });
             return Circuit.from({
               ...prev,
               circuitData: {
@@ -105,7 +126,7 @@ export const useCircuitEditorPageHandler = ({
         },
       );
     },
-    [circuit, setError],
+    [setError],
   );
 
   const updateCircuitNode = useCallback(
@@ -117,12 +138,10 @@ export const useCircuitEditorPageHandler = ({
       coordinate: Coordinate;
       size: CircuitNodeSize;
     }): void => {
-      handleValidationError(
+      Attempt.proceed(
         () => {
-          if (!circuit) return;
-
           setCircuit((prev) => {
-            if (!prev) return prev;
+            if (!prev) throw new Attempt.Abort("Circuit is not defined.", { tag: "noCircuit" });
             const updated = CircuitData.from({
               nodes: prev.circuitData.nodes.map((node) => (node.id === newNode.id ? newNode : node)),
               edges: prev.circuitData.edges,
@@ -138,17 +157,15 @@ export const useCircuitEditorPageHandler = ({
         },
       );
     },
-    [circuit, setError],
+    [setError],
   );
 
   const deleteCircuitNode = useCallback(
     (nodeId: CircuitNodeId): void => {
-      handleValidationError(
+      Attempt.proceed(
         () => {
-          if (!circuit) return;
-
           setCircuit((prev) => {
-            if (!prev) return prev;
+            if (!prev) throw new Attempt.Abort("Circuit is not defined.", { tag: "noCircuit" });
             const updated = CircuitData.from({
               nodes: prev.circuitData.nodes.filter((node) => node.id !== nodeId),
               edges: prev.circuitData.edges,
@@ -164,7 +181,7 @@ export const useCircuitEditorPageHandler = ({
         },
       );
     },
-    [circuit, setError],
+    [setError],
   );
 
   const addCircuitEdge = useCallback(
@@ -174,12 +191,10 @@ export const useCircuitEditorPageHandler = ({
       to: CircuitNodePinId;
       waypoints: Waypoint | null;
     }): void => {
-      handleValidationError(
+      Attempt.proceed(
         () => {
-          if (!circuit) return;
-
           setCircuit((prev) => {
-            if (!prev) return prev;
+            if (!prev) throw new Attempt.Abort("Circuit is not defined.", { tag: "noCircuit" });
             return Circuit.from({
               ...prev,
               circuitData: {
@@ -195,7 +210,7 @@ export const useCircuitEditorPageHandler = ({
         },
       );
     },
-    [circuit, setError],
+    [setError],
   );
 
   const updateCircuitEdge = useCallback(
@@ -205,12 +220,10 @@ export const useCircuitEditorPageHandler = ({
       to: CircuitNodePinId;
       waypoints: Waypoint | null;
     }): void => {
-      handleValidationError(
+      Attempt.proceed(
         () => {
-          if (!circuit) return;
-
           setCircuit((prev) => {
-            if (!prev) return prev;
+            if (!prev) throw new Attempt.Abort("Circuit is not defined.", { tag: "noCircuit" });
             const updated = CircuitData.from({
               nodes: prev.circuitData.nodes,
               edges: prev.circuitData.edges.map((edge) => (edge.id === newEdge.id ? newEdge : edge)),
@@ -226,17 +239,15 @@ export const useCircuitEditorPageHandler = ({
         },
       );
     },
-    [circuit, setError],
+    [setError],
   );
 
   const deleteCircuitEdge = useCallback(
     (edgeId: CircuitEdgeId): void => {
-      handleValidationError(
+      Attempt.proceed(
         () => {
-          if (!circuit) return;
-
           setCircuit((prev) => {
-            if (!prev) return prev;
+            if (!prev) throw new Attempt.Abort("Circuit is not defined.", { tag: "noCircuit" });
             const updated = CircuitData.from({
               nodes: prev.circuitData.nodes,
               edges: prev.circuitData.edges.filter((edge) => edge.id !== edgeId),
@@ -252,7 +263,7 @@ export const useCircuitEditorPageHandler = ({
         },
       );
     },
-    [circuit, setError],
+    [setError],
   );
 
   useEffect(() => {
@@ -260,22 +271,10 @@ export const useCircuitEditorPageHandler = ({
   }, [fetch]);
 
   useEffect(() => {
-    handleValidationError(
-      () => {
-        if (circuit === undefined) return;
+    if (!shoudExecute) return;
 
-        const circuitGuiData = circuitParserUsecase.parseToGuiData(circuit.circuitData);
-        if (!circuitGuiData.ok) {
-          console.error(circuitGuiData.error);
-          setError("failedToParseCircuitDataError", true);
-          return;
-        }
-
-        setGuiData(circuitGuiData.value);
-      },
-      () => setError("failedToGetCircuitDetailError", true),
-    );
-  }, [circuit, circuitParserUsecase, setError]);
+    updateCircuitGuiData();
+  }, [updateCircuitGuiData, shoudExecute]);
 
   return {
     error,

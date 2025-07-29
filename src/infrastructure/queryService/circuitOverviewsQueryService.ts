@@ -4,6 +4,15 @@ import type {
   ICircuitOverviewsQueryService,
 } from "@/domain/model/queryService/ICircuitOverviewsQueryService";
 import type { ICircuitRepository } from "@/domain/model/repository/ICircuitRepository";
+import { Attempt } from "@/utils/attempt";
+
+export class CircuitOverviewsQueryServiceError extends Error {
+  constructor(message: string, options: { cause: unknown }) {
+    super(message);
+    this.name = "CircuitOverviewsQueryServiceError";
+    this.cause = options.cause;
+  }
+}
 
 interface CircuitOverviewsQueryServiceDependencies {
   circuitRepository: ICircuitRepository;
@@ -17,12 +26,16 @@ export class CircuitOverviewsQueryService implements ICircuitOverviewsQueryServi
   }
 
   async getAll(): Promise<CircuitOverviewsQueryServiceGetAllOutput> {
-    const res = await this.circuitRepository.getAll();
+    return await Attempt.asyncProceed(
+      async () => {
+        const res = await this.circuitRepository.getAll();
+        if (!res.ok) {
+          throw new Attempt.Abort("Failed to get circuits.", {
+            cause: res.error,
+          });
+        }
 
-    switch (res.ok) {
-      case true: {
         const rawCircuits = res.value;
-
         const circuitOverviews =
           rawCircuits?.map((circuit) =>
             CircuitOverview.from({
@@ -34,11 +47,11 @@ export class CircuitOverviewsQueryService implements ICircuitOverviewsQueryServi
             }),
           ) ?? [];
 
-        return { ok: true, value: circuitOverviews };
-      }
-      case false: {
-        return { ok: false, error: res.error };
-      }
-    }
+        return { ok: true, value: circuitOverviews } as const;
+      },
+      (err: unknown) => {
+        return { ok: false, error: new CircuitOverviewsQueryServiceError("Failed to get circuit overviews.", { cause: err }) } as const;
+      },
+    );
   }
 }

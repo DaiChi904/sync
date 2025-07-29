@@ -5,15 +5,16 @@ import type {
 import type { ICircuitRepository } from "@/domain/model/repository/ICircuitRepository";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 
-interface CircuitDetailQueryServiceDependencies {
-  circuitRepository: ICircuitRepository;
+export class CircuitDetailQueryServiceError extends Error {
+  constructor(message: string, options: { cause: unknown }) {
+    super(message);
+    this.name = "CircuitDetailQueryServiceError";
+    this.cause = options.cause;
+  }
 }
 
-export class CircuitDetailQueryServiceGetByIdError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "CircuitDetailQueryServiceGetByIdError";
-  }
+interface CircuitDetailQueryServiceDependencies {
+  circuitRepository: ICircuitRepository;
 }
 
 export class CircuitDetailQueryService implements ICircuitDetailQueryService {
@@ -25,19 +26,10 @@ export class CircuitDetailQueryService implements ICircuitDetailQueryService {
 
   async getById(id: CircuitId): Promise<CircuitDetailQueryServiceGetByIdOutput> {
     const res = await this.circuitRepository.getById(id);
-
-    switch (res.ok) {
-      case true: {
-        const circuit = res.value;
-
-        return {
-          ok: true,
-          value: circuit,
-        };
-      }
-      case false: {
-        return { ok: false, error: res.error };
-      }
+    if (!res.ok) {
+      return { ok: false, error: new CircuitDetailQueryServiceError(`Failed to get circuit detail. id = ${id}`, { cause: res.error }) };
     }
+
+    return { ok: true, value: res.value };
   }
 }

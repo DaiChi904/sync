@@ -5,6 +5,14 @@ import type {
 } from "@/domain/model/usecase/IGenerateCircuitEmulatorServiceClientUsecase";
 import type { CircuitEmulatorService } from "@/domain/service/circuitEmulatorService";
 
+export class GenerateCircuitEmulatorServiceClientUsecaseError extends Error {
+  constructor(message: string, options: { cause: unknown }) {
+    super(message);
+    this.name = "GenerateCircuitEmulatorServiceClientUsecaseError";
+    this.cause = options.cause;
+  }
+}
+
 interface GenerateCircuitEmulatorServiceClientUsecaseDependencies {
   circuitEmulatorService: typeof CircuitEmulatorService;
 }
@@ -18,14 +26,15 @@ export class GenerateCircuitEmulatorServiceClientUsecase implements IGenerateCir
 
   generate(circuitGraphData: CircuitGraphData): IGenerateCircuitEmulatorServiceClientUsecaseGenerateOutput {
     const res = this.circuitEmulatorService.from(circuitGraphData);
-
-    switch (res.ok) {
-      case true: {
-        return { ok: true, value: res.value };
-      }
-      case false: {
-        return { ok: false, error: res.error };
-      }
+    if (!res.ok) {
+      return {
+        ok: false,
+        error: new GenerateCircuitEmulatorServiceClientUsecaseError("Failed to generate circuit emulator service.", {
+          cause: res.error,
+        }),
+      };
     }
+
+    return { ok: true, value: res.value };
   }
 }

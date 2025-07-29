@@ -4,6 +4,14 @@ import type {
   IGetCircuitOverviewsUsecaseGetOverviewsOutput,
 } from "@/domain/model/usecase/IGetCircuitOverviewsUsecase";
 
+export class GetCircuitOverviewsUsecaseError extends Error {
+  constructor(message: string, options: { cause: unknown }) {
+    super(message);
+    this.name = "GetCircuitOverviewsUsecaseError";
+    this.cause = options.cause;
+  }
+}
+
 interface GetCircuitOverviewsUsecaseDependencies {
   circuitOverviewsQueryService: ICircuitOverviewsQueryService;
 }
@@ -17,14 +25,13 @@ export class GetCircuitOverviewsUsecase implements IGetCircuitOverviewsUsecase {
 
   async getOverviews(): Promise<IGetCircuitOverviewsUsecaseGetOverviewsOutput> {
     const res = await this.circuitOverviewsQueryService.getAll();
-
-    switch (res.ok) {
-      case true: {
-        return { ok: true, value: res.value };
-      }
-      case false: {
-        return { ok: false, error: res.error };
-      }
+    if (!res.ok) {
+      return {
+        ok: false,
+        error: new GetCircuitOverviewsUsecaseError("Failed to get circuit overviews.", { cause: res.error }),
+      };
     }
+
+    return { ok: true, value: res.value };
   }
 }

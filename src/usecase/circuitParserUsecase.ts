@@ -6,6 +6,14 @@ import type {
 } from "@/domain/model/usecase/ICircuitParserUsecase";
 import type { CircuitData } from "@/domain/model/valueObject/circuitData";
 
+export class CircuitParserUsecaseError extends Error {
+  constructor(message: string, options: { cause: unknown }) {
+    super(message);
+    this.name = "CircuitParserUsecaseError";
+    this.cause = options.cause;
+  }
+}
+
 interface CircuitParserUsecaseDependencies {
   circuitParserService: ICircuitParserService;
 }
@@ -19,27 +27,25 @@ export class CircuitParserUsecase implements ICircuitParserUsecase {
 
   parseToGuiData(circuitData: CircuitData): ICircuitParserUsecaseParseToGuiDataOutput {
     const res = this.circuitParserService.parseToGuiData(circuitData);
-
-    switch (res.ok) {
-      case true: {
-        return { ok: true, value: res.value };
-      }
-      case false: {
-        return { ok: false, error: res.error };
-      }
+    if (!res.ok) {
+      return {
+        ok: false,
+        error: new CircuitParserUsecaseError("Failed to parse circuit data to gui data.", { cause: res.error }),
+      };
     }
+
+    return res;
   }
 
   parseToGraphData(circuitData: CircuitData): ICircuitParserUsecaseParseToGraphDataOutput {
     const res = this.circuitParserService.parseToGraphData(circuitData);
-
-    switch (res.ok) {
-      case true: {
-        return { ok: true, value: res.value };
-      }
-      case false: {
-        return { ok: false, error: res.error };
-      }
+    if (!res.ok) {
+      return {
+        ok: false,
+        error: new CircuitParserUsecaseError("Failed to parse circuit data to graph data.", { cause: res.error }),
+      };
     }
+
+    return res;
   }
 }

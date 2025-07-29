@@ -5,6 +5,14 @@ import type {
 } from "@/domain/model/usecase/IGetCircuitDetailUsecase";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 
+export class GetCircuitDetailUsecaseError extends Error {
+  constructor(message: string, options: { cause: unknown }) {
+    super(message);
+    this.name = "GetCircuitDetailUsecaseError";
+    this.cause = options.cause;
+  }
+}
+
 interface GetCircuitDeailUsecaseDependencies {
   circuitDetailQueryService: ICircuitDetailQueryService;
 }
@@ -18,14 +26,13 @@ export class GetCircuitDetailUsecase implements IGetCircuitDetailUsecase {
 
   async getById(id: CircuitId): Promise<IGetCircuitDetailUsecaseGetByIdOutput> {
     const res = await this.circuitDetailQueryService.getById(id);
-
-    switch (res.ok) {
-      case true: {
-        return { ok: true, value: res.value };
-      }
-      case false: {
-        return { ok: false, error: res.error };
-      }
+    if (!res.ok) {
+      return {
+        ok: false,
+        error: new GetCircuitDetailUsecaseError(`Failed to get circuit detail. id = ${id}`, { cause: res.error }),
+      };
     }
+
+    return { ok: true, value: res.value };
   }
 }

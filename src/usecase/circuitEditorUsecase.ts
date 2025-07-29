@@ -4,16 +4,17 @@ import type { ICircuitParserService } from "@/domain/model/service/ICircuitParse
 import type { ICircuitEditorUsecase } from "@/domain/model/usecase/ICircuitEditorUsecase";
 import type { Result } from "@/utils/result";
 
+export class CircuitEditorUsecaseError extends Error {
+  constructor(message: string, options: { cause: unknown }) {
+    super(message);
+    this.name = "CircuitEditorUsecaseError";
+    this.cause = options.cause;
+  }
+}
+
 interface CircuitEditorUsecaseDependencies {
   circuitRepository: ICircuitRepository;
   circuitParserService: ICircuitParserService;
-}
-
-export class CircuitEditorUsecaseGenerateNewCircuitDataError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "CircuitEditorUsecaseGenerateNewCircuitDataError";
-  }
 }
 
 export class CircuitEditorUsecase implements ICircuitEditorUsecase {
@@ -25,15 +26,10 @@ export class CircuitEditorUsecase implements ICircuitEditorUsecase {
 
   async save(newCircuit: Circuit): Promise<Result<void>> {
     const res = await this.circuitRepository.save("UPDATE", newCircuit);
-
-    switch (res.ok) {
-      case true: {
-        return { ok: true, value: undefined };
-      }
-      case false: {
-        console.error(res.error);
-        return { ok: false, error: res.error };
-      }
+    if (!res.ok) {
+      return { ok: false, error: new CircuitEditorUsecaseError("Failed to save circuit.", { cause: res.error }) };
     }
+
+    return res;
   }
 }

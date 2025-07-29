@@ -8,9 +8,7 @@ export const HomePageHandlerContext = createContext<IHomePageHandler | undefined
 export const useHomePageHandlerContext = () => {
   const ctx = useContext(HomePageHandlerContext);
   if (ctx === undefined) {
-    throw new Error(
-      "useHomePageHandlerContext must be used within a HomePageHandlerContext",
-    );
+    throw new Error("useHomePageHandlerContext must be used within a HomePageHandlerContext");
   }
   return ctx;
 };

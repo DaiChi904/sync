@@ -50,7 +50,10 @@ export class CircuitOverviewsQueryService implements ICircuitOverviewsQueryServi
         return { ok: true, value: circuitOverviews } as const;
       },
       (err: unknown) => {
-        return { ok: false, error: new CircuitOverviewsQueryServiceError("Failed to get circuit overviews.", { cause: err }) } as const;
+        return {
+          ok: false,
+          error: new CircuitOverviewsQueryServiceError("Failed to get circuit overviews.", { cause: err }),
+        } as const;
       },
     );
   }

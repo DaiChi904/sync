@@ -27,7 +27,10 @@ export class CircuitDetailQueryService implements ICircuitDetailQueryService {
   async getById(id: CircuitId): Promise<CircuitDetailQueryServiceGetByIdOutput> {
     const res = await this.circuitRepository.getById(id);
     if (!res.ok) {
-      return { ok: false, error: new CircuitDetailQueryServiceError(`Failed to get circuit detail. id = ${id}`, { cause: res.error }) };
+      return {
+        ok: false,
+        error: new CircuitDetailQueryServiceError(`Failed to get circuit detail. id = ${id}`, { cause: res.error }),
+      };
     }
 
     return { ok: true, value: res.value };

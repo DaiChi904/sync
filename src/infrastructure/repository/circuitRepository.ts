@@ -11,6 +11,7 @@ import { Coordinate } from "@/domain/model/valueObject/coordinate";
 import { CreatedDateTime } from "@/domain/model/valueObject/createdDateTime";
 import { UpdatedDateTime } from "@/domain/model/valueObject/updatedDateTime";
 import { Waypoint } from "@/domain/model/valueObject/waypoint";
+import { Attempt } from "@/utils/attempt";
 import { Circuit } from "../../domain/model/aggregate/circuit";
 import type {
   CircuitRepositoryDeleteOutput,
@@ -21,29 +22,16 @@ import type {
 } from "../../domain/model/repository/ICircuitRepository";
 import type { ILocalStorage } from "../storage/localStorage";
 
+export class CircuitRepositoryError extends Error {
+  constructor(message: string, options: { cause: unknown }) {
+    super(message);
+    this.name = "CircuitRepositoryError";
+    this.cause = options.cause;
+  }
+}
+
 interface CircuitRepositoryDependencies {
   localStorage: ILocalStorage<"circuit">;
-}
-
-export class CircuitRepositoryGetByIdError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "CircuitRepositoryGetByIdError";
-  }
-}
-
-export class CircuitRepositorySaveError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "CircuitRepositorySaveError";
-  }
-}
-
-export class CircuitRepositoryDeleteError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "CircuitRepositoryDeleteError";
-  }
 }
 
 export class CircuitRepository implements ICircuitRepository {
@@ -54,12 +42,16 @@ export class CircuitRepository implements ICircuitRepository {
   }
 
   async getAll(): Promise<CircuitRepositoryGetAllOutput> {
-    const res = await this.localStorage.get();
+    return await Attempt.asyncProceed(
+      async () => {
+        const res = await this.localStorage.get();
+        if (!res.ok) {
+          throw new Attempt.Abort("Failed to get circuits.", {
+            cause: res.error,
+          });
+        }
 
-    switch (res.ok) {
-      case true: {
         const rawCircuits = res.value;
-
         const circuits =
           rawCircuits?.map((circuit) =>
             Circuit.from({
@@ -87,23 +79,27 @@ export class CircuitRepository implements ICircuitRepository {
             }),
           ) ?? [];
 
-        return { ok: true, value: circuits };
-      }
-      case false: {
-        return { ok: false, error: res.error };
-      }
-    }
+        return { ok: true, value: circuits } as const;
+      },
+      (err: unknown) => {
+        return { ok: false, error: new CircuitRepositoryError("Failed to get circuits.", { cause: err }) } as const;
+      },
+    );
   }
 
   async getById(id: CircuitId): Promise<CircuitRepositoryGetByIdOutput> {
-    const res = await this.localStorage.get();
+    return await Attempt.asyncProceed(
+      async () => {
+        const res = await this.localStorage.get();
+        if (!res.ok) {
+          throw new Attempt.Abort("Failed to get circuits.", {
+            cause: res.error,
+          });
+        }
 
-    switch (res.ok) {
-      case true: {
         const rawCircuits = res.value;
         const rawCircuit = rawCircuits?.find((c) => c.id === id);
-        if (rawCircuit === undefined)
-          return { ok: false, error: new CircuitRepositoryGetByIdError("Circuit not found.") };
+        if (rawCircuit === undefined) throw new Attempt.Abort("Circuit not found.");
 
         const circuit = Circuit.from({
           id: CircuitId.from(rawCircuit.id),
@@ -129,64 +125,118 @@ export class CircuitRepository implements ICircuitRepository {
           updatedAt: UpdatedDateTime.fromString(rawCircuit.updatedAt),
         });
 
-        return { ok: true, value: circuit };
-      }
-      case false: {
-        return { ok: false, error: res.error };
-      }
-    }
+        return { ok: true, value: circuit } as const;
+      },
+      (err: unknown) => {
+        return { ok: false, error: new CircuitRepositoryError("Failed to get circuit.", { cause: err }) } as const;
+      },
+    );
   }
 
   async save(method: "ADD" | "UPDATE", circuit: Circuit): Promise<CircuitRepositorySaveOutput> {
-    const getRes = await this.localStorage.get();
+    return await Attempt.asyncProceed(
+      async () => {
+        const res = await this.localStorage.get();
+        if (!res.ok) {
+          throw new Attempt.Abort("Failed to get circuits from storage.", {
+            cause: res.error,
+          });
+        }
 
-    switch (getRes.ok) {
-      case true: {
-        const current = getRes.value ?? [];
+        const current = res.value ?? [];
         switch (method) {
           case "ADD": {
-            const saveRes = await this.localStorage.save([...current, circuit]);
-            return saveRes.ok ? { ok: true, value: undefined } : { ok: false, error: saveRes.error };
+            const res = await this.localStorage.save([...current, circuit]);
+            if (!res.ok) {
+              throw new Attempt.Abort("Failed to add circuit.", {
+                cause: res.error,
+              });
+            }
+
+            return { ok: true, value: undefined } as const;
           }
           case "UPDATE": {
-            if (current.length === 0) return { ok: false, error: new CircuitRepositorySaveError("No circuits found.") };
+            if (current.length === 0) throw new Attempt.Abort("No circuits stored.");
 
             const isExist = current.some((c) => c.id === circuit.id);
-            if (!isExist) return { ok: false, error: new CircuitRepositorySaveError("Subject not found.") };
+            if (!isExist) throw new Attempt.Abort(`Subject not found. id = ${circuit.id}`);
 
             const updated = current.map((c) => (c.id === circuit.id ? circuit : c));
-            const saveRes = await this.localStorage.save(updated);
-            return saveRes.ok ? { ok: true, value: undefined } : { ok: false, error: saveRes.error };
+            const res = await this.localStorage.save(updated);
+            if (!res.ok) {
+              throw new Attempt.Abort("Failed to update circuit.", {
+                cause: res.error,
+              });
+            }
+
+            return { ok: true, value: undefined } as const;
           }
           default: {
-            return { ok: false, error: new CircuitRepositorySaveError("Invalid method.") };
+            throw new Attempt.Abort("Invalid method.");
           }
         }
-      }
-      case false: {
-        return { ok: false, error: getRes.error };
-      }
-    }
+      },
+      (err: unknown) => {
+        switch (true) {
+          case Attempt.isAborted(err): {
+            return {
+              ok: false,
+              error: new CircuitRepositoryError(`Failed to save. reason: ${err.message}`, { cause: err }),
+            } as const;
+          }
+          default: {
+            return {
+              ok: false,
+              error: new CircuitRepositoryError("Failed to save. reason: unknown", { cause: err }),
+            } as const;
+          }
+        }
+      },
+    );
   }
 
   async delete(id: CircuitId): Promise<CircuitRepositoryDeleteOutput> {
-    const getRes = await this.localStorage.get();
+    return await Attempt.asyncProceed(
+      async () => {
+        const circuits = await this.localStorage.get();
+        if (!circuits.ok) {
+          throw new Attempt.Abort("Failed to get circuits.", {
+            cause: circuits.error,
+          });
+        }
 
-    switch (getRes.ok) {
-      case true: {
-        const current = getRes.value ?? [];
-        if (current.length === 0) return { ok: false, error: new CircuitRepositoryDeleteError("No circuits found.") };
+        const current = circuits.value ?? [];
+        if (current.length === 0) new Attempt.Abort("No circuits stored.");
 
         const isExist = current.some((c) => c.id === id);
-        if (!isExist) return { ok: false, error: new CircuitRepositoryDeleteError("Subject not found.") };
+        if (!isExist) throw new Attempt.Abort(`Subject not found. id = ${id}`);
 
         const updated = current.filter((c) => c.id !== id);
-        const saveRes = await this.localStorage.save(updated);
-        return saveRes.ok ? { ok: true, value: undefined } : { ok: false, error: saveRes.error };
-      }
-      case false: {
-        return { ok: false, error: getRes.error };
-      }
-    }
+        const res = await this.localStorage.save(updated);
+        if (!res.ok) {
+          throw new Attempt.Abort("Failed to delete circuit.", {
+            cause: res.error,
+          });
+        }
+
+        return { ok: true, value: undefined } as const;
+      },
+      (err: unknown) => {
+        switch (true) {
+          case Attempt.isAborted(err): {
+            return {
+              ok: false,
+              error: new CircuitRepositoryError(`Failed to delete. reason: ${err.message}`, { cause: err }),
+            } as const;
+          }
+          default: {
+            return {
+              ok: false,
+              error: new CircuitRepositoryError("Failed to delete. reason: unknown", { cause: err }),
+            } as const;
+          }
+        }
+      },
+    );
   }
 }

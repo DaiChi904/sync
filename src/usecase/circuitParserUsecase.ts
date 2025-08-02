@@ -19,27 +19,19 @@ export class CircuitParserUsecase implements ICircuitParserUsecase {
 
   parseToGuiData(circuitData: CircuitData): ICircuitParserUsecaseParseToGuiDataOutput {
     const res = this.circuitParserService.parseToGuiData(circuitData);
-
-    switch (res.ok) {
-      case true: {
-        return { ok: true, value: res.value };
-      }
-      case false: {
-        return { ok: false, error: res.error };
-      }
+    if (!res.ok) {
+      return { ok: false, error: res.error };
     }
+
+    return { ok: true, value: res.value };
   }
 
   parseToGraphData(circuitData: CircuitData): ICircuitParserUsecaseParseToGraphDataOutput {
     const res = this.circuitParserService.parseToGraphData(circuitData);
-
-    switch (res.ok) {
-      case true: {
-        return { ok: true, value: res.value };
-      }
-      case false: {
-        return { ok: false, error: res.error };
-      }
+    if (!res.ok) {
+      return { ok: false, error: res.error };
     }
+
+    return { ok: true, value: res.value };
   }
 }

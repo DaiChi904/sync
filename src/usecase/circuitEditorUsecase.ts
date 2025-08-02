@@ -25,15 +25,10 @@ export class CircuitEditorUsecase implements ICircuitEditorUsecase {
 
   async save(newCircuit: Circuit): Promise<Result<void>> {
     const res = await this.circuitRepository.save("UPDATE", newCircuit);
-
-    switch (res.ok) {
-      case true: {
-        return { ok: true, value: undefined };
-      }
-      case false: {
-        console.error(res.error);
-        return { ok: false, error: res.error };
-      }
+    if (!res.ok) {
+      return { ok: false, error: res.error };
     }
+
+    return { ok: true, value: undefined };
   }
 }

@@ -25,19 +25,13 @@ export class CircuitDetailQueryService implements ICircuitDetailQueryService {
 
   async getById(id: CircuitId): Promise<CircuitDetailQueryServiceGetByIdOutput> {
     const res = await this.circuitRepository.getById(id);
-
-    switch (res.ok) {
-      case true: {
-        const circuit = res.value;
-
-        return {
-          ok: true,
-          value: circuit,
-        };
-      }
-      case false: {
-        return { ok: false, error: res.error };
-      }
+    if (!res.ok) {
+      return { ok: false, error: new CircuitDetailQueryServiceGetByIdError("Circuit not found.") };
     }
+
+    return {
+      ok: true,
+      value: res.value,
+    };
   }
 }

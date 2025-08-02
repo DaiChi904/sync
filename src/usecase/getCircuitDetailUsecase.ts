@@ -18,14 +18,10 @@ export class GetCircuitDetailUsecase implements IGetCircuitDetailUsecase {
 
   async getById(id: CircuitId): Promise<IGetCircuitDetailUsecaseGetByIdOutput> {
     const res = await this.circuitDetailQueryService.getById(id);
-
-    switch (res.ok) {
-      case true: {
-        return { ok: true, value: res.value };
-      }
-      case false: {
-        return { ok: false, error: res.error };
-      }
+    if (!res.ok) {
+      return { ok: false, error: res.error };
     }
+
+    return { ok: true, value: res.value };
   }
 }

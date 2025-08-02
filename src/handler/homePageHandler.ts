@@ -20,17 +20,13 @@ export const useHomePageHandler = ({ getCircuitOverviewsUsecase }: HomePageHandl
     handleValidationError(
       async () => {
         const res = await getCircuitOverviewsUsecase.getOverviews();
-
-        switch (res.ok) {
-          case true: {
-            setCircuitOverviews(res.value);
-            break;
-          }
-          case false: {
-            console.error(res.error);
-            setError("failedToGetCircuitOverviewsError", true);
-          }
+        if (!res.ok) {
+          console.error(res.error);
+          setError("failedToGetCircuitOverviewsError", true);
+          return;
         }
+
+        setCircuitOverviews(res.value);
       },
       () => setError("failedToGetCircuitOverviewsError", true),
     );

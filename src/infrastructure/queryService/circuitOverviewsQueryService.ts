@@ -22,7 +22,7 @@ export class CircuitOverviewsQueryService implements ICircuitOverviewsQueryServi
       async () => {
         const res = await this.circuitRepository.getAll();
         if (!res.ok) {
-          throw new Attempt.Abort("Failed to get circuits.", { cause: res.error });
+          throw new Attempt.Abort("CircuitOverviewsQueryService.getAll", "Failed to get circuits.", { cause: res.error });
         }
 
         const rawCircuits = res.value;

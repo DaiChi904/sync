@@ -22,7 +22,7 @@ export class CircuitDetailQueryService implements ICircuitDetailQueryService {
       async () => {
         const res = await this.circuitRepository.getById(id);
         if (!res.ok) {
-          throw new Attempt.Abort(`Failed to get circuit. Id: ${id}`, { cause: res.error });
+          throw new Attempt.Abort("CircuitDetailQueryService.getById", `Failed to get circuit. Id: ${id}`, { cause: res.error });
         }
 
         return {

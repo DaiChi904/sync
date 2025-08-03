@@ -73,9 +73,9 @@ export namespace Attempt {
 
   export class Abort extends Error {
     readonly tag: string | undefined;
-    constructor(message: string, options?: { cause?: unknown; tag?: string }) {
+    constructor(name: string, message: string, options?: { cause?: unknown; tag?: string }) {
       super(message, { cause: options?.cause ?? undefined });
-      this.name = "Abort";
+      this.name = `Abort: ${name}`;
       this.tag = options?.tag ?? undefined;
     }
   }

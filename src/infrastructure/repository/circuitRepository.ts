@@ -87,7 +87,10 @@ export class CircuitRepository implements ICircuitRepository {
         const rawCircuits = res.value;
         const rawCircuit = rawCircuits?.find((c) => c.id === id);
         if (rawCircuit === undefined) {
-          throw new Attempt.Abort("CircuitRepository.getById", `Subject not found. You might specify a invalid Id. Id: ${id}`);
+          throw new Attempt.Abort(
+            "CircuitRepository.getById",
+            `Subject not found. You might specify a invalid Id. Id: ${id}`,
+          );
         }
 
         const circuit = Circuit.from({

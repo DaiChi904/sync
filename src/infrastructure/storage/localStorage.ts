@@ -1,4 +1,5 @@
 import type { PrimitiveWaypoint } from "@/domain/model/valueObject/waypoint";
+import { Attempt } from "@/utils/attempt";
 import type { Result } from "@/utils/result";
 
 type NameSpace = "circuit";
@@ -42,22 +43,22 @@ export interface ILocalStorage<T extends NameSpace> {
 }
 
 export class LocalStorageSaveError extends Error {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: { cause?: unknown }) {
+    super(message, { cause: options?.cause ?? undefined });
     this.name = "LocalStorageSaveError";
   }
 }
 
 export class LocalStorageGetError extends Error {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: { cause?: unknown }) {
+    super(message, { cause: options?.cause ?? undefined });
     this.name = "LocalStorageGetError";
   }
 }
 
 export class LocalStorageRemoveError extends Error {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: { cause?: unknown }) {
+    super(message, { cause: options?.cause ?? undefined });
     this.name = "LocalStorageRemoveError";
   }
 }
@@ -70,32 +71,40 @@ export class LocalStorage<T extends NameSpace> implements ILocalStorage<T> {
   }
 
   async save(value: NameSpaceValueMap[T]): Promise<Result<void>> {
-    try {
-      localStorage.setItem(this.KEY, JSON.stringify(value));
-      return { ok: true, value: undefined };
-    } catch (err: unknown) {
-      return {
-        ok: false,
-        error: new LocalStorageSaveError(
-          `Failed to save to localStorage: ${err instanceof Error ? err.message : String(err)}`,
-        ),
-      };
-    }
+    return Attempt.proceed(
+      () => {
+        localStorage.setItem(this.KEY, JSON.stringify(value));
+        return { ok: true, value: undefined } as const;
+      },
+      (err: unknown) => {
+        return {
+          ok: false,
+          error: new LocalStorageSaveError(
+            `Failed to save to localStorage: ${err instanceof Error ? err.message : String(err)}`,
+            { cause: err },
+          ),
+        } as const;
+      },
+    );
   }
 
   async get(): Promise<Result<NameSpaceValueMap[T] | null>> {
-    try {
-      const rawItem = localStorage.getItem(this.KEY);
-      const item = rawItem !== null ? JSON.parse(rawItem) : null;
-      return { ok: true, value: item as NameSpaceValueMap[T] | null };
-    } catch (err: unknown) {
-      return {
-        ok: false,
-        error: new LocalStorageGetError(
-          `Failed to get from localStorage: ${err instanceof Error ? err.message : String(err)}`,
-        ),
-      };
-    }
+    return Attempt.proceed(
+      () => {
+        const rawItem = localStorage.getItem(this.KEY);
+        const item = rawItem !== null ? JSON.parse(rawItem) : null;
+        return { ok: true, value: item as NameSpaceValueMap[T] | null } as const;
+      },
+      (err: unknown) => {
+        return {
+          ok: false,
+          error: new LocalStorageGetError(
+            `Failed to get from localStorage: ${err instanceof Error ? err.message : String(err)}`,
+            { cause: err },
+          ),
+        } as const;
+      },
+    );
   }
 
   async remove(): Promise<Result<void>> {
@@ -107,6 +116,7 @@ export class LocalStorage<T extends NameSpace> implements ILocalStorage<T> {
         ok: false,
         error: new LocalStorageRemoveError(
           `Failed to remove from localStorage: ${err instanceof Error ? err.message : String(err)}`,
+          { cause: err },
         ),
       };
     }

@@ -119,7 +119,10 @@ export class CircuitParserService implements ICircuitParserService {
 
             const targetNode = Array.from(nodes.entries()).find((node) => node[1].outputs.includes(targetEdge.from));
             if (!targetNode) {
-              throw new Attempt.Abort("CircuitParserService.parseToGraphData", `No target node found: ${targetEdge.from}`);
+              throw new Attempt.Abort(
+                "CircuitParserService.parseToGraphData",
+                `No target node found: ${targetEdge.from}`,
+              );
             }
 
             return CircuitNodeId.from(targetNode[0]);
@@ -133,7 +136,10 @@ export class CircuitParserService implements ICircuitParserService {
 
             const targetNode = Array.from(nodes.entries()).find((node) => node[1].inputs.includes(targetEdge.to));
             if (!targetNode) {
-              throw new Attempt.Abort("CircuitParserService.parseToGraphData", `No target node found: ${targetEdge.to}`);
+              throw new Attempt.Abort(
+                "CircuitParserService.parseToGraphData",
+                `No target node found: ${targetEdge.to}`,
+              );
             }
 
             return CircuitNodeId.from(targetNode[0]);

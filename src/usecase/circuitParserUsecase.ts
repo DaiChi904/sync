@@ -5,6 +5,7 @@ import type {
   ICircuitParserUsecaseParseToGuiDataOutput,
 } from "@/domain/model/usecase/ICircuitParserUsecase";
 import type { CircuitData } from "@/domain/model/valueObject/circuitData";
+import { Attempt } from "@/utils/attempt";
 
 interface CircuitParserUsecaseDependencies {
   circuitParserService: ICircuitParserService;
@@ -18,20 +19,38 @@ export class CircuitParserUsecase implements ICircuitParserUsecase {
   }
 
   parseToGuiData(circuitData: CircuitData): ICircuitParserUsecaseParseToGuiDataOutput {
-    const res = this.circuitParserService.parseToGuiData(circuitData);
-    if (!res.ok) {
-      return { ok: false, error: res.error };
-    }
+    return Attempt.proceed(
+      () => {
+        const res = this.circuitParserService.parseToGuiData(circuitData);
+        if (!res.ok) {
+          throw new Attempt.Abort("CircuitParserUsecase.parseToGuiData", "Failed to parse circuit data.", {
+            cause: res.error,
+          });
+        }
 
-    return { ok: true, value: res.value };
+        return { ok: true, value: res.value } as const;
+      },
+      (err: unknown) => {
+        return { ok: false, error: err } as const;
+      },
+    );
   }
 
   parseToGraphData(circuitData: CircuitData): ICircuitParserUsecaseParseToGraphDataOutput {
-    const res = this.circuitParserService.parseToGraphData(circuitData);
-    if (!res.ok) {
-      return { ok: false, error: res.error };
-    }
+    return Attempt.proceed(
+      () => {
+        const res = this.circuitParserService.parseToGraphData(circuitData);
+        if (!res.ok) {
+          throw new Attempt.Abort("CircuitParserUsecase.parseToGraphData", "Failed to parse circuit data.", {
+            cause: res.error,
+          });
+        }
 
-    return { ok: true, value: res.value };
+        return { ok: true, value: res.value } as const;
+      },
+      (err: unknown) => {
+        return { ok: false, error: err } as const;
+      },
+    );
   }
 }

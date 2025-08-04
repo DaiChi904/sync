@@ -9,6 +9,7 @@ import { ExecutionOrder } from "@/domain/model/valueObject/executionOrder";
 import type { InputRecord } from "@/domain/model/valueObject/inputRecord";
 import { Phase } from "@/domain/model/valueObject/phase";
 import { Tick } from "@/domain/model/valueObject/tick";
+import { Attempt } from "@/utils/attempt";
 import type { Result } from "@/utils/result";
 
 export class CircuitNodeFromError extends Error {
@@ -86,18 +87,26 @@ export abstract class CircuitNode implements ICircuitNode {
   }
 
   init(): Result<void> {
-    this.phase = Phase.from(1);
-    this.tick = Tick.from(0);
-    // biome-ignore lint/style/noNonNullAssertion: This is cared by the next if statement.
-    const initialHistory = this.history!.get(Phase.from(0));
-    if (!initialHistory)
-      return {
-        ok: false,
-        error: new CircuitNodeInitError("Failed to initialize node. This node might not be setup yet."),
-      };
+    return Attempt.proceed(
+      () => {
+        this.phase = Phase.from(1);
+        this.tick = Tick.from(0);
+        // biome-ignore lint/style/noNonNullAssertion: This is cared by the next if statement.
+        const initialHistory = this.history!.get(Phase.from(0));
+        if (!initialHistory) {
+          throw new Attempt.Abort("CircuitNode.init", "Failed to initialize node. This node might not be setup yet.", {
+            cause: new CircuitNodeInitError("Initial history for phase 0 not found."),
+          });
+        }
 
-    this.history = EvalHistory.from(new Map([[Phase.from(0), initialHistory]]));
-    return { ok: true, value: undefined };
+        this.history = EvalHistory.from(new Map([[Phase.from(0), initialHistory]]));
+
+        return { ok: true, value: undefined } as const;
+      },
+      (err: unknown) => {
+        return { ok: false, error: err } as const;
+      },
+    );
   }
 
   abstract eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult>;
@@ -120,17 +129,31 @@ class EntryNode extends CircuitNode {
   }
 
   eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult> {
-    if (this.outputs.length !== 1) {
-      return { ok: false, error: new CircuitNodeEvalError(`ENTRY node "${this.id}" must have exactly one output`) };
-    }
-    this.phase = phase;
-    this.tick = tick;
-    const result = { CircuitNodeOutputId: this.outputs[0], output: inputs[CircuitNodeInputId.from(this.id)] ?? false };
-    if (!this.history.has(phase)) {
-      this.history.set(phase, new Map());
-    }
-    this.saveOutput(phase, tick, result.output);
-    return { ok: true, value: result.output };
+    return Attempt.proceed(
+      () => {
+        if (this.outputs.length !== 1) {
+          throw new Attempt.Abort("EntryNode.eval", "Failed to evaluate Entry node.", {
+            cause: new CircuitNodeEvalError(`ENTRY node "${this.id}" must have exactly one output.`),
+          });
+        }
+
+        this.phase = phase;
+        this.tick = tick;
+        const result = {
+          CircuitNodeOutputId: this.outputs[0],
+          output: inputs[CircuitNodeInputId.from(this.id)] ?? false,
+        };
+        if (!this.history.has(phase)) {
+          this.history.set(phase, new Map());
+        }
+        this.saveOutput(phase, tick, result.output);
+
+        return { ok: true, value: result.output } as const;
+      },
+      (err: unknown) => {
+        return { ok: false, error: err } as const;
+      },
+    );
   }
 
   getInformation(): NodeInformation {
@@ -154,18 +177,31 @@ class ExitNode extends CircuitNode {
   }
 
   eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult> {
-    if (this.inputs.length !== 1 || this.outputs.length !== 0) {
-      return { ok: false, error: new CircuitNodeEvalError(`EXIT node "${this.id}" must have exactly one input`) };
-    }
+    return Attempt.proceed(
+      () => {
+        if (this.inputs.length !== 1 || this.outputs.length !== 0) {
+          throw new Attempt.Abort("ExitNode.eval", "Failed to evaluate Exit node.", {
+            cause: new CircuitNodeEvalError(`EXIT node "${this.id}" must have exactly one input.`),
+          });
+        }
 
-    this.phase = phase;
-    this.tick = tick;
-    const result = { CircuitNodeOutputId: this.id, output: inputs[CircuitNodeInputId.from(this.inputs[0])] ?? false };
-    if (!this.history.has(phase)) {
-      this.history.set(phase, new Map());
-    }
-    this.saveOutput(phase, tick, result.output);
-    return { ok: true, value: result.output };
+        this.phase = phase;
+        this.tick = tick;
+        const result = {
+          CircuitNodeOutputId: this.id,
+          output: inputs[CircuitNodeInputId.from(this.inputs[0])] ?? false,
+        };
+        if (!this.history.has(phase)) {
+          this.history.set(phase, new Map());
+        }
+        this.saveOutput(phase, tick, result.output);
+
+        return { ok: true, value: result.output } as const;
+      },
+      (err: unknown) => {
+        return { ok: false, error: err } as const;
+      },
+    );
   }
 
   getInformation(): NodeInformation {
@@ -189,22 +225,30 @@ class AndNode extends CircuitNode {
   }
 
   eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult> {
-    if (this.inputs.length !== 2 || this.outputs.length !== 1) {
-      return {
-        ok: false,
-        error: new CircuitNodeEvalError(`AND node "${this.id}" must have exactly two inputs and one output`),
-      };
-    }
-    this.phase = phase;
-    this.tick = tick;
-    const a = inputs[CircuitNodeInputId.from(this.inputs[0])] ?? false;
-    const b = inputs[CircuitNodeInputId.from(this.inputs[1])] ?? false;
-    const result = { CircuitNodeOutputId: this.outputs[0], output: a && b };
-    if (!this.history.has(phase)) {
-      this.history.set(phase, new Map());
-    }
-    this.saveOutput(phase, tick, result.output);
-    return { ok: true, value: result.output };
+    return Attempt.proceed(
+      () => {
+        if (this.inputs.length !== 2 || this.outputs.length !== 1) {
+          throw new Attempt.Abort("AndNode.eval", "Failed to evaluate And node.", {
+            cause: new CircuitNodeEvalError(`AND node "${this.id}" must have exactly two inputs and one output`),
+          });
+        }
+
+        this.phase = phase;
+        this.tick = tick;
+        const a = inputs[CircuitNodeInputId.from(this.inputs[0])] ?? false;
+        const b = inputs[CircuitNodeInputId.from(this.inputs[1])] ?? false;
+        const result = { CircuitNodeOutputId: this.outputs[0], output: a && b };
+        if (!this.history.has(phase)) {
+          this.history.set(phase, new Map());
+        }
+        this.saveOutput(phase, tick, result.output);
+
+        return { ok: true, value: result.output } as const;
+      },
+      (err: unknown) => {
+        return { ok: false, error: err } as const;
+      },
+    );
   }
 
   getInformation(): NodeInformation {
@@ -228,22 +272,30 @@ class OrNode extends CircuitNode {
   }
 
   eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult> {
-    if (this.inputs.length !== 2 || this.outputs.length !== 1) {
-      return {
-        ok: false,
-        error: new CircuitNodeEvalError(`OR node "${this.id}" must have exactly two inputs and one output`),
-      };
-    }
-    this.phase = phase;
-    this.tick = tick;
-    const a = inputs[CircuitNodeInputId.from(this.inputs[0])] ?? false;
-    const b = inputs[CircuitNodeInputId.from(this.inputs[1])] ?? false;
-    const result = { CircuitNodeOutputId: this.outputs[0], output: a || b };
-    if (!this.history.has(phase)) {
-      this.history.set(phase, new Map());
-    }
-    this.saveOutput(phase, tick, result.output);
-    return { ok: true, value: result.output };
+    return Attempt.proceed(
+      () => {
+        if (this.inputs.length !== 2 || this.outputs.length !== 1) {
+          throw new Attempt.Abort("OrNode.eval", "Failed to evaluate Or node.", {
+            cause: new CircuitNodeEvalError(`OR node "${this.id}" must have exactly two inputs and one output`),
+          });
+        }
+
+        this.phase = phase;
+        this.tick = tick;
+        const a = inputs[CircuitNodeInputId.from(this.inputs[0])] ?? false;
+        const b = inputs[CircuitNodeInputId.from(this.inputs[1])] ?? false;
+        const result = { CircuitNodeOutputId: this.outputs[0], output: a || b };
+        if (!this.history.has(phase)) {
+          this.history.set(phase, new Map());
+        }
+        this.saveOutput(phase, tick, result.output);
+
+        return { ok: true, value: result.output } as const;
+      },
+      (err: unknown) => {
+        return { ok: false, error: err } as const;
+      },
+    );
   }
 
   getInformation(): NodeInformation {
@@ -267,21 +319,29 @@ class NotNode extends CircuitNode {
   }
 
   eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult> {
-    if (this.inputs.length !== 1 || this.outputs.length !== 1) {
-      return {
-        ok: false,
-        error: new CircuitNodeEvalError(`NOT node "${this.id}" must have exactly one input and one output`),
-      };
-    }
-    this.phase = phase;
-    this.tick = tick;
-    const input = inputs[CircuitNodeInputId.from(this.inputs[0])] ?? false;
-    const result = { CircuitNodeOutputId: this.outputs[0], output: EvalResult.from(!input) };
-    if (!this.history.has(phase)) {
-      this.history.set(phase, new Map());
-    }
-    this.saveOutput(phase, tick, result.output);
-    return { ok: true, value: result.output };
+    return Attempt.proceed(
+      () => {
+        if (this.inputs.length !== 1 || this.outputs.length !== 1) {
+          throw new Attempt.Abort("NotNode.eval", "Failed to evaluate Not node.", {
+            cause: new CircuitNodeEvalError(`NOT node "${this.id}" must have exactly one input and one output`),
+          });
+        }
+
+        this.phase = phase;
+        this.tick = tick;
+        const input = inputs[CircuitNodeInputId.from(this.inputs[0])] ?? false;
+        const result = { CircuitNodeOutputId: this.outputs[0], output: EvalResult.from(!input) };
+        if (!this.history.has(phase)) {
+          this.history.set(phase, new Map());
+        }
+        this.saveOutput(phase, tick, result.output);
+
+        return { ok: true, value: result.output } as const;
+      },
+      (err: unknown) => {
+        return { ok: false, error: err } as const;
+      },
+    );
   }
 
   getInformation(): NodeInformation {
@@ -305,27 +365,35 @@ class JunctionNode extends CircuitNode {
   }
 
   eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult> {
-    if (this.inputs.length !== 1 || this.outputs.length < 1) {
-      return {
-        ok: false,
-        error: new CircuitNodeEvalError(`JUNCTION node "${this.id}" must have one input and at least one output`),
-      };
-    }
-    this.phase = phase;
-    this.tick = tick;
-    const output = inputs[CircuitNodeInputId.from(this.inputs[0])] ?? false;
-    const result = this.outputs.map((CircuitNodeOutputId) => ({
-      CircuitNodeOutputId: CircuitNodeOutputId,
-      output: output,
-    }));
-    if (!this.history.has(phase)) {
-      this.history.set(phase, new Map());
-    }
-    result.forEach((result) => {
-      this.saveOutput(phase, tick, result.output);
-    });
-    // As all JUNCTION outputs are identical, it is allowed to return one of the multiple outputs.
-    return { ok: true, value: result[0].output };
+    return Attempt.proceed(
+      () => {
+        if (this.inputs.length !== 1 || this.outputs.length < 1) {
+          throw new Attempt.Abort("JunctionNode.eval", "Failed to evaluate Junction node.", {
+            cause: new CircuitNodeEvalError(`JUNCTION node "${this.id}" must have one input and at least one output`),
+          });
+        }
+
+        this.phase = phase;
+        this.tick = tick;
+        const output = inputs[CircuitNodeInputId.from(this.inputs[0])] ?? false;
+        const result = this.outputs.map((CircuitNodeOutputId) => ({
+          CircuitNodeOutputId: CircuitNodeOutputId,
+          output: output,
+        }));
+        if (!this.history.has(phase)) {
+          this.history.set(phase, new Map());
+        }
+        result.forEach((result) => {
+          this.saveOutput(phase, tick, result.output);
+        });
+
+        // As all JUNCTION outputs are identical, it is allowed to return one of the multiple outputs.
+        return { ok: true, value: result[0].output } as const;
+      },
+      (err: unknown) => {
+        return { ok: false, error: err } as const;
+      },
+    );
   }
 
   getInformation(): NodeInformation {

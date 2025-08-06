@@ -58,7 +58,7 @@ export default function CircuitEmulationPageLayout() {
               >
                 <EvalMenu
                   error={{
-                    failedToSetupError: error.failedToSetupError,
+                    failedToSetupEmulatorServiceError: error.failedToSetupEmulatorServiceError,
                     failedToEvalCircuitError: error.failedToEvalCircuitError,
                   }}
                   currentPhase={currentPhase}

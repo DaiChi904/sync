@@ -8,7 +8,7 @@ import type { Phase } from "@/domain/model/valueObject/phase";
 
 interface EvalMenuProps {
   error: {
-    failedToSetupError: boolean;
+    failedToSetupEmulatorServiceError: boolean;
     failedToEvalCircuitError: boolean;
   };
   currentPhase: Phase;
@@ -36,7 +36,7 @@ export default function EvalMenu({
       >
         <Typography size="mediumPlus">Eval</Typography>
       </Box>
-      {error.failedToSetupError && (
+      {error.failedToSetupEmulatorServiceError && (
         <Typography size="medium" style={{ color: "red", marginTop: 10 }}>
           Failed to setup the circuit emulator service.
         </Typography>

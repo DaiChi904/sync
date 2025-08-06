@@ -1,5 +1,5 @@
+import { Attempt } from "@/utils/attempt";
 import type { Brand } from "@/utils/brand";
-import { ModelValidationError } from "../modelValidationError";
 
 const brandSymbol = Symbol("DateTime");
 
@@ -11,7 +11,10 @@ export namespace DateTime {
   };
 
   export const fromString = (value: string): DateTime => {
-    if (Number.isNaN(Date.parse(value))) throw new ModelValidationError("DateTime", value);
+    if (Number.isNaN(Date.parse(value))) {
+      throw new Attempt.ModelValidationError("DateTime", value);
+    }
+
     return new Date(value).toISOString() as DateTime;
   };
 

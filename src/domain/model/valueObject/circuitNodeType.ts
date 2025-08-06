@@ -1,5 +1,5 @@
+import { Attempt } from "@/utils/attempt";
 import type { Brand } from "@/utils/brand";
-import { ModelValidationError } from "../modelValidationError";
 
 const brandSymbol = Symbol("CircuitNodeType");
 
@@ -9,8 +9,10 @@ export type CircuitNodeType = Brand<ICircuitNodeType, typeof brandSymbol>;
 
 export namespace CircuitNodeType {
   export const from = (value: string): CircuitNodeType => {
-    if (!["ENTRY", "EXIT", "AND", "OR", "NOT", "JUNCTION"].includes(value))
-      throw new ModelValidationError("CircuitNodeType", value);
+    if (!["ENTRY", "EXIT", "AND", "OR", "NOT", "JUNCTION"].includes(value)) {
+      throw new Attempt.ModelValidationError("CircuitNodeType", value);
+    }
+
     return value as CircuitNodeType;
   };
 

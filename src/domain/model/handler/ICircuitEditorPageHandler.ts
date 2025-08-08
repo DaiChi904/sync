@@ -1,5 +1,6 @@
 import type { Circuit } from "../aggregate/circuit";
 import type { CircuitGuiData } from "../entity/circuitGuiData";
+import type { CircuitGuiNode } from "../entity/circuitGuiNode";
 import type { CircuitEdgeId } from "../valueObject/circuitEdgeId";
 import type { CircuitNodeId } from "../valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "../valueObject/circuitNodePinId";
@@ -57,4 +58,11 @@ export interface ICircuitEditorPageHandler {
     waypoints: Waypoint | null;
   }) => void;
   deleteCircuitEdge: (edgeId: CircuitEdgeId) => void;
+  svgRef: React.RefObject<SVGSVGElement | null>;
+  focusedElement: CircuitGuiNode | null;
+  focusElement: (node: CircuitGuiNode) => void;
+  draggingNode: CircuitGuiNode | null;
+  handleNodeMouseDown: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
+  handleNodeMouseMove: (ev: React.MouseEvent) => void;
+  handleNodeMouseUp: () => void;
 }

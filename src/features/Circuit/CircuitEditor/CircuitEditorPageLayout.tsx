@@ -20,6 +20,13 @@ export default function CircuitEditorPageLayout() {
     addCircuitEdge,
     updateCircuitEdge,
     deleteCircuitEdge,
+    svgRef,
+    focusedElement,
+    focusElement,
+    draggingNode,
+    handleNodeMouseDown,
+    handleNodeMouseMove,
+    handleNodeMouseUp,
   } = useCircuitEditorPageHandlerContext();
 
   switch (true) {
@@ -96,7 +103,16 @@ export default function CircuitEditorPageLayout() {
                     background: "#222",
                   }}
                 >
-                  <CircuitDiagram data={guiData} />
+                  <CircuitDiagram
+                    data={guiData}
+                    svgRef={svgRef}
+                    focusedElement={focusedElement}
+                    focusElement={focusElement}
+                    draggingNode={draggingNode}
+                    handleNodeMouseDown={handleNodeMouseDown}
+                    handleNodeMouseMove={handleNodeMouseMove}
+                    handleNodeMouseUp={handleNodeMouseUp}
+                  />
                 </Grid>
               </Grid>
             </Flex>

@@ -1,10 +1,32 @@
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
 
-type AndNodeProps = CircuitGuiNode;
+interface AndNodeProps {
+  node: CircuitGuiNode;
+  isInFocus?: boolean;
+  focusElement?: (node: CircuitGuiNode) => void;
+  handleNodeMouseDown?: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
+}
 
-export default function AndNode({ node }: { node: AndNodeProps }) {
+export default function AndNode({ node, isInFocus, focusElement, handleNodeMouseDown }: AndNodeProps) {
   return (
-    <g>
+    // biome-ignore lint/a11y/noStaticElementInteractions: // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
+    <g
+      onClick={() => focusElement?.(node)}
+      onMouseDown={isInFocus ? (ev) => handleNodeMouseDown?.(ev, node) : undefined}
+    >
+      {isInFocus && (
+        // biome-ignore lint/nursery/useUniqueElementIds: No need for unique id.
+        <rect
+          id="node-focused-frame"
+          x={node.coordinate.x - node.size.x / 2 - 10}
+          y={node.coordinate.y - node.size.y / 2 - 10}
+          width={node.size.x + 20}
+          height={node.size.y + 20}
+          fill="rgba(0,0,0,0)"
+          stroke="#fff"
+          strokeWidth={1}
+        />
+      )}
       {/* Main body */}
       <path
         d={`

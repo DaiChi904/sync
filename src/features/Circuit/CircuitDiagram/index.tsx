@@ -187,6 +187,7 @@ export default function CircuitDiagram({
 
       {uiState?.isOpenEdgeUtilitiesMenu.open && focusedElement?.kind === "edge" && (
         <>
+          {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support. */}
           <rect
             x={0}
             y={0}
@@ -227,6 +228,7 @@ export default function CircuitDiagram({
       )}
       {uiState?.isOpenNodeUtilitiesMenu.open && focusedElement?.kind === "node" && (
         <>
+          {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support. */}
           <rect
             x={0}
             y={0}

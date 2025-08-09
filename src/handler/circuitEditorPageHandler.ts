@@ -532,23 +532,29 @@ export const useCircuitEditorPageHandler = ({
     reattachFocusedElement();
   };
 
-  const openEdgeUtilitiesMenu = useCallback((ev: React.MouseEvent) => {
-    const svgCoordinate = getSvgCoords(ev);
-    if (!svgCoordinate.ok) return;
+  const openEdgeUtilitiesMenu = useCallback(
+    (ev: React.MouseEvent) => {
+      const svgCoordinate = getSvgCoords(ev);
+      if (!svgCoordinate.ok) return;
 
-    setUiState("isOpenEdgeUtilitiesMenu", { open: true, at: svgCoordinate.value });
-  }, [getSvgCoords, setUiState]);
+      setUiState("isOpenEdgeUtilitiesMenu", { open: true, at: svgCoordinate.value });
+    },
+    [getSvgCoords, setUiState],
+  );
 
   const closeEdgeUtilitiesMenu = useCallback(() => {
     setUiState("isOpenEdgeUtilitiesMenu", { open: false, at: null });
   }, [setUiState]);
 
-  const openNodeUtilitiesMenu = useCallback((ev: React.MouseEvent) => {
-    const svgCoordinate = getSvgCoords(ev);
-    if (!svgCoordinate.ok) return;
+  const openNodeUtilitiesMenu = useCallback(
+    (ev: React.MouseEvent) => {
+      const svgCoordinate = getSvgCoords(ev);
+      if (!svgCoordinate.ok) return;
 
-    setUiState("isOpenNodeUtilitiesMenu", { open: true, at: svgCoordinate.value });
-  }, [getSvgCoords, setUiState]);
+      setUiState("isOpenNodeUtilitiesMenu", { open: true, at: svgCoordinate.value });
+    },
+    [getSvgCoords, setUiState],
+  );
 
   const closeNodeUtilitiesMenu = useCallback(() => {
     setUiState("isOpenNodeUtilitiesMenu", { open: false, at: null });

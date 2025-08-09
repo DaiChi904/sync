@@ -1,9 +1,7 @@
-import Box from "@/components/atoms/Box";
 import type { CircuitGuiEdge } from "@/domain/model/entity/circuitGuiEdge";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 import type { Coordinate } from "@/domain/model/valueObject/coordinate";
 import type { EvalResult } from "@/domain/model/valueObject/evalResult";
-import EdgeUtilitiesMenu from "../EdgeUtilitiesMenu";
 
 interface EdgeProps {
   edge: CircuitGuiEdge;

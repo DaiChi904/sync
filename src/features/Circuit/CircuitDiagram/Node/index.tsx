@@ -9,7 +9,7 @@ import OrNode from "./OrNode";
 interface NodeProps {
   node: CircuitGuiNode;
   isInFocus?: boolean;
-  focusElement?: (node: CircuitGuiNode) => void;
+  focusElement?: (value: CircuitGuiNode) => void;
   handleNodeMouseDown?: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
 }
 

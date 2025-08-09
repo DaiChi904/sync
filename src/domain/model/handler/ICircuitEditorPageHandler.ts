@@ -1,5 +1,6 @@
 import type { Circuit } from "../aggregate/circuit";
 import type { CircuitGuiData } from "../entity/circuitGuiData";
+import type { CircuitGuiEdge } from "../entity/circuitGuiEdge";
 import type { CircuitGuiNode } from "../entity/circuitGuiNode";
 import type { CircuitEdgeId } from "../valueObject/circuitEdgeId";
 import type { CircuitNodeId } from "../valueObject/circuitNodeId";
@@ -59,10 +60,28 @@ export interface ICircuitEditorPageHandler {
   }) => void;
   deleteCircuitEdge: (edgeId: CircuitEdgeId) => void;
   svgRef: React.RefObject<SVGSVGElement | null>;
-  focusedElement: CircuitGuiNode | null;
-  focusElement: (node: CircuitGuiNode) => void;
+  focusedElement: { kind: "node"; value: CircuitGuiNode } | { kind: "edge"; value: CircuitGuiEdge } | null;
+  focusElement: {
+    (kind: "node"): (value: CircuitGuiNode) => void;
+    (kind: "edge"): (value: CircuitGuiEdge) => void;
+  };
   draggingNode: CircuitGuiNode | null;
   handleNodeMouseDown: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
   handleNodeMouseMove: (ev: React.MouseEvent) => void;
   handleNodeMouseUp: () => void;
+  draggingNodePin: {
+    id: CircuitNodePinId;
+    offset: Coordinate;
+    kind: "from" | "to" | "waypoints";
+    method: "ADD" | "UPDATE";
+  } | null;
+  handleNodePinMouseDown: (
+    ev: React.MouseEvent,
+    id: CircuitNodePinId,
+    kind: "from" | "to" | "waypoints",
+    method: "ADD" | "UPDATE",
+  ) => void;
+  handleNodePinMouseMove: (ev: React.MouseEvent) => void;
+  handleNodePinMouseUp: (ev: React.MouseEvent) => void;
+  tempEdge: { from: Coordinate; to: Coordinate } | null;
 }

@@ -1,4 +1,5 @@
 import type { CircuitGuiData } from "@/domain/model/entity/circuitGuiData";
+import type { CircuitGuiEdge } from "@/domain/model/entity/circuitGuiEdge";
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
 import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
@@ -11,12 +12,30 @@ interface CircuitDiagramProps {
   data: CircuitGuiData;
   outputRecord?: Record<CircuitNodeId, EvalResult>;
   svgRef?: React.RefObject<SVGSVGElement | null>;
-  focusedElement?: CircuitGuiNode | null;
-  focusElement?: (node: CircuitGuiNode) => void;
+  focusedElement?: { kind: "node"; value: CircuitGuiNode } | { kind: "edge"; value: CircuitGuiEdge } | null;
+  focusElement?: {
+    (kind: "node"): (value: CircuitGuiNode) => void;
+    (kind: "edge"): (value: CircuitGuiEdge) => void;
+  };
   draggingNode?: CircuitGuiNode | null;
   handleNodeMouseDown?: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
   handleNodeMouseMove?: (ev: React.MouseEvent) => void;
   handleNodeMouseUp?: () => void;
+  draggingNodePin?: {
+    id: CircuitNodePinId;
+    offset: Coordinate;
+    kind: "from" | "to" | "waypoints";
+    method: "ADD" | "UPDATE";
+  } | null;
+  handleNodePinMouseDown?: (
+    ev: React.MouseEvent,
+    id: CircuitNodePinId,
+    kind: "from" | "to" | "waypoints",
+    method: "ADD" | "UPDATE",
+  ) => void;
+  handleNodePinMouseMove?: (ev: React.MouseEvent) => void;
+  handleNodePinMouseUp?: (ev: React.MouseEvent) => void;
+  tempEdge?: { from: Coordinate; to: Coordinate } | null;
 }
 
 export default function CircuitDiagram({
@@ -29,6 +48,11 @@ export default function CircuitDiagram({
   handleNodeMouseDown,
   handleNodeMouseMove,
   handleNodeMouseUp,
+  draggingNodePin,
+  handleNodePinMouseDown,
+  handleNodePinMouseMove,
+  handleNodePinMouseUp,
+  tempEdge,
 }: CircuitDiagramProps) {
   const pinMap = new Map<CircuitNodePinId, Coordinate>();
   const waypointsMap = new Map<CircuitNodePinId, Coordinate[]>();
@@ -66,29 +90,69 @@ export default function CircuitDiagram({
   const viewHeight = maxY - minY;
 
   // Make focused element on top.
-  const focusedNode = data?.nodes.find((node) => node.id === focusedElement?.id);
+  const focusedNode =
+    focusedElement?.kind === "node" ? data?.nodes.find((node) => node.id === focusedElement?.value.id) : undefined;
   const orderdNode = focusedNode
-    ? [...data.nodes.filter((node) => node.id !== focusedElement?.id), focusedNode]
+    ? [...data.nodes.filter((node) => node.id !== focusedElement?.value.id), focusedNode]
     : data.nodes;
 
   return (
     <svg ref={svgRef} viewBox={`${minX} ${minY} ${viewWidth} ${viewHeight}`} style={{ background: "#222" }}>
       <title>Circuit Diagram</title>
-      {data?.edges.map((edge) => (
-        <Edge key={edge.id} edge={edge} pinMap={pinMap} outputMap={outputMap} waypointsMap={waypointsMap} />
-      ))}
+      {data?.edges.map((edge) => {
+        const isInFocus = focusedElement?.kind === "edge" && edge.id === focusedElement?.value.id;
+        return (
+          <Edge
+            key={edge.id}
+            edge={edge}
+            pinMap={pinMap}
+            outputMap={outputMap}
+            waypointsMap={waypointsMap}
+            isInFocus={isInFocus}
+            focusElement={focusElement?.("edge")}
+            handleNodePinMouseDown={handleNodePinMouseDown}
+          />
+        );
+      })}
       {orderdNode.map((node) => {
-        const isInFocus = node.id === focusedElement?.id;
+        const isInFocus = focusedElement?.kind === "node" && node.id === focusedElement?.value.id;
         return (
           <Node
             key={node.id}
             node={node}
             isInFocus={isInFocus}
-            focusElement={focusElement}
+            focusElement={focusElement?.("node")}
             handleNodeMouseDown={handleNodeMouseDown}
           />
         );
       })}
+
+      {draggingNodePin && (
+        // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
+        <rect
+          x={0}
+          y={0}
+          width="100%"
+          height="100%"
+          fill="transparent"
+          pointerEvents="all"
+          onMouseMove={handleNodePinMouseMove}
+          onMouseUp={handleNodePinMouseUp}
+        />
+      )}
+
+      {tempEdge && (
+        // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
+        <line
+          x1={tempEdge.from.x}
+          y1={tempEdge.from.y}
+          x2={tempEdge.to.x}
+          y2={tempEdge.to.y}
+          stroke="#9ca19d"
+          strokeWidth={2}
+          onMouseUp={handleNodePinMouseUp}
+        />
+      )}
 
       {draggingNode && (
         // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.

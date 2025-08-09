@@ -27,6 +27,11 @@ export default function CircuitEditorPageLayout() {
     handleNodeMouseDown,
     handleNodeMouseMove,
     handleNodeMouseUp,
+    draggingNodePin,
+    handleNodePinMouseDown,
+    handleNodePinMouseMove,
+    handleNodePinMouseUp,
+    tempEdge,
   } = useCircuitEditorPageHandlerContext();
 
   switch (true) {
@@ -68,7 +73,7 @@ export default function CircuitEditorPageLayout() {
             >
               <Grid xs={1} ys={1} xfs={5} yfs={1} container grow={1}>
                 <Grid
-                  xs={3}
+                  xs={2}
                   ys={1}
                   xfs={5}
                   yfs={1}
@@ -90,7 +95,7 @@ export default function CircuitEditorPageLayout() {
                   />
                 </Grid>
                 <Grid
-                  xs={2}
+                  xs={3}
                   ys={1}
                   xfs={5}
                   yfs={1}
@@ -112,6 +117,11 @@ export default function CircuitEditorPageLayout() {
                     handleNodeMouseDown={handleNodeMouseDown}
                     handleNodeMouseMove={handleNodeMouseMove}
                     handleNodeMouseUp={handleNodeMouseUp}
+                    draggingNodePin={draggingNodePin}
+                    handleNodePinMouseDown={handleNodePinMouseDown}
+                    handleNodePinMouseMove={handleNodePinMouseMove}
+                    handleNodePinMouseUp={handleNodePinMouseUp}
+                    tempEdge={tempEdge}
                   />
                 </Grid>
               </Grid>

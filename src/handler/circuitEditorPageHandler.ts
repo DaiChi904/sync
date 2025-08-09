@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Circuit } from "@/domain/model/aggregate/circuit";
 import type { CircuitGuiData } from "@/domain/model/entity/circuitGuiData";
+import type { CircuitGuiEdge } from "@/domain/model/entity/circuitGuiEdge";
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
 import {
   type CircuitEditorPageError,
@@ -14,7 +15,7 @@ import type { ICircuitParserService } from "@/domain/model/service/ICircuitParse
 import type { ICircuitEditorUsecase } from "@/domain/model/usecase/ICircuitEditorUsecase";
 import type { IGetCircuitDetailUsecase } from "@/domain/model/usecase/IGetCircuitDetailUsecase";
 import { CircuitData } from "@/domain/model/valueObject/circuitData";
-import type { CircuitEdgeId } from "@/domain/model/valueObject/circuitEdgeId";
+import { CircuitEdgeId } from "@/domain/model/valueObject/circuitEdgeId";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
@@ -46,8 +47,17 @@ export const useCircuitEditorPageHandler = ({
   const [guiData, setGuiData] = useState<CircuitGuiData | undefined>(undefined);
 
   const svgRef = useRef<SVGSVGElement | null>(null);
-  const [focusedElement, setFocusedElement] = useState<CircuitGuiNode | null>(null);
+  const [focusedElement, setFocusedElement] = useState<
+    { kind: "node"; value: CircuitGuiNode } | { kind: "edge"; value: CircuitGuiEdge } | null
+  >(null);
   const [draggingNode, setDraggingNode] = useState<CircuitGuiNode | null>(null);
+  const [draggingNodePin, setDraggingNodePin] = useState<{
+    id: CircuitNodePinId;
+    offset: Coordinate;
+    kind: "from" | "to" | "waypoints";
+    method: "ADD" | "UPDATE";
+  } | null>(null);
+  const [tempEdge, setTempEdge] = useState<{ from: Coordinate; to: Coordinate } | null>(null);
 
   const fetch = useCallback(async (): Promise<void> => {
     await Attempt.asyncProceed(
@@ -322,9 +332,40 @@ export const useCircuitEditorPageHandler = ({
     );
   }, []);
 
-  const focusElement = useCallback((node: CircuitGuiNode) => {
-    setFocusedElement(node);
+  const focusElement: {
+    (kind: "node"): (value: CircuitGuiNode) => void;
+    (kind: "edge"): (value: CircuitGuiEdge) => void;
+  } = useCallback((kind: "node" | "edge") => {
+    // biome-ignore lint/suspicious/noExplicitAny: Type safety is preserved.
+    return (value: any) => {
+      setFocusedElement({ kind, value });
+    };
   }, []);
+
+  const reattachFocusedElement = useCallback(() => {
+    if (!focusedElement) return;
+
+    switch (focusedElement.kind) {
+      case "node": {
+        const node = guiData?.nodes.find((n) => n.id === focusedElement.value.id);
+        if (!node) {
+          setFocusedElement(null);
+          return;
+        }
+        setFocusedElement({ kind: "node", value: node });
+        break;
+      }
+      case "edge": {
+        const edge = guiData?.edges.find((e) => e.id === focusedElement.value.id);
+        if (!edge) {
+          setFocusedElement(null);
+          return;
+        }
+        setFocusedElement({ kind: "edge", value: edge });
+        break;
+      }
+    }
+  }, [focusedElement, guiData]);
 
   const handleNodeMouseDown = useCallback(
     (ev: React.MouseEvent, node: CircuitGuiNode) => {
@@ -363,7 +404,129 @@ export const useCircuitEditorPageHandler = ({
     [draggingNode, getSvgCoords, circuit, updateCircuitNode],
   );
 
-  const handleNodeMouseUp = useCallback(() => setDraggingNode(null), []);
+  const handleNodeMouseUp = useCallback(() => {
+    setDraggingNode(null);
+    reattachFocusedElement();
+  }, [reattachFocusedElement]);
+
+  const SNAP_RADIUS = 20; // 半径10px以内にいたら接続とみなす
+
+  const findNearestPin = (coordinate: Coordinate) => {
+    for (const node of guiData?.nodes ?? []) {
+      for (const pin of [...node.inputs, ...node.outputs]) {
+        const dx = coordinate.x - pin.coordinate.x;
+        const dy = coordinate.y - pin.coordinate.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < SNAP_RADIUS) {
+          return pin.id;
+        }
+      }
+    }
+
+    return null;
+  };
+
+  const handleNodePinMouseDown = (
+    ev: React.MouseEvent,
+    id: CircuitNodePinId,
+    kind: "from" | "to" | "waypoints",
+    method: "ADD" | "UPDATE",
+  ) => {
+    const svgCoordinate = getSvgCoords(ev);
+    if (!svgCoordinate.ok) return;
+
+    const { x: initialMouseX, y: initialMouseY } = svgCoordinate.value;
+
+    setDraggingNodePin({
+      id: id,
+      offset: Coordinate.from({ x: initialMouseX, y: initialMouseY }),
+      kind: kind,
+      method: method,
+    });
+  };
+
+  const handleNodePinMouseMove = (ev: React.MouseEvent) => {
+    if (draggingNodePin) {
+      const svgCoordinate = getSvgCoords(ev);
+      if (!svgCoordinate.ok) return;
+
+      const { x, y } = svgCoordinate.value;
+
+      setTempEdge({ from: draggingNodePin.offset, to: Coordinate.from({ x, y }) });
+    }
+  };
+
+  const handleAddEdgeOnMouseUp = (ev: React.MouseEvent) => {
+    const svgCoordinate = getSvgCoords(ev);
+    if (!svgCoordinate.ok) return;
+
+    const { x, y } = svgCoordinate.value;
+    const toPinId = findNearestPin(Coordinate.from({ x, y }));
+
+    if (!draggingNodePin || !toPinId) return;
+
+    addCircuitEdge({
+      id: CircuitEdgeId.from(Math.random().toString()),
+      from: draggingNodePin.kind === "from" ? draggingNodePin.id : toPinId,
+      to: draggingNodePin.kind === "from" ? toPinId : draggingNodePin.id,
+      waypoints: null,
+    });
+  };
+
+  const handleUpdateEdgeOnMouseUp = (ev: React.MouseEvent) => {
+    const svgCoordinate = getSvgCoords(ev);
+    if (!svgCoordinate.ok) return;
+
+    const { x, y } = svgCoordinate.value;
+
+    const edgeId = guiData?.edges.find((edge) => {
+      return edge.from === draggingNodePin?.id || edge.to === draggingNodePin?.id;
+    })?.id;
+    if (!edgeId) return;
+
+    const prev = guiData?.edges.find((edge) => edge.id === edgeId);
+    if (!prev) return;
+
+    const toPinId = findNearestPin(Coordinate.from({ x, y }));
+
+    if (!draggingNodePin || !toPinId) return;
+
+    switch (draggingNodePin.kind) {
+      case "from": {
+        updateCircuitEdge({
+          id: prev.id,
+          from: draggingNodePin.id,
+          to: toPinId,
+          waypoints: null,
+        });
+        break;
+      }
+      case "to": {
+        updateCircuitEdge({
+          id: prev.id,
+          from: toPinId,
+          to: draggingNodePin.id,
+          waypoints: null,
+        });
+        break;
+      }
+      case "waypoints": {
+        console.error("not implemented");
+        break;
+      }
+    }
+  };
+
+  const handleNodePinMouseUp = (ev: React.MouseEvent) => {
+    if (!draggingNodePin) return;
+
+    draggingNodePin.method === "ADD" ? handleAddEdgeOnMouseUp(ev) : handleUpdateEdgeOnMouseUp(ev);
+
+    setDraggingNodePin(null);
+    setTempEdge(null);
+    reattachFocusedElement();
+  };
 
   useEffect(() => {
     fetch();
@@ -393,5 +556,10 @@ export const useCircuitEditorPageHandler = ({
     handleNodeMouseDown,
     handleNodeMouseMove,
     handleNodeMouseUp,
+    draggingNodePin,
+    handleNodePinMouseDown,
+    handleNodePinMouseMove,
+    handleNodePinMouseUp,
+    tempEdge,
   };
 };

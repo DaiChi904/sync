@@ -3,7 +3,7 @@ import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
 interface OrNodeProps {
   node: CircuitGuiNode;
   isInFocus?: boolean;
-  focusElement?: (node: CircuitGuiNode) => void;
+  focusElement?: (value: CircuitGuiNode) => void;
   handleNodeMouseDown?: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
 }
 

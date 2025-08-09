@@ -537,22 +537,22 @@ export const useCircuitEditorPageHandler = ({
     if (!svgCoordinate.ok) return;
 
     setUiState("isOpenEdgeUtilitiesMenu", { open: true, at: svgCoordinate.value });
-  }, []);
+  }, [getSvgCoords, setUiState]);
 
   const closeEdgeUtilitiesMenu = useCallback(() => {
     setUiState("isOpenEdgeUtilitiesMenu", { open: false, at: null });
-  }, []);
+  }, [setUiState]);
 
   const openNodeUtilitiesMenu = useCallback((ev: React.MouseEvent) => {
     const svgCoordinate = getSvgCoords(ev);
     if (!svgCoordinate.ok) return;
 
     setUiState("isOpenNodeUtilitiesMenu", { open: true, at: svgCoordinate.value });
-  }, []);
+  }, [getSvgCoords, setUiState]);
 
   const closeNodeUtilitiesMenu = useCallback(() => {
     setUiState("isOpenNodeUtilitiesMenu", { open: false, at: null });
-  }, []);
+  }, [setUiState]);
 
   useEffect(() => {
     fetch();

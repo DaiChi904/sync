@@ -6,7 +6,9 @@ import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePin
 import type { Coordinate } from "@/domain/model/valueObject/coordinate";
 import { EvalResult } from "@/domain/model/valueObject/evalResult";
 import Edge from "./Edge";
+import EdgeUtilitiesMenu from "./EdgeUtilitiesMenu";
 import Node from "./Node";
+import NodeUtilitiesMenu from "./NodeUtilitiesMenu";
 
 interface CircuitDiagramProps {
   data: CircuitGuiData;
@@ -36,6 +38,14 @@ interface CircuitDiagramProps {
   handleNodePinMouseMove?: (ev: React.MouseEvent) => void;
   handleNodePinMouseUp?: (ev: React.MouseEvent) => void;
   tempEdge?: { from: Coordinate; to: Coordinate } | null;
+  uiState?: {
+    isOpenEdgeUtilitiesMenu: { open: boolean; at: Coordinate | null };
+    isOpenNodeUtilitiesMenu: { open: boolean; at: Coordinate | null };
+  };
+  openEdgeUtilitiesMenu?: (ev: React.MouseEvent) => void;
+  closeEdgeUtilitiesMenu?: () => void;
+  openNodeUtilitiesMenu?: (ev: React.MouseEvent) => void;
+  closeNodeUtilitiesMenu?: () => void;
 }
 
 export default function CircuitDiagram({
@@ -53,6 +63,11 @@ export default function CircuitDiagram({
   handleNodePinMouseMove,
   handleNodePinMouseUp,
   tempEdge,
+  uiState,
+  openEdgeUtilitiesMenu,
+  closeEdgeUtilitiesMenu,
+  openNodeUtilitiesMenu,
+  closeNodeUtilitiesMenu,
 }: CircuitDiagramProps) {
   const pinMap = new Map<CircuitNodePinId, Coordinate>();
   const waypointsMap = new Map<CircuitNodePinId, Coordinate[]>();
@@ -111,6 +126,7 @@ export default function CircuitDiagram({
             isInFocus={isInFocus}
             focusElement={focusElement?.("edge")}
             handleNodePinMouseDown={handleNodePinMouseDown}
+            openEdgeUtilitiesMenu={isInFocus ? openEdgeUtilitiesMenu : undefined}
           />
         );
       })}
@@ -123,6 +139,7 @@ export default function CircuitDiagram({
             isInFocus={isInFocus}
             focusElement={focusElement?.("node")}
             handleNodeMouseDown={handleNodeMouseDown}
+            openNodeUtilitiesMenu={openNodeUtilitiesMenu}
           />
         );
       })}
@@ -166,6 +183,94 @@ export default function CircuitDiagram({
           onMouseMove={handleNodeMouseMove}
           onMouseUp={handleNodeMouseUp}
         />
+      )}
+
+      {uiState?.isOpenEdgeUtilitiesMenu.open && focusedElement?.kind === "edge" && (
+        <>
+          <rect
+            x={0}
+            y={0}
+            width="100%"
+            height="100%"
+            fill="transparent"
+            pointerEvents="all"
+            onClick={() => {
+              closeEdgeUtilitiesMenu?.();
+            }}
+          />
+          <foreignObject
+            x={uiState?.isOpenEdgeUtilitiesMenu.at?.x}
+            y={uiState?.isOpenEdgeUtilitiesMenu.at?.y}
+            width={75}
+            height={200}
+          >
+            <EdgeUtilitiesMenu
+              menuOptions={[
+                {
+                  label: "Delete",
+                  onClickHandler: () => {
+                    console.log("not implemented");
+                    closeEdgeUtilitiesMenu?.();
+                  },
+                },
+                {
+                  label: "Add Waypoint",
+                  onClickHandler: () => {
+                    console.log("not implemented");
+                    closeEdgeUtilitiesMenu?.();
+                  },
+                },
+              ]}
+            />
+          </foreignObject>
+        </>
+      )}
+      {uiState?.isOpenNodeUtilitiesMenu.open && focusedElement?.kind === "node" && (
+        <>
+          <rect
+            x={0}
+            y={0}
+            width="100%"
+            height="100%"
+            fill="transparent"
+            pointerEvents="all"
+            onClick={() => {
+              closeNodeUtilitiesMenu?.();
+            }}
+          />
+          <foreignObject
+            x={uiState?.isOpenNodeUtilitiesMenu.at?.x}
+            y={uiState?.isOpenNodeUtilitiesMenu.at?.y}
+            width={75}
+            height={200}
+          >
+            <NodeUtilitiesMenu
+              menuOptions={[
+                {
+                  label: "Delete",
+                  onClickHandler: () => {
+                    console.log("not implemented");
+                    closeNodeUtilitiesMenu?.();
+                  },
+                },
+                {
+                  label: "Add New Edge",
+                  onClickHandler: () => {
+                    console.log("not implemented");
+                    closeNodeUtilitiesMenu?.();
+                  },
+                },
+                {
+                  label: "Switch Inputs",
+                  onClickHandler: () => {
+                    console.log("not implemented");
+                    closeNodeUtilitiesMenu?.();
+                  },
+                },
+              ]}
+            />
+          </foreignObject>
+        </>
       )}
     </svg>
   );

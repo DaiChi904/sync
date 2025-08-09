@@ -1,7 +1,9 @@
+import Box from "@/components/atoms/Box";
 import type { CircuitGuiEdge } from "@/domain/model/entity/circuitGuiEdge";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 import type { Coordinate } from "@/domain/model/valueObject/coordinate";
 import type { EvalResult } from "@/domain/model/valueObject/evalResult";
+import EdgeUtilitiesMenu from "../EdgeUtilitiesMenu";
 
 interface EdgeProps {
   edge: CircuitGuiEdge;
@@ -16,6 +18,7 @@ interface EdgeProps {
     kind: "from" | "to" | "waypoints",
     method: "ADD" | "UPDATE",
   ) => void;
+  openEdgeUtilitiesMenu?: (ev: React.MouseEvent) => void;
 }
 
 export default function Edge({
@@ -26,6 +29,7 @@ export default function Edge({
   isInFocus,
   focusElement,
   handleNodePinMouseDown,
+  openEdgeUtilitiesMenu,
 }: EdgeProps) {
   const from = pinMap.get(edge.from);
   const to = pinMap.get(edge.to);
@@ -47,14 +51,7 @@ export default function Edge({
       <>
         <defs>
           {/** biome-ignore lint/nursery/useUniqueElementIds: No need for unique id. */}
-          <marker
-            id="arrow"
-            markerWidth="5"
-            markerHeight="5"
-            refX="7.5"
-            refY="2.5"
-            orient="auto"
-          >
+          <marker id="arrow" markerWidth="5" markerHeight="5" refX="7.5" refY="2.5" orient="auto">
             <path d="M 0 0 L 5 2.5 L 0 5 z" fill="#00a120" />
           </marker>
         </defs>
@@ -71,6 +68,7 @@ export default function Edge({
                 fill="rgba(0,0,0,0)"
                 stroke="#fff"
                 strokeWidth={1}
+                onContextMenu={openEdgeUtilitiesMenu}
                 onMouseDown={
                   idx === 0 || edges.length < 2
                     ? (ev) => handleNodePinMouseDown?.(ev, edge.to, "to", "UPDATE")
@@ -85,6 +83,7 @@ export default function Edge({
                 fill="rgba(0,0,0,0)"
                 stroke="#fff"
                 strokeWidth={1}
+                onContextMenu={openEdgeUtilitiesMenu}
                 onMouseDown={
                   idx + 1 === edges.length - 1 || edges.length < 2
                     ? (ev) => handleNodePinMouseDown?.(ev, edge.from, "from", "UPDATE")
@@ -93,16 +92,6 @@ export default function Edge({
               />
             </>
           )}
-          {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support. */}
-          <line
-            x1={from.x}
-            y1={from.y}
-            x2={to.x}
-            y2={to.y}
-            stroke="rgba(0,0,0,0)"
-            strokeWidth={20}
-            onClick={() => focusElement?.(edge)}
-          />
 
           <line
             x1={from.x}
@@ -112,6 +101,20 @@ export default function Edge({
             stroke={outputMap?.get(edge.from) === true ? "#00a120" : "#9ca19d"}
             strokeWidth={2}
             markerEnd={isInFocus ? "url(#arrow)" : "none"}
+          />
+          {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support. */}
+          <line
+            x1={from.x}
+            y1={from.y}
+            x2={to.x}
+            y2={to.y}
+            stroke="rgba(0,0,0,0)"
+            strokeWidth={30}
+            onClick={() => focusElement?.(edge)}
+            onContextMenu={(ev) => {
+              ev.preventDefault();
+              openEdgeUtilitiesMenu?.(ev);
+            }}
           />
         </g>
       </>

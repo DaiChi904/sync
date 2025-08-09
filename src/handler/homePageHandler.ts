@@ -4,8 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import type { CircuitOverview } from "@/domain/model/entity/circuitOverview";
 import { type HomePageError, homePageError, type IHomePageHandler } from "@/domain/model/handler/IHomePageHandler";
 import type { IGetCircuitOverviewsUsecase } from "@/domain/model/usecase/IGetCircuitOverviewsUsecase";
-import { Attempt } from "@/utils/attempt";
 import { usePartialState } from "@/hooks/partialState";
+import { Attempt } from "@/utils/attempt";
 
 interface HomePageHandlerDependencies {
   getCircuitOverviewsUsecase: IGetCircuitOverviewsUsecase;

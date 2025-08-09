@@ -5,9 +5,16 @@ interface OrNodeProps {
   isInFocus?: boolean;
   focusElement?: (value: CircuitGuiNode) => void;
   handleNodeMouseDown?: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
+  openNodeUtilitiesMenu?: (ev: React.MouseEvent) => void;
 }
 
-export default function OrNode({ node, isInFocus, focusElement, handleNodeMouseDown }: OrNodeProps) {
+export default function OrNode({
+  node,
+  isInFocus,
+  focusElement,
+  handleNodeMouseDown,
+  openNodeUtilitiesMenu,
+}: OrNodeProps) {
   // The Or node has a slight depression at the input, so if it is drawn as it is, the connection points cannot be connected neatly to the edge in the GUI, so a little play is made with this value.
   const extraInputWidth = node.size.x * 0.1;
   return (
@@ -15,6 +22,10 @@ export default function OrNode({ node, isInFocus, focusElement, handleNodeMouseD
     <g
       onClick={() => focusElement?.(node)}
       onMouseDown={isInFocus ? (ev) => handleNodeMouseDown?.(ev, node) : undefined}
+      onContextMenu={(ev) => {
+        ev.preventDefault();
+        openNodeUtilitiesMenu?.(ev);
+      }}
     >
       {isInFocus && (
         // biome-ignore lint/nursery/useUniqueElementIds: No need for unique id.

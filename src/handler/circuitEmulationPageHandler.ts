@@ -17,8 +17,8 @@ import { EvalResult } from "@/domain/model/valueObject/evalResult";
 import { InputRecord } from "@/domain/model/valueObject/inputRecord";
 import { Phase } from "@/domain/model/valueObject/phase";
 import type { CircuitParserService } from "@/domain/service/circuitParserService";
-import { Attempt } from "@/utils/attempt";
 import { usePartialState } from "@/hooks/partialState";
+import { Attempt } from "@/utils/attempt";
 
 interface CircuitEmulationPageHandlerDependencies {
   query: CircuitId;

@@ -11,8 +11,8 @@ import {
 import type { ICircuitParserService } from "@/domain/model/service/ICircuitParserService";
 import type { IGetCircuitDetailUsecase } from "@/domain/model/usecase/IGetCircuitDetailUsecase";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
-import { Attempt } from "@/utils/attempt";
 import { usePartialState } from "@/hooks/partialState";
+import { Attempt } from "@/utils/attempt";
 
 interface CircuitViewPageHandlerDependencies {
   query: CircuitId;

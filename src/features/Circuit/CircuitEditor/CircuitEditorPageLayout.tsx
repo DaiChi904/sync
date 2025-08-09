@@ -32,6 +32,11 @@ export default function CircuitEditorPageLayout() {
     handleNodePinMouseMove,
     handleNodePinMouseUp,
     tempEdge,
+    uiState,
+    openEdgeUtilitiesMenu,
+    closeEdgeUtilitiesMenu,
+    openNodeUtilitiesMenu,
+    closeNodeUtilitiesMenu,
   } = useCircuitEditorPageHandlerContext();
 
   switch (true) {
@@ -122,6 +127,11 @@ export default function CircuitEditorPageLayout() {
                     handleNodePinMouseMove={handleNodePinMouseMove}
                     handleNodePinMouseUp={handleNodePinMouseUp}
                     tempEdge={tempEdge}
+                    uiState={uiState}
+                    openEdgeUtilitiesMenu={openEdgeUtilitiesMenu}
+                    closeEdgeUtilitiesMenu={closeEdgeUtilitiesMenu}
+                    openNodeUtilitiesMenu={openNodeUtilitiesMenu}
+                    closeNodeUtilitiesMenu={closeNodeUtilitiesMenu}
                   />
                 </Grid>
               </Grid>

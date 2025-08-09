@@ -5,14 +5,25 @@ interface JunctionNodeProps {
   isInFocus?: boolean;
   focusElement?: (value: CircuitGuiNode) => void;
   handleNodeMouseDown?: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
+  openNodeUtilitiesMenu?: (ev: React.MouseEvent) => void;
 }
 
-export default function JunctionNode({ node, isInFocus, focusElement, handleNodeMouseDown }: JunctionNodeProps) {
+export default function JunctionNode({
+  node,
+  isInFocus,
+  focusElement,
+  handleNodeMouseDown,
+  openNodeUtilitiesMenu,
+}: JunctionNodeProps) {
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
     <g
       onClick={() => focusElement?.(node)}
       onMouseDown={isInFocus ? (ev) => handleNodeMouseDown?.(ev, node) : undefined}
+      onContextMenu={(ev) => {
+        ev.preventDefault();
+        openNodeUtilitiesMenu?.(ev);
+      }}
     >
       {isInFocus && (
         // biome-ignore lint/nursery/useUniqueElementIds: No need for unique id.

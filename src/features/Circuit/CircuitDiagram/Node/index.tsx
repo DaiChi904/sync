@@ -11,9 +11,10 @@ interface NodeProps {
   isInFocus?: boolean;
   focusElement?: (value: CircuitGuiNode) => void;
   handleNodeMouseDown?: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
+  openNodeUtilitiesMenu?: (ev: React.MouseEvent) => void;
 }
 
-export default function Node({ node, isInFocus, focusElement, handleNodeMouseDown }: NodeProps) {
+export default function Node({ node, isInFocus, focusElement, handleNodeMouseDown, openNodeUtilitiesMenu }: NodeProps) {
   switch (node.type) {
     case "ENTRY":
       return (
@@ -22,6 +23,7 @@ export default function Node({ node, isInFocus, focusElement, handleNodeMouseDow
           isInFocus={isInFocus}
           focusElement={focusElement}
           handleNodeMouseDown={handleNodeMouseDown}
+          openNodeUtilitiesMenu={isInFocus ? openNodeUtilitiesMenu : undefined}
         />
       );
     case "EXIT":
@@ -31,6 +33,7 @@ export default function Node({ node, isInFocus, focusElement, handleNodeMouseDow
           isInFocus={isInFocus}
           focusElement={focusElement}
           handleNodeMouseDown={handleNodeMouseDown}
+          openNodeUtilitiesMenu={isInFocus ? openNodeUtilitiesMenu : undefined}
         />
       );
     case "JUNCTION":
@@ -40,6 +43,7 @@ export default function Node({ node, isInFocus, focusElement, handleNodeMouseDow
           isInFocus={isInFocus}
           focusElement={focusElement}
           handleNodeMouseDown={handleNodeMouseDown}
+          openNodeUtilitiesMenu={isInFocus ? openNodeUtilitiesMenu : undefined}
         />
       );
     case "AND":
@@ -49,6 +53,7 @@ export default function Node({ node, isInFocus, focusElement, handleNodeMouseDow
           isInFocus={isInFocus}
           focusElement={focusElement}
           handleNodeMouseDown={handleNodeMouseDown}
+          openNodeUtilitiesMenu={isInFocus ? openNodeUtilitiesMenu : undefined}
         />
       );
     case "OR":
@@ -58,6 +63,7 @@ export default function Node({ node, isInFocus, focusElement, handleNodeMouseDow
           isInFocus={isInFocus}
           focusElement={focusElement}
           handleNodeMouseDown={handleNodeMouseDown}
+          openNodeUtilitiesMenu={isInFocus ? openNodeUtilitiesMenu : undefined}
         />
       );
     case "NOT":
@@ -67,6 +73,7 @@ export default function Node({ node, isInFocus, focusElement, handleNodeMouseDow
           isInFocus={isInFocus}
           focusElement={focusElement}
           handleNodeMouseDown={handleNodeMouseDown}
+          openNodeUtilitiesMenu={isInFocus ? openNodeUtilitiesMenu : undefined}
         />
       );
     default:

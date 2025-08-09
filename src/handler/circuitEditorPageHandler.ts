@@ -23,9 +23,9 @@ import type { CircuitNodeSize } from "@/domain/model/valueObject/circuitNodeSize
 import type { CircuitNodeType } from "@/domain/model/valueObject/circuitNodeType";
 import { Coordinate } from "@/domain/model/valueObject/coordinate";
 import type { Waypoint } from "@/domain/model/valueObject/waypoint";
+import { usePartialState } from "@/hooks/partialState";
 import { Attempt } from "@/utils/attempt";
 import type { Result } from "@/utils/result";
-import { usePartialState } from "@/hooks/partialState";
 
 interface CircuitEditorPageHandlerDependencies {
   query: CircuitId;
@@ -42,6 +42,10 @@ export const useCircuitEditorPageHandler = ({
   circuitEditorUsecase,
 }: CircuitEditorPageHandlerDependencies): ICircuitEditorPageHandler => {
   const [error, setError] = usePartialState<CircuitEditorPageError>(circuitEditorPageError);
+  const [uiState, setUiState] = usePartialState<{
+    isOpenEdgeUtilitiesMenu: { open: boolean; at: Coordinate | null };
+    isOpenNodeUtilitiesMenu: { open: boolean; at: Coordinate | null };
+  }>({ isOpenEdgeUtilitiesMenu: { open: false, at: null }, isOpenNodeUtilitiesMenu: { open: false, at: null } });
 
   const [circuit, setCircuit] = useState<Circuit | undefined>(undefined);
   const [guiData, setGuiData] = useState<CircuitGuiData | undefined>(undefined);
@@ -528,6 +532,28 @@ export const useCircuitEditorPageHandler = ({
     reattachFocusedElement();
   };
 
+  const openEdgeUtilitiesMenu = useCallback((ev: React.MouseEvent) => {
+    const svgCoordinate = getSvgCoords(ev);
+    if (!svgCoordinate.ok) return;
+
+    setUiState("isOpenEdgeUtilitiesMenu", { open: true, at: svgCoordinate.value });
+  }, []);
+
+  const closeEdgeUtilitiesMenu = useCallback(() => {
+    setUiState("isOpenEdgeUtilitiesMenu", { open: false, at: null });
+  }, []);
+
+  const openNodeUtilitiesMenu = useCallback((ev: React.MouseEvent) => {
+    const svgCoordinate = getSvgCoords(ev);
+    if (!svgCoordinate.ok) return;
+
+    setUiState("isOpenNodeUtilitiesMenu", { open: true, at: svgCoordinate.value });
+  }, []);
+
+  const closeNodeUtilitiesMenu = useCallback(() => {
+    setUiState("isOpenNodeUtilitiesMenu", { open: false, at: null });
+  }, []);
+
   useEffect(() => {
     fetch();
   }, [fetch]);
@@ -561,5 +587,10 @@ export const useCircuitEditorPageHandler = ({
     handleNodePinMouseMove,
     handleNodePinMouseUp,
     tempEdge,
+    uiState,
+    openEdgeUtilitiesMenu,
+    closeEdgeUtilitiesMenu,
+    openNodeUtilitiesMenu,
+    closeNodeUtilitiesMenu,
   };
 };

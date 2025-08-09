@@ -11,8 +11,8 @@ import {
 import type { ICircuitParserService } from "@/domain/model/service/ICircuitParserService";
 import type { IGetCircuitDetailUsecase } from "@/domain/model/usecase/IGetCircuitDetailUsecase";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
-import { useObjectState } from "@/hooks/objectState";
 import { Attempt } from "@/utils/attempt";
+import { usePartialState } from "@/hooks/partialState";
 
 interface CircuitViewPageHandlerDependencies {
   query: CircuitId;
@@ -25,7 +25,7 @@ export const useCircuitViewPageHandler = ({
   getCircuitDetailUsecase,
   circuitParserUsecase,
 }: CircuitViewPageHandlerDependencies): ICircuitViewPageHandler => {
-  const [error, setError] = useObjectState<CircuitViewPageError>(circuitViewPageError);
+  const [error, setError] = usePartialState<CircuitViewPageError>(circuitViewPageError);
 
   const [overview, setOverview] = useState<CircuitOverview | undefined>(undefined);
   const [guiData, setGuiData] = useState<CircuitGuiData | undefined>(undefined);

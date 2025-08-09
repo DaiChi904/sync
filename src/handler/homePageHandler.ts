@@ -4,15 +4,15 @@ import { useCallback, useEffect, useState } from "react";
 import type { CircuitOverview } from "@/domain/model/entity/circuitOverview";
 import { type HomePageError, homePageError, type IHomePageHandler } from "@/domain/model/handler/IHomePageHandler";
 import type { IGetCircuitOverviewsUsecase } from "@/domain/model/usecase/IGetCircuitOverviewsUsecase";
-import { useObjectState } from "@/hooks/objectState";
 import { Attempt } from "@/utils/attempt";
+import { usePartialState } from "@/hooks/partialState";
 
 interface HomePageHandlerDependencies {
   getCircuitOverviewsUsecase: IGetCircuitOverviewsUsecase;
 }
 
 export const useHomePageHandler = ({ getCircuitOverviewsUsecase }: HomePageHandlerDependencies): IHomePageHandler => {
-  const [error, setError] = useObjectState<HomePageError>(homePageError);
+  const [error, setError] = usePartialState<HomePageError>(homePageError);
 
   const [circuitOverviews, setCircuitOverviews] = useState<Array<CircuitOverview> | undefined>(undefined);
 

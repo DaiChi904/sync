@@ -23,9 +23,9 @@ import type { CircuitNodeSize } from "@/domain/model/valueObject/circuitNodeSize
 import type { CircuitNodeType } from "@/domain/model/valueObject/circuitNodeType";
 import { Coordinate } from "@/domain/model/valueObject/coordinate";
 import type { Waypoint } from "@/domain/model/valueObject/waypoint";
-import { useObjectState } from "@/hooks/objectState";
 import { Attempt } from "@/utils/attempt";
 import type { Result } from "@/utils/result";
+import { usePartialState } from "@/hooks/partialState";
 
 interface CircuitEditorPageHandlerDependencies {
   query: CircuitId;
@@ -41,7 +41,7 @@ export const useCircuitEditorPageHandler = ({
   circuitParserUsecase,
   circuitEditorUsecase,
 }: CircuitEditorPageHandlerDependencies): ICircuitEditorPageHandler => {
-  const [error, setError] = useObjectState<CircuitEditorPageError>(circuitEditorPageError);
+  const [error, setError] = usePartialState<CircuitEditorPageError>(circuitEditorPageError);
 
   const [circuit, setCircuit] = useState<Circuit | undefined>(undefined);
   const [guiData, setGuiData] = useState<CircuitGuiData | undefined>(undefined);

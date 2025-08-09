@@ -17,8 +17,8 @@ import { EvalResult } from "@/domain/model/valueObject/evalResult";
 import { InputRecord } from "@/domain/model/valueObject/inputRecord";
 import { Phase } from "@/domain/model/valueObject/phase";
 import type { CircuitParserService } from "@/domain/service/circuitParserService";
-import { useObjectState } from "@/hooks/objectState";
 import { Attempt } from "@/utils/attempt";
+import { usePartialState } from "@/hooks/partialState";
 
 interface CircuitEmulationPageHandlerDependencies {
   query: CircuitId;
@@ -33,7 +33,7 @@ export const useCircuitEmulationPageHandler = ({
   generateCircuitEmulatorServiceClientUsecase,
   circuitParserUsecase,
 }: CircuitEmulationPageHandlerDependencies): ICircuitEmulationPageHandler => {
-  const [error, setError] = useObjectState<CircuitEmulationPageError>(circuitEmulationPageError);
+  const [error, setError] = usePartialState<CircuitEmulationPageError>(circuitEmulationPageError);
 
   const [overview, setOverview] = useState<CircuitOverview | undefined>(undefined);
   const [guiData, setGuiData] = useState<CircuitGuiData | undefined>(undefined);

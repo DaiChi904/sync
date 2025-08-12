@@ -105,13 +105,13 @@ export const useCircuitEditorPageHandler = ({
 
         setGuiData(circuitGuiData.value);
 
-        if (viewBox || !guiData) return;
+        if (viewBox) return;
 
         const MARRGIN = 20;
-        const minX = Math.min(...guiData.nodes.map((node) => node.coordinate.x - node.size.x / 2)) - MARRGIN;
-        const minY = Math.min(...guiData.nodes.map((node) => node.coordinate.y - node.size.y / 2)) - MARRGIN;
-        const maxX = Math.max(...guiData.nodes.map((node) => node.coordinate.x + node.size.x / 2)) + MARRGIN;
-        const maxY = Math.max(...guiData.nodes.map((node) => node.coordinate.y + node.size.y / 2)) + MARRGIN;
+        const minX = Math.min(...circuitGuiData.value.nodes.map((node) => node.coordinate.x - node.size.x / 2)) - MARRGIN;
+        const minY = Math.min(...circuitGuiData.value.nodes.map((node) => node.coordinate.y - node.size.y / 2)) - MARRGIN;
+        const maxX = Math.max(...circuitGuiData.value.nodes.map((node) => node.coordinate.x + node.size.x / 2)) + MARRGIN;
+        const maxY = Math.max(...circuitGuiData.value.nodes.map((node) => node.coordinate.y + node.size.y / 2)) + MARRGIN;
         const viewWidth = maxX - minX;
         const viewHeight = maxY - minY;
 
@@ -121,7 +121,7 @@ export const useCircuitEditorPageHandler = ({
         setError("failedToParseCircuitDataError", true);
       },
     );
-  }, [circuit, circuitParserUsecase, guiData, viewBox, setError]);
+  }, [circuit, circuitParserUsecase, viewBox, setError]);
 
   const handleMouseDown = (ev: React.MouseEvent) => {
     // On right click.

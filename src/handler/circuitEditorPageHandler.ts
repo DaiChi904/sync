@@ -108,10 +108,14 @@ export const useCircuitEditorPageHandler = ({
         if (viewBox) return;
 
         const MARRGIN = 20;
-        const minX = Math.min(...circuitGuiData.value.nodes.map((node) => node.coordinate.x - node.size.x / 2)) - MARRGIN;
-        const minY = Math.min(...circuitGuiData.value.nodes.map((node) => node.coordinate.y - node.size.y / 2)) - MARRGIN;
-        const maxX = Math.max(...circuitGuiData.value.nodes.map((node) => node.coordinate.x + node.size.x / 2)) + MARRGIN;
-        const maxY = Math.max(...circuitGuiData.value.nodes.map((node) => node.coordinate.y + node.size.y / 2)) + MARRGIN;
+        const minX =
+          Math.min(...circuitGuiData.value.nodes.map((node) => node.coordinate.x - node.size.x / 2)) - MARRGIN;
+        const minY =
+          Math.min(...circuitGuiData.value.nodes.map((node) => node.coordinate.y - node.size.y / 2)) - MARRGIN;
+        const maxX =
+          Math.max(...circuitGuiData.value.nodes.map((node) => node.coordinate.x + node.size.x / 2)) + MARRGIN;
+        const maxY =
+          Math.max(...circuitGuiData.value.nodes.map((node) => node.coordinate.y + node.size.y / 2)) + MARRGIN;
         const viewWidth = maxX - minX;
         const viewHeight = maxY - minY;
 

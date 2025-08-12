@@ -17,7 +17,7 @@ interface CircuitDiagramProps {
   data: CircuitGuiData;
   outputRecord?: Record<CircuitNodeId, EvalResult>;
   svgRef?: React.RefObject<SVGSVGElement | null>;
-  viewBox: { x: number; y: number; w: number; h: number };
+  viewBox?: { x: number; y: number; w: number; h: number };
   isPanningRef?: React.RefObject<boolean>;
   handleMouseDown?: (ev: React.MouseEvent) => void;
   handleMouseMove?: (ev: React.MouseEvent) => void;
@@ -92,10 +92,20 @@ export default function CircuitDiagram({
     ev.preventDefault();
   };
 
+  const MARRGIN = 20;
+  const minX = Math.min(...data.nodes.map((node) => node.coordinate.x - node.size.x / 2)) - MARRGIN;
+  const minY = Math.min(...data.nodes.map((node) => node.coordinate.y - node.size.y / 2)) - MARRGIN;
+  const maxX = Math.max(...data.nodes.map((node) => node.coordinate.x + node.size.x / 2)) + MARRGIN;
+  const maxY = Math.max(...data.nodes.map((node) => node.coordinate.y + node.size.y / 2)) + MARRGIN;
+  const viewWidth = maxX - minX;
+  const viewHeight = maxY - minY;
+
   return (
     <svg
       ref={svgRef}
-      viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`}
+      viewBox={
+        viewBox ? `${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}` : `${minX} ${minY} ${viewWidth} ${viewHeight}`
+      }
       style={{ background: "#222", cursor: isPanningRef?.current ? "grabbing" : "default" }}
       onContextMenu={disableContextMenu}
       onWheel={handleWheel}

@@ -1,20 +1,20 @@
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
 
-interface AndNodeProps {
+interface NotNodeProps {
   node: CircuitGuiNode;
   isInFocus?: boolean;
   focusElement?: (value: CircuitGuiNode) => void;
   handleNodeMouseDown?: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
-  openNodeUtilitiesMenu?: (ev: React.MouseEvent) => void;
+  openNodeUtilityMenu?: (ev: React.MouseEvent) => void;
 }
 
-export default function AndNode({
+export default function NotNode({
   node,
   isInFocus,
   focusElement,
   handleNodeMouseDown,
-  openNodeUtilitiesMenu,
-}: AndNodeProps) {
+  openNodeUtilityMenu,
+}: NotNodeProps) {
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
     <g
@@ -22,7 +22,7 @@ export default function AndNode({
       onMouseDown={isInFocus ? (ev) => handleNodeMouseDown?.(ev, node) : undefined}
       onContextMenu={(ev) => {
         ev.preventDefault();
-        openNodeUtilitiesMenu?.(ev);
+        openNodeUtilityMenu?.(ev);
       }}
     >
       {isInFocus && (
@@ -42,9 +42,8 @@ export default function AndNode({
       <path
         d={`
             M ${node.coordinate.x - node.size.x / 2} ${node.coordinate.y - node.size.y / 2}
-            H ${node.coordinate.x + node.size.x / 2 - node.size.y / 2}
-            A ${node.size.y / 2} ${node.size.y / 2} 0 0 1 ${node.coordinate.x + node.size.x / 2 - node.size.y / 2} ${node.coordinate.y + node.size.y / 2}
-            H ${node.coordinate.x - node.size.x / 2}
+            L ${node.coordinate.x + node.size.x / 2} ${node.coordinate.y}
+            L ${node.coordinate.x - node.size.x / 2} ${node.coordinate.y + node.size.y / 2}
             Z
         `}
         fill="#333"
@@ -52,7 +51,17 @@ export default function AndNode({
         strokeWidth={1}
       />
 
-      {/* Input pins */}
+      {/* Circle of output (circle of NOT) */}
+      <circle
+        cx={node.coordinate.x + node.size.x / 2}
+        cy={node.coordinate.y}
+        r={node.size.y * 0.1}
+        fill="#333"
+        stroke="#fff"
+        strokeWidth={1}
+      />
+
+      {/* Input pin */}
       {node.inputs.map((pin) => (
         <circle key={pin.id} cx={pin.coordinate.x} cy={pin.coordinate.y} r={4} fill="#0ff" stroke="#0ff" />
       ))}

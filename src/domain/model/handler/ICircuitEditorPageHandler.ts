@@ -85,11 +85,11 @@ export interface ICircuitEditorPageHandler {
   handleNodePinMouseUp: (ev: React.MouseEvent) => void;
   tempEdge: { from: Coordinate; to: Coordinate } | null;
   uiState: {
-    isOpenEdgeUtilitiesMenu: { open: boolean; at: Coordinate | null };
-    isOpenNodeUtilitiesMenu: { open: boolean; at: Coordinate | null };
+    isOpenEdgeUtilityMenu: { open: boolean; at: Coordinate | null };
+    isOpenNodeUtilityMenu: { open: boolean; at: Coordinate | null };
   };
-  openEdgeUtilitiesMenu: (ev: React.MouseEvent) => void;
-  closeEdgeUtilitiesMenu: () => void;
-  openNodeUtilitiesMenu: (ev: React.MouseEvent) => void;
-  closeNodeUtilitiesMenu: () => void;
+  openEdgeUtilityMenu: (ev: React.MouseEvent) => void;
+  closeEdgeUtilityMenu: () => void;
+  openNodeUtilityMenu: (ev: React.MouseEvent) => void;
+  closeNodeUtilityMenu: () => void;
 }

@@ -16,7 +16,7 @@ interface EdgeProps {
     kind: "from" | "to" | "waypoints",
     method: "ADD" | "UPDATE",
   ) => void;
-  openEdgeUtilitiesMenu?: (ev: React.MouseEvent) => void;
+  openEdgeUtilityMenu?: (ev: React.MouseEvent) => void;
 }
 
 export default function Edge({
@@ -27,7 +27,7 @@ export default function Edge({
   isInFocus,
   focusElement,
   handleNodePinMouseDown,
-  openEdgeUtilitiesMenu,
+  openEdgeUtilityMenu,
 }: EdgeProps) {
   const from = pinMap.get(edge.from);
   const to = pinMap.get(edge.to);
@@ -66,7 +66,7 @@ export default function Edge({
                 fill="rgba(0,0,0,0)"
                 stroke="#fff"
                 strokeWidth={1}
-                onContextMenu={openEdgeUtilitiesMenu}
+                onContextMenu={openEdgeUtilityMenu}
                 onMouseDown={
                   idx === 0 || edges.length < 2
                     ? (ev) => handleNodePinMouseDown?.(ev, edge.to, "to", "UPDATE")
@@ -81,7 +81,7 @@ export default function Edge({
                 fill="rgba(0,0,0,0)"
                 stroke="#fff"
                 strokeWidth={1}
-                onContextMenu={openEdgeUtilitiesMenu}
+                onContextMenu={openEdgeUtilityMenu}
                 onMouseDown={
                   idx + 1 === edges.length - 1 || edges.length < 2
                     ? (ev) => handleNodePinMouseDown?.(ev, edge.from, "from", "UPDATE")
@@ -111,7 +111,7 @@ export default function Edge({
             onClick={() => focusElement?.(edge)}
             onContextMenu={(ev) => {
               ev.preventDefault();
-              openEdgeUtilitiesMenu?.(ev);
+              openEdgeUtilityMenu?.(ev);
             }}
           />
         </g>

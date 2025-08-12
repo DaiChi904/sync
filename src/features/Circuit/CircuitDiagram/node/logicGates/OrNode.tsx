@@ -5,7 +5,7 @@ interface OrNodeProps {
   isInFocus?: boolean;
   focusElement?: (value: CircuitGuiNode) => void;
   handleNodeMouseDown?: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
-  openNodeUtilitiesMenu?: (ev: React.MouseEvent) => void;
+  openNodeUtilityMenu?: (ev: React.MouseEvent) => void;
 }
 
 export default function OrNode({
@@ -13,7 +13,7 @@ export default function OrNode({
   isInFocus,
   focusElement,
   handleNodeMouseDown,
-  openNodeUtilitiesMenu,
+  openNodeUtilityMenu,
 }: OrNodeProps) {
   // The Or node has a slight depression at the input, so if it is drawn as it is, the connection points cannot be connected neatly to the edge in the GUI, so a little play is made with this value.
   const extraInputWidth = node.size.x * 0.1;
@@ -24,7 +24,7 @@ export default function OrNode({
       onMouseDown={isInFocus ? (ev) => handleNodeMouseDown?.(ev, node) : undefined}
       onContextMenu={(ev) => {
         ev.preventDefault();
-        openNodeUtilitiesMenu?.(ev);
+        openNodeUtilityMenu?.(ev);
       }}
     >
       {isInFocus && (

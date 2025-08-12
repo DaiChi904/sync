@@ -1,20 +1,20 @@
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
 
-interface JunctionNodeProps {
+interface EntryNodeProps {
   node: CircuitGuiNode;
   isInFocus?: boolean;
   focusElement?: (value: CircuitGuiNode) => void;
   handleNodeMouseDown?: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
-  openNodeUtilitiesMenu?: (ev: React.MouseEvent) => void;
+  openNodeUtilityMenu?: (ev: React.MouseEvent) => void;
 }
 
-export default function JunctionNode({
+export default function EntryNode({
   node,
   isInFocus,
   focusElement,
   handleNodeMouseDown,
-  openNodeUtilitiesMenu,
-}: JunctionNodeProps) {
+  openNodeUtilityMenu,
+}: EntryNodeProps) {
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
     <g
@@ -22,7 +22,7 @@ export default function JunctionNode({
       onMouseDown={isInFocus ? (ev) => handleNodeMouseDown?.(ev, node) : undefined}
       onContextMenu={(ev) => {
         ev.preventDefault();
-        openNodeUtilitiesMenu?.(ev);
+        openNodeUtilityMenu?.(ev);
       }}
     >
       {isInFocus && (

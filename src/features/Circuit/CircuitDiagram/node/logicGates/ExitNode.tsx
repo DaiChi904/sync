@@ -5,7 +5,7 @@ interface ExitNodeProps {
   isInFocus?: boolean;
   focusElement?: (value: CircuitGuiNode) => void;
   handleNodeMouseDown?: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
-  openNodeUtilitiesMenu?: (ev: React.MouseEvent) => void;
+  openNodeUtilityMenu?: (ev: React.MouseEvent) => void;
 }
 
 export default function ExitNode({
@@ -13,7 +13,7 @@ export default function ExitNode({
   isInFocus,
   focusElement,
   handleNodeMouseDown,
-  openNodeUtilitiesMenu,
+  openNodeUtilityMenu,
 }: ExitNodeProps) {
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
@@ -22,7 +22,7 @@ export default function ExitNode({
       onMouseDown={isInFocus ? (ev) => handleNodeMouseDown?.(ev, node) : undefined}
       onContextMenu={(ev) => {
         ev.preventDefault();
-        openNodeUtilitiesMenu?.(ev);
+        openNodeUtilityMenu?.(ev);
       }}
     >
       {isInFocus && (

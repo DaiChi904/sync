@@ -4,11 +4,14 @@ import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
 import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 import type { Coordinate } from "@/domain/model/valueObject/coordinate";
-import { EvalResult } from "@/domain/model/valueObject/evalResult";
-import Edge from "./Edge";
-import EdgeUtilitiesMenu from "./EdgeUtilitiesMenu";
-import Node from "./Node";
-import NodeUtilitiesMenu from "./NodeUtilitiesMenu";
+import type { EvalResult } from "@/domain/model/valueObject/evalResult";
+import Edges from "./edge/Edges";
+import OnClickEventBackdrop from "./eventCaptureLayer/baseLayers/onClickEventBackdrop";
+import NodeDragInteractionLayer from "./eventCaptureLayer/NodeDragInteractionLayer";
+import NodePinDragInteractionLayer from "./eventCaptureLayer/NodePinDragInteractionLayer";
+import Nodes from "./node/Nodes";
+import EdgeUtilityMenu from "./utilityMenu/EdgeUtilityMenu";
+import NodeUtilityMenu from "./utilityMenu/NodeUtilityMenu";
 
 interface CircuitDiagramProps {
   data: CircuitGuiData;
@@ -39,13 +42,13 @@ interface CircuitDiagramProps {
   handleNodePinMouseUp?: (ev: React.MouseEvent) => void;
   tempEdge?: { from: Coordinate; to: Coordinate } | null;
   uiState?: {
-    isOpenEdgeUtilitiesMenu: { open: boolean; at: Coordinate | null };
-    isOpenNodeUtilitiesMenu: { open: boolean; at: Coordinate | null };
+    isOpenEdgeUtilityMenu: { open: boolean; at: Coordinate | null };
+    isOpenNodeUtilityMenu: { open: boolean; at: Coordinate | null };
   };
-  openEdgeUtilitiesMenu?: (ev: React.MouseEvent) => void;
-  closeEdgeUtilitiesMenu?: () => void;
-  openNodeUtilitiesMenu?: (ev: React.MouseEvent) => void;
-  closeNodeUtilitiesMenu?: () => void;
+  openEdgeUtilityMenu?: (ev: React.MouseEvent) => void;
+  closeEdgeUtilityMenu?: () => void;
+  openNodeUtilityMenu?: (ev: React.MouseEvent) => void;
+  closeNodeUtilityMenu?: () => void;
 }
 
 export default function CircuitDiagram({
@@ -64,38 +67,11 @@ export default function CircuitDiagram({
   handleNodePinMouseUp,
   tempEdge,
   uiState,
-  openEdgeUtilitiesMenu,
-  closeEdgeUtilitiesMenu,
-  openNodeUtilitiesMenu,
-  closeNodeUtilitiesMenu,
+  openEdgeUtilityMenu,
+  closeEdgeUtilityMenu,
+  openNodeUtilityMenu,
+  closeNodeUtilityMenu,
 }: CircuitDiagramProps) {
-  const pinMap = new Map<CircuitNodePinId, Coordinate>();
-  const waypointsMap = new Map<CircuitNodePinId, Coordinate[]>();
-  const outputMap = new Map<CircuitNodePinId, EvalResult>();
-
-  data.nodes.forEach((node) => {
-    node.inputs.forEach((pin) => pinMap.set(pin.id, pin.coordinate));
-    node.outputs.forEach((pin) => pinMap.set(pin.id, pin.coordinate));
-  });
-
-  data.edges.forEach((edge) => {
-    if (edge.waypoints) {
-      waypointsMap.set(edge.from, edge.waypoints);
-      waypointsMap.set(edge.to, edge.waypoints);
-    }
-  });
-
-  data?.nodes.forEach((node) => {
-    node.inputs.forEach((pin) => {
-      const output = outputRecord?.[node.id];
-      outputMap.set(pin.id, output ?? EvalResult.from(true));
-    });
-    node.outputs.forEach((pin) => {
-      const output = outputRecord?.[node.id];
-      outputMap.set(pin.id, output ?? EvalResult.from(true));
-    });
-  });
-
   const MARRGIN = 20;
   const minX = Math.min(...data.nodes.map((node) => node.coordinate.x - node.size.x / 2)) - MARRGIN; // 余白つける
   const minY = Math.min(...data.nodes.map((node) => node.coordinate.y - node.size.y / 2)) - MARRGIN;
@@ -104,174 +80,101 @@ export default function CircuitDiagram({
   const viewWidth = maxX - minX;
   const viewHeight = maxY - minY;
 
-  // Make focused element on top.
-  const focusedNode =
-    focusedElement?.kind === "node" ? data?.nodes.find((node) => node.id === focusedElement?.value.id) : undefined;
-  const orderdNode = focusedNode
-    ? [...data.nodes.filter((node) => node.id !== focusedElement?.value.id), focusedNode]
-    : data.nodes;
-
   return (
     <svg ref={svgRef} viewBox={`${minX} ${minY} ${viewWidth} ${viewHeight}`} style={{ background: "#222" }}>
       <title>Circuit Diagram</title>
-      {data?.edges.map((edge) => {
-        const isInFocus = focusedElement?.kind === "edge" && edge.id === focusedElement?.value.id;
-        return (
-          <Edge
-            key={edge.id}
-            edge={edge}
-            pinMap={pinMap}
-            outputMap={outputMap}
-            waypointsMap={waypointsMap}
-            isInFocus={isInFocus}
-            focusElement={focusElement?.("edge")}
-            handleNodePinMouseDown={handleNodePinMouseDown}
-            openEdgeUtilitiesMenu={isInFocus ? openEdgeUtilitiesMenu : undefined}
-          />
-        );
-      })}
-      {orderdNode.map((node) => {
-        const isInFocus = focusedElement?.kind === "node" && node.id === focusedElement?.value.id;
-        return (
-          <Node
-            key={node.id}
-            node={node}
-            isInFocus={isInFocus}
-            focusElement={focusElement?.("node")}
-            handleNodeMouseDown={handleNodeMouseDown}
-            openNodeUtilitiesMenu={openNodeUtilitiesMenu}
-          />
-        );
-      })}
 
-      {draggingNodePin && (
-        // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
-        <rect
-          x={0}
-          y={0}
-          width="100%"
-          height="100%"
-          fill="transparent"
-          pointerEvents="all"
-          onMouseMove={handleNodePinMouseMove}
-          onMouseUp={handleNodePinMouseUp}
-        />
-      )}
+      <Edges
+        data={data}
+        outputRecord={outputRecord}
+        focusedElement={focusedElement}
+        focusElement={focusElement}
+        handleNodePinMouseDown={handleNodePinMouseDown}
+        openEdgeUtilityMenu={openEdgeUtilityMenu}
+      />
 
-      {tempEdge && (
-        // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
-        <line
-          x1={tempEdge.from.x}
-          y1={tempEdge.from.y}
-          x2={tempEdge.to.x}
-          y2={tempEdge.to.y}
-          stroke="#9ca19d"
-          strokeWidth={2}
-          onMouseUp={handleNodePinMouseUp}
-        />
-      )}
+      <Nodes
+        data={data}
+        focusedElement={focusedElement}
+        focusElement={focusElement}
+        handleNodeMouseDown={handleNodeMouseDown}
+        openNodeUtilityMenu={openNodeUtilityMenu}
+      />
 
-      {draggingNode && (
-        // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
-        <rect
-          x={0}
-          y={0}
-          width="100%"
-          height="100%"
-          fill="transparent"
-          pointerEvents="all"
-          onMouseMove={handleNodeMouseMove}
-          onMouseUp={handleNodeMouseUp}
-        />
-      )}
+      <NodePinDragInteractionLayer
+        isActive={!!draggingNodePin}
+        onMouseMove={handleNodePinMouseMove}
+        onMouseUp={handleNodePinMouseUp}
+        tempEdge={tempEdge}
+      />
 
-      {uiState?.isOpenEdgeUtilitiesMenu.open && focusedElement?.kind === "edge" && (
+      <NodeDragInteractionLayer
+        isActive={!!draggingNode}
+        onMouseMove={handleNodeMouseMove}
+        onMouseUp={handleNodeMouseUp}
+      />
+
+      {uiState?.isOpenEdgeUtilityMenu.open && focusedElement?.kind === "edge" && (
         <>
-          {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support. */}
-          <rect
-            x={0}
-            y={0}
-            width="100%"
-            height="100%"
-            fill="transparent"
-            pointerEvents="all"
+          <OnClickEventBackdrop
             onClick={() => {
-              closeEdgeUtilitiesMenu?.();
+              closeEdgeUtilityMenu?.();
             }}
           />
-          <foreignObject
-            x={uiState?.isOpenEdgeUtilitiesMenu.at?.x}
-            y={uiState?.isOpenEdgeUtilitiesMenu.at?.y}
-            width={75}
-            height={200}
-          >
-            <EdgeUtilitiesMenu
-              menuOptions={[
-                {
-                  label: "Delete",
-                  onClickHandler: () => {
-                    console.log("not implemented");
-                    closeEdgeUtilitiesMenu?.();
-                  },
+          <EdgeUtilityMenu
+            at={uiState.isOpenEdgeUtilityMenu.at}
+            menuOptions={[
+              {
+                label: "Delete",
+                onClickHandler: () => {
+                  console.log("not implemented");
+                  closeEdgeUtilityMenu?.();
                 },
-                {
-                  label: "Add Waypoint",
-                  onClickHandler: () => {
-                    console.log("not implemented");
-                    closeEdgeUtilitiesMenu?.();
-                  },
+              },
+              {
+                label: "Add Waypoint",
+                onClickHandler: () => {
+                  console.log("not implemented");
+                  closeEdgeUtilityMenu?.();
                 },
-              ]}
-            />
-          </foreignObject>
+              },
+            ]}
+          />
         </>
       )}
-      {uiState?.isOpenNodeUtilitiesMenu.open && focusedElement?.kind === "node" && (
+      {uiState?.isOpenNodeUtilityMenu.open && focusedElement?.kind === "node" && (
         <>
-          {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support. */}
-          <rect
-            x={0}
-            y={0}
-            width="100%"
-            height="100%"
-            fill="transparent"
-            pointerEvents="all"
+          <OnClickEventBackdrop
             onClick={() => {
-              closeNodeUtilitiesMenu?.();
+              closeNodeUtilityMenu?.();
             }}
           />
-          <foreignObject
-            x={uiState?.isOpenNodeUtilitiesMenu.at?.x}
-            y={uiState?.isOpenNodeUtilitiesMenu.at?.y}
-            width={75}
-            height={200}
-          >
-            <NodeUtilitiesMenu
-              menuOptions={[
-                {
-                  label: "Delete",
-                  onClickHandler: () => {
-                    console.log("not implemented");
-                    closeNodeUtilitiesMenu?.();
-                  },
+          <NodeUtilityMenu
+            at={uiState.isOpenNodeUtilityMenu.at}
+            menuOptions={[
+              {
+                label: "Delete",
+                onClickHandler: () => {
+                  console.log("not implemented");
+                  closeNodeUtilityMenu?.();
                 },
-                {
-                  label: "Add New Edge",
-                  onClickHandler: () => {
-                    console.log("not implemented");
-                    closeNodeUtilitiesMenu?.();
-                  },
+              },
+              {
+                label: "Add New Edge",
+                onClickHandler: () => {
+                  console.log("not implemented");
+                  closeNodeUtilityMenu?.();
                 },
-                {
-                  label: "Switch Inputs",
-                  onClickHandler: () => {
-                    console.log("not implemented");
-                    closeNodeUtilitiesMenu?.();
-                  },
+              },
+              {
+                label: "Switch Inputs",
+                onClickHandler: () => {
+                  console.log("not implemented");
+                  closeNodeUtilityMenu?.();
                 },
-              ]}
-            />
-          </foreignObject>
+              },
+            ]}
+          />
         </>
       )}
     </svg>

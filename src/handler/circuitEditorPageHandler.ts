@@ -49,8 +49,12 @@ export const useCircuitEditorPageHandler = ({
 
   const [circuit, setCircuit] = useState<Circuit | undefined>(undefined);
   const [guiData, setGuiData] = useState<CircuitGuiData | undefined>(undefined);
+  const [viewBox, setViewBox] = useState<{ x: number; y: number; w: number; h: number } | undefined>(undefined);
 
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const isPanningRef = useRef(false);
+  const [lastMousePosition, setLastMousePosition] = useState<{ x: number; y: number } | null>(null);
+
   const [focusedElement, setFocusedElement] = useState<
     { kind: "node"; value: CircuitGuiNode } | { kind: "edge"; value: CircuitGuiEdge } | null
   >(null);
@@ -100,12 +104,109 @@ export const useCircuitEditorPageHandler = ({
         }
 
         setGuiData(circuitGuiData.value);
+
+        if (viewBox || !guiData) return;
+
+        const MARRGIN = 20;
+        const minX = Math.min(...guiData.nodes.map((node) => node.coordinate.x - node.size.x / 2)) - MARRGIN;
+        const minY = Math.min(...guiData.nodes.map((node) => node.coordinate.y - node.size.y / 2)) - MARRGIN;
+        const maxX = Math.max(...guiData.nodes.map((node) => node.coordinate.x + node.size.x / 2)) + MARRGIN;
+        const maxY = Math.max(...guiData.nodes.map((node) => node.coordinate.y + node.size.y / 2)) + MARRGIN;
+        const viewWidth = maxX - minX;
+        const viewHeight = maxY - minY;
+
+        setViewBox({ x: minX, y: minY, w: viewWidth, h: viewHeight });
       },
       () => {
         setError("failedToParseCircuitDataError", true);
       },
     );
-  }, [setError, circuit, circuitParserUsecase]);
+  }, [circuit, circuitParserUsecase, guiData, viewBox, setError]);
+
+  const handleMouseDown = (ev: React.MouseEvent) => {
+    // On right click.
+    if (ev.button !== 2) return;
+
+    isPanningRef.current = true;
+    setLastMousePosition({ x: ev.clientX, y: ev.clientY });
+  };
+
+  const handleMouseMove = (ev: React.MouseEvent) => {
+    Attempt.proceed(
+      () => {
+        if (!isPanningRef.current || !lastMousePosition) return;
+
+        if (!viewBox) return;
+
+        const dx = (ev.clientX - lastMousePosition.x) * (viewBox.w / window.innerWidth);
+        const dy = (ev.clientY - lastMousePosition.y) * (viewBox.h / window.innerHeight);
+
+        setViewBox((prev) => {
+          if (!prev) {
+            throw new Attempt.Abort("circuitEditorPageHandler.handleMouseMove", "viewBox is not defined.");
+          }
+          return {
+            ...prev,
+            x: prev.x - dx,
+            y: prev.y - dy,
+          };
+        });
+
+        setLastMousePosition({ x: ev.clientX, y: ev.clientY });
+      },
+      () => {
+        setError("failedToRenderCircuitError", true);
+      },
+    );
+  };
+
+  const handleMouseUp = () => {
+    isPanningRef.current = false;
+  };
+
+  const handleWheel = (ev: React.WheelEvent) => {
+    Attempt.proceed(
+      () => {
+        if (!ev.ctrlKey) return;
+
+        const scaleAmount = ev.deltaY < 0 ? 0.9 : 1.1;
+        const mouseX = ev.clientX / window.innerWidth;
+        const mouseY = ev.clientY / window.innerHeight;
+
+        setViewBox((prev) => {
+          if (!prev) {
+            throw new Attempt.Abort("circuitEditorPageHandler.handleWheel", "viewBox is not defined.");
+          }
+          const newW = prev.w * scaleAmount;
+          const newH = prev.h * scaleAmount;
+          return {
+            x: prev.x + (prev.w - newW) * mouseX,
+            y: prev.y + (prev.h - newH) * mouseY,
+            w: newW,
+            h: newH,
+          };
+        });
+      },
+      () => {
+        setError("failedToRenderCircuitError", true);
+      },
+    );
+  };
+
+  const preventBrowserZoom = (ref: React.RefObject<SVGSVGElement | null>) => {
+    // biome-ignore lint/correctness/useHookAtTopLevel: This is safe under the Rules of Hooks. We've just encapsulated useEffect in a local function for readability. Since it depends on a ref, it's guaranteed to run on the initial render, making it equivalent to a top-level call.
+    useEffect(() => {
+      const el = ref.current;
+      if (!el) return;
+
+      const wheelHandler = (e: WheelEvent) => {
+        if (e.ctrlKey) e.preventDefault();
+      };
+
+      el.addEventListener("wheel", wheelHandler, { passive: false });
+      return () => el.removeEventListener("wheel", wheelHandler);
+    }, [ref]);
+  };
 
   const save = useCallback(async (): Promise<void> => {
     await Attempt.asyncProceed(
@@ -568,12 +669,19 @@ export const useCircuitEditorPageHandler = ({
     if (!circuit) return;
 
     updateCircuitGuiData();
-  }, [updateCircuitGuiData, circuit]);
+  }, [circuit, updateCircuitGuiData]);
 
   return {
     error,
     circuit,
     guiData,
+    viewBox,
+    isPanningRef,
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
+    handleWheel,
+    preventBrowserZoom,
     save,
     addCircuitNode,
     updateCircuitNode,

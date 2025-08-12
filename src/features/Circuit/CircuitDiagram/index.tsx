@@ -17,6 +17,13 @@ interface CircuitDiagramProps {
   data: CircuitGuiData;
   outputRecord?: Record<CircuitNodeId, EvalResult>;
   svgRef?: React.RefObject<SVGSVGElement | null>;
+  viewBox: { x: number; y: number; w: number; h: number };
+  isPanningRef?: React.RefObject<boolean>;
+  handleMouseDown?: (ev: React.MouseEvent) => void;
+  handleMouseMove?: (ev: React.MouseEvent) => void;
+  handleMouseUp?: () => void;
+  handleWheel?: (ev: React.WheelEvent) => void;
+  preventBrowserZoom?: (ref: React.RefObject<SVGSVGElement | null>) => void;
   focusedElement?: { kind: "node"; value: CircuitGuiNode } | { kind: "edge"; value: CircuitGuiEdge } | null;
   focusElement?: {
     (kind: "node"): (value: CircuitGuiNode) => void;
@@ -55,6 +62,13 @@ export default function CircuitDiagram({
   data,
   outputRecord,
   svgRef,
+  viewBox,
+  isPanningRef,
+  handleMouseDown,
+  handleMouseMove,
+  handleMouseUp,
+  handleWheel,
+  preventBrowserZoom,
   focusedElement,
   focusElement,
   draggingNode,
@@ -72,16 +86,23 @@ export default function CircuitDiagram({
   openNodeUtilityMenu,
   closeNodeUtilityMenu,
 }: CircuitDiagramProps) {
-  const MARRGIN = 20;
-  const minX = Math.min(...data.nodes.map((node) => node.coordinate.x - node.size.x / 2)) - MARRGIN; // 余白つける
-  const minY = Math.min(...data.nodes.map((node) => node.coordinate.y - node.size.y / 2)) - MARRGIN;
-  const maxX = Math.max(...data.nodes.map((node) => node.coordinate.x + node.size.x / 2)) + MARRGIN;
-  const maxY = Math.max(...data.nodes.map((node) => node.coordinate.y + node.size.y / 2)) + MARRGIN;
-  const viewWidth = maxX - minX;
-  const viewHeight = maxY - minY;
+  svgRef && preventBrowserZoom && preventBrowserZoom(svgRef);
+
+  const disableContextMenu = (ev: React.MouseEvent) => {
+    ev.preventDefault();
+  };
 
   return (
-    <svg ref={svgRef} viewBox={`${minX} ${minY} ${viewWidth} ${viewHeight}`} style={{ background: "#222" }}>
+    <svg
+      ref={svgRef}
+      viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`}
+      style={{ background: "#222", cursor: isPanningRef?.current ? "grabbing" : "default" }}
+      onContextMenu={disableContextMenu}
+      onWheel={handleWheel}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+    >
       <title>Circuit Diagram</title>
 
       <Edges

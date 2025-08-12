@@ -13,6 +13,13 @@ export default function CircuitEditorPageLayout() {
     error,
     circuit,
     guiData,
+    viewBox,
+    isPanningRef,
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
+    handleWheel,
+    preventBrowserZoom,
     save,
     addCircuitNode,
     updateCircuitNode,
@@ -62,7 +69,10 @@ export default function CircuitEditorPageLayout() {
         </LayoutContainer>
       );
     }
-    case !error.failedToGetCircuitDetailError && circuit !== undefined && guiData !== undefined: {
+    case !error.failedToGetCircuitDetailError &&
+      circuit !== undefined &&
+      guiData !== undefined &&
+      viewBox !== undefined: {
       return (
         <LayoutContainer>
           <Flex
@@ -116,6 +126,13 @@ export default function CircuitEditorPageLayout() {
                   <CircuitDiagram
                     data={guiData}
                     svgRef={svgRef}
+                    viewBox={viewBox}
+                    isPanningRef={isPanningRef}
+                    handleMouseDown={handleMouseDown}
+                    handleMouseMove={handleMouseMove}
+                    handleMouseUp={handleMouseUp}
+                    handleWheel={handleWheel}
+                    preventBrowserZoom={preventBrowserZoom}
                     focusedElement={focusedElement}
                     focusElement={focusElement}
                     draggingNode={draggingNode}

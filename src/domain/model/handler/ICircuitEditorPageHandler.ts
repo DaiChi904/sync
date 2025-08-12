@@ -14,6 +14,7 @@ export interface CircuitEditorPageError {
   failedToGetCircuitDetailError: boolean;
   failedToParseCircuitDataError: boolean;
   failedToUpdateCircuitDataError: boolean;
+  failedToRenderCircuitError: boolean;
   failedToSaveCircuitError: boolean;
 }
 
@@ -21,6 +22,7 @@ export const circuitEditorPageError: CircuitEditorPageError = {
   failedToGetCircuitDetailError: false,
   failedToParseCircuitDataError: false,
   failedToUpdateCircuitDataError: false,
+  failedToRenderCircuitError: false,
   failedToSaveCircuitError: false,
 };
 
@@ -28,6 +30,13 @@ export interface ICircuitEditorPageHandler {
   error: CircuitEditorPageError;
   circuit: Circuit | undefined;
   guiData: CircuitGuiData | undefined;
+  viewBox: { x: number; y: number; w: number; h: number } | undefined;
+  isPanningRef: React.RefObject<boolean>;
+  handleMouseDown: (ev: React.MouseEvent) => void;
+  handleMouseMove: (ev: React.MouseEvent) => void;
+  handleMouseUp: () => void;
+  handleWheel: (ev: React.WheelEvent) => void;
+  preventBrowserZoom: (ref: React.RefObject<SVGSVGElement | null>) => void;
   save: () => void;
   addCircuitNode: (newNode: {
     id: CircuitNodeId;

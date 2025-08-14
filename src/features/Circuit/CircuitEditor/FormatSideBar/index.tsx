@@ -108,23 +108,23 @@ export default function FormatSideBar({ data }: FormatSideBarProps) {
               <TableCell>To</TableCell>
               <TableCell>{data.value.to}</TableCell>
             </TableRow>
-            <TableRow>
-              {data.value.waypoints.length > 0 ? (
-                data.value.waypoints.map((waypoint, idx) => (
-                  <>
-                    <TableCell>Waypoints {idx + 1}</TableCell>
-                    <TableCell>
-                      {waypoint.x} * {waypoint.y}
-                    </TableCell>
-                  </>
-                ))
-              ) : (
-                <>
-                  <TableCell>Waypoints</TableCell>
-                  <TableCell>No waypoints</TableCell>
-                </>
-              )}
-            </TableRow>
+
+            {data.value.waypoints.length > 0 ? (
+              data.value.waypoints.map((waypoint, idx) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: This is fine.
+                <TableRow key={idx}>
+                  <TableCell>Waypoints {idx + 1}</TableCell>
+                  <TableCell>
+                    {waypoint.x} * {waypoint.y}
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell>Waypoints</TableCell>
+                <TableCell>No waypoints</TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       )}

@@ -55,6 +55,30 @@ export default function Edge({
         </defs>
 
         <g key={`${edge.id}-${idx}`}>
+          <line
+            x1={from.x}
+            y1={from.y}
+            x2={to.x}
+            y2={to.y}
+            stroke={outputMap?.get(edge.from) === true ? "#00a120" : "#9ca19d"}
+            strokeWidth={2}
+            markerEnd={isInFocus ? "url(#arrow)" : "none"}
+          />
+          {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support. */}
+          <line
+            x1={from.x}
+            y1={from.y}
+            x2={to.x}
+            y2={to.y}
+            stroke="rgba(0,0,0,0)"
+            strokeWidth={30}
+            onClick={() => focusElement?.(edge)}
+            onContextMenu={(ev) => {
+              ev.preventDefault();
+              openEdgeUtilityMenu?.(ev);
+            }}
+          />
+
           {isInFocus && (
             <>
               {/** When manipulating edges that are connected on both sides, it is more intuitive to reverse the kind, so we will reverse it. */}
@@ -90,30 +114,6 @@ export default function Edge({
               />
             </>
           )}
-
-          <line
-            x1={from.x}
-            y1={from.y}
-            x2={to.x}
-            y2={to.y}
-            stroke={outputMap?.get(edge.from) === true ? "#00a120" : "#9ca19d"}
-            strokeWidth={2}
-            markerEnd={isInFocus ? "url(#arrow)" : "none"}
-          />
-          {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support. */}
-          <line
-            x1={from.x}
-            y1={from.y}
-            x2={to.x}
-            y2={to.y}
-            stroke="rgba(0,0,0,0)"
-            strokeWidth={30}
-            onClick={() => focusElement?.(edge)}
-            onContextMenu={(ev) => {
-              ev.preventDefault();
-              openEdgeUtilityMenu?.(ev);
-            }}
-          />
         </g>
       </>
     );

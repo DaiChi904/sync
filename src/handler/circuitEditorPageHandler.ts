@@ -51,6 +51,7 @@ export const useCircuitEditorPageHandler = ({
   const [guiData, setGuiData] = useState<CircuitGuiData | undefined>(undefined);
   const [viewBox, setViewBox] = useState<{ x: number; y: number; w: number; h: number } | undefined>(undefined);
 
+  const circuitDiagramContainer = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const isPanningRef = useRef(false);
   const [lastMousePosition, setLastMousePosition] = useState<{ x: number; y: number } | null>(null);
@@ -105,6 +106,7 @@ export const useCircuitEditorPageHandler = ({
 
         setGuiData(circuitGuiData.value);
 
+        //-- define INITIAL viewbox value --//
         if (viewBox) return;
 
         const MARRGIN = 20;
@@ -116,10 +118,13 @@ export const useCircuitEditorPageHandler = ({
           Math.max(...circuitGuiData.value.nodes.map((node) => node.coordinate.x + node.size.x / 2)) + MARRGIN;
         const maxY =
           Math.max(...circuitGuiData.value.nodes.map((node) => node.coordinate.y + node.size.y / 2)) + MARRGIN;
-        const viewWidth = maxX - minX;
-        const viewHeight = maxY - minY;
+        const viewWidth = circuitDiagramContainer.current?.clientWidth ?? maxX - minX;
+        const viewHeight = circuitDiagramContainer.current?.clientHeight ?? maxY - minY;
+        const centerX = (minX + maxX) / 2;
+        const centerY = (minY + maxY) / 2;
 
-        setViewBox({ x: minX, y: minY, w: viewWidth, h: viewHeight });
+        setViewBox({ x: centerX - viewWidth / 2, y: centerY - viewHeight / 2, w: viewWidth, h: viewHeight });
+        //-- define INITIAL viewbox value --//
       },
       () => {
         setError("failedToParseCircuitDataError", true);
@@ -690,6 +695,7 @@ export const useCircuitEditorPageHandler = ({
     addCircuitEdge,
     updateCircuitEdge,
     deleteCircuitEdge,
+    circuitDiagramContainer,
     svgRef,
     focusedElement,
     focusElement,

@@ -1,4 +1,4 @@
-import type { CSSProperties, HTMLAttributes } from "react";
+import { type CSSProperties, forwardRef, type HTMLAttributes } from "react";
 import Box from "./Box";
 
 interface FlexProps extends HTMLAttributes<HTMLDivElement> {
@@ -13,34 +13,27 @@ interface FlexProps extends HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
 }
 
-export default function Flex({
-  alignItems,
-  alignContent,
-  justifyItems,
-  justifyContent,
-  direction,
-  wrap,
-  gap,
-  grow,
-  children,
-  ...props
-}: FlexProps) {
-  const style: CSSProperties = {
-    display: "flex",
-    alignItems,
-    alignContent,
-    justifyItems,
-    justifyContent,
-    flexDirection: direction,
-    flexWrap: wrap,
-    gap: gap,
-    flexGrow: grow,
-    ...props.style,
-  };
+const Flex = forwardRef<HTMLDivElement, FlexProps>(
+  ({ alignItems, alignContent, justifyItems, justifyContent, direction, wrap, gap, grow, children, ...props }, ref) => {
+    const style: CSSProperties = {
+      display: "flex",
+      alignItems,
+      alignContent,
+      justifyItems,
+      justifyContent,
+      flexDirection: direction,
+      flexWrap: wrap,
+      gap,
+      flexGrow: grow,
+      ...props.style,
+    };
 
-  return (
-    <Box {...props} style={style}>
-      {children}
-    </Box>
-  );
-}
+    return (
+      <Box {...props} style={style} ref={ref}>
+        {children}
+      </Box>
+    );
+  },
+);
+
+export default Flex;

@@ -68,6 +68,7 @@ export interface ICircuitEditorPageHandler {
     waypoints: Waypoint | null;
   }) => void;
   deleteCircuitEdge: (edgeId: CircuitEdgeId) => void;
+  circuitDiagramContainer: React.RefObject<HTMLDivElement | null>;
   svgRef: React.RefObject<SVGSVGElement | null>;
   focusedElement: { kind: "node"; value: CircuitGuiNode } | { kind: "edge"; value: CircuitGuiEdge } | null;
   focusElement: {

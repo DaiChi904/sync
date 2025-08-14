@@ -29,6 +29,7 @@ export default function CircuitEditorPageLayout() {
     addCircuitEdge,
     updateCircuitEdge,
     deleteCircuitEdge,
+    circuitDiagramContainer,
     svgRef,
     focusedElement,
     focusElement,
@@ -99,6 +100,7 @@ export default function CircuitEditorPageLayout() {
                 height: "100%",
                 background: "#fff",
               }}
+              ref={circuitDiagramContainer}
             >
               <Pending
                 fallback={<LoadingPuls />}
@@ -112,6 +114,7 @@ export default function CircuitEditorPageLayout() {
                 onFailure={<Typography>Something went wrong</Typography>}
               >
                 <CircuitDiagram
+                  showTouchableArea={true}
                   // biome-ignore lint/style/noNonNullAssertion: guiData is guaranteed to be present when isLoading is false
                   data={guiData!}
                   svgRef={svgRef}

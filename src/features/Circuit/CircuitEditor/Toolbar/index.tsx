@@ -1,4 +1,5 @@
 import type { ComponentProps } from "react";
+import Box from "@/components/atoms/Box";
 import Flex from "@/components/atoms/Flex";
 import ExpandMenu from "@/components/molecules/ExpandMenu";
 import type { Circuit } from "@/domain/model/aggregate/circuit";

@@ -15,6 +15,7 @@ import EdgeUtilityMenu from "./utilityMenu/EdgeUtilityMenu";
 import NodeUtilityMenu from "./utilityMenu/NodeUtilityMenu";
 
 interface CircuitDiagramProps {
+  showTouchableArea?: boolean;
   data: CircuitGuiData;
   outputRecord?: Record<CircuitNodeId, EvalResult>;
   svgRef?: React.RefObject<SVGSVGElement | null>;
@@ -55,6 +56,7 @@ interface CircuitDiagramProps {
 }
 
 export default function CircuitDiagram({
+  showTouchableArea = false,
   data,
   outputRecord,
   svgRef,
@@ -109,6 +111,20 @@ export default function CircuitDiagram({
     >
       <title>Circuit Diagram</title>
 
+      {showTouchableArea && (
+        // biome-ignore lint/nursery/useUniqueElementIds: No need for unique id.
+        <rect
+          id="circuit-diagram-area"
+          x={minX}
+          y={minY}
+          width={viewWidth}
+          height={viewHeight}
+          fill="none"
+          stroke="#555"
+          strokeDasharray="4 2"
+        />
+      )}
+
       <Edges
         data={data}
         outputRecord={outputRecord}
@@ -137,6 +153,8 @@ export default function CircuitDiagram({
         isActive={!!draggingNode}
         onMouseMove={handleNodeMouseMove}
         onMouseUp={handleNodeMouseUp}
+        viewBoxX={viewBox?.x}
+        viewBoxY={viewBox?.y}
       />
 
       {uiState?.diagramUtilityMenu.open === "edge" && focusedElement?.kind === "edge" && (

@@ -1,6 +1,7 @@
 import type { CircuitGuiData } from "@/domain/model/entity/circuitGuiData";
 import type { CircuitGuiEdge } from "@/domain/model/entity/circuitGuiEdge";
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
+import type { ICircuitEditorPageHandler } from "@/domain/model/handler/ICircuitEditorPageHandler";
 import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 import type { Coordinate } from "@/domain/model/valueObject/coordinate";
@@ -48,14 +49,9 @@ interface CircuitDiagramProps {
   handleNodePinMouseMove?: (ev: React.MouseEvent) => void;
   handleNodePinMouseUp?: (ev: React.MouseEvent) => void;
   tempEdge?: { from: Coordinate; to: Coordinate } | null;
-  uiState?: {
-    isOpenEdgeUtilityMenu: { open: boolean; at: Coordinate | null };
-    isOpenNodeUtilityMenu: { open: boolean; at: Coordinate | null };
-  };
-  openEdgeUtilityMenu?: (ev: React.MouseEvent) => void;
-  closeEdgeUtilityMenu?: () => void;
-  openNodeUtilityMenu?: (ev: React.MouseEvent) => void;
-  closeNodeUtilityMenu?: () => void;
+  uiState?: ICircuitEditorPageHandler["uiState"];
+  openUtilityMenu?: (kind: "node" | "edge") => (ev: React.MouseEvent) => void;
+  closeUtilityMenu?: () => void;
 }
 
 export default function CircuitDiagram({
@@ -81,10 +77,8 @@ export default function CircuitDiagram({
   handleNodePinMouseUp,
   tempEdge,
   uiState,
-  openEdgeUtilityMenu,
-  closeEdgeUtilityMenu,
-  openNodeUtilityMenu,
-  closeNodeUtilityMenu,
+  openUtilityMenu,
+  closeUtilityMenu,
 }: CircuitDiagramProps) {
   svgRef && preventBrowserZoom && preventBrowserZoom(svgRef);
 
@@ -121,7 +115,7 @@ export default function CircuitDiagram({
         focusedElement={focusedElement}
         focusElement={focusElement}
         handleNodePinMouseDown={handleNodePinMouseDown}
-        openEdgeUtilityMenu={openEdgeUtilityMenu}
+        openEdgeUtilityMenu={openUtilityMenu?.("edge")}
       />
 
       <Nodes
@@ -129,7 +123,7 @@ export default function CircuitDiagram({
         focusedElement={focusedElement}
         focusElement={focusElement}
         handleNodeMouseDown={handleNodeMouseDown}
-        openNodeUtilityMenu={openNodeUtilityMenu}
+        openNodeUtilityMenu={openUtilityMenu?.("node")}
       />
 
       <NodePinDragInteractionLayer
@@ -145,63 +139,63 @@ export default function CircuitDiagram({
         onMouseUp={handleNodeMouseUp}
       />
 
-      {uiState?.isOpenEdgeUtilityMenu.open && focusedElement?.kind === "edge" && (
+      {uiState?.diagramUtilityMenu.open === "edge" && focusedElement?.kind === "edge" && (
         <>
           <OnClickEventBackdrop
             onClick={() => {
-              closeEdgeUtilityMenu?.();
+              closeUtilityMenu?.();
             }}
           />
           <EdgeUtilityMenu
-            at={uiState.isOpenEdgeUtilityMenu.at}
+            at={uiState.diagramUtilityMenu.at}
             menuOptions={[
               {
                 label: "Delete",
                 onClickHandler: () => {
                   console.log("not implemented");
-                  closeEdgeUtilityMenu?.();
+                  closeUtilityMenu?.();
                 },
               },
               {
                 label: "Add Waypoint",
                 onClickHandler: () => {
                   console.log("not implemented");
-                  closeEdgeUtilityMenu?.();
+                  closeUtilityMenu?.();
                 },
               },
             ]}
           />
         </>
       )}
-      {uiState?.isOpenNodeUtilityMenu.open && focusedElement?.kind === "node" && (
+      {uiState?.diagramUtilityMenu.open === "node" && focusedElement?.kind === "node" && (
         <>
           <OnClickEventBackdrop
             onClick={() => {
-              closeNodeUtilityMenu?.();
+              closeUtilityMenu?.();
             }}
           />
           <NodeUtilityMenu
-            at={uiState.isOpenNodeUtilityMenu.at}
+            at={uiState.diagramUtilityMenu.at}
             menuOptions={[
               {
                 label: "Delete",
                 onClickHandler: () => {
                   console.log("not implemented");
-                  closeNodeUtilityMenu?.();
+                  closeUtilityMenu?.();
                 },
               },
               {
                 label: "Add New Edge",
                 onClickHandler: () => {
                   console.log("not implemented");
-                  closeNodeUtilityMenu?.();
+                  closeUtilityMenu?.();
                 },
               },
               {
                 label: "Switch Inputs",
                 onClickHandler: () => {
                   console.log("not implemented");
-                  closeNodeUtilityMenu?.();
+                  closeUtilityMenu?.();
                 },
               },
             ]}

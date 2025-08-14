@@ -1,12 +1,14 @@
 import Flex from "@/components/atoms/Flex";
 import Grid from "@/components/atoms/Grid";
 import LoadingPuls from "@/components/atoms/LoadingPuls";
+import Pending from "@/components/atoms/Pending";
 import Typography from "@/components/atoms/Typography";
 import LayoutContainer from "@/components/layouts/LayoutContainer";
 import { useCircuitEditorPageHandlerContext } from "@/contexts/CircuitEditorPageHandlerContext";
 import CircuitDiagram from "../CircuitDiagram";
-import CircuitEditor from "./EditorMenu";
-import OverviewBar from "./OverviewBar";
+import ElementSideBar from "./ElementSideBar";
+import FormatSideBar from "./FormatSideBar";
+import Toolbar from "./Toolbar";
 
 export default function CircuitEditorPageLayout() {
   const {
@@ -40,166 +42,109 @@ export default function CircuitEditorPageLayout() {
     handleNodePinMouseUp,
     tempEdge,
     uiState,
-    openEdgeUtilityMenu,
-    closeEdgeUtilityMenu,
-    openNodeUtilityMenu,
-    closeNodeUtilityMenu,
+    openUtilityMenu,
+    closeUtilityMenu,
+    openToolbarMenu,
+    closeToolbarMenu,
   } = useCircuitEditorPageHandlerContext();
 
-  switch (true) {
-    case !error.failedToGetCircuitDetailError && circuit === undefined && guiData === undefined: {
-      return (
-        <LayoutContainer>
-          <Flex
-            direction="column"
-            grow={1}
-            style={{ paddingTop: 10, paddingBottom: 10, paddingLeft: 15, paddingRight: 15 }}
-          >
-            <OverviewBar error={error.failedToGetCircuitDetailError} circuit={circuit} />
-            <Flex
-              direction="column"
-              alignItems="center"
-              justifyContent="center"
-              grow={1}
-              style={{ width: "100%", marginTop: 10 }}
+  return (
+    <LayoutContainer>
+      <Flex
+        direction="column"
+        grow={1}
+        style={{ paddingTop: 10, paddingBottom: 10, paddingLeft: 15, paddingRight: 15 }}
+      >
+        <Toolbar
+          circuit={circuit}
+          open={uiState.toolbarMenu.open}
+          onClickExpand={openToolbarMenu}
+          onClickClose={closeToolbarMenu}
+          fileMenuOptions={[
+            {
+              label: "Save",
+              kind: "func",
+              onClick: () => {
+                save();
+                closeToolbarMenu();
+              },
+              disabled: !circuit,
+            },
+            { label: "Chamge Name", kind: "func", onClick: () => {}, disabled: !circuit },
+            { label: "Export", kind: "func", onClick: () => {}, disabled: !circuit },
+            { label: "Back", kind: "link", href: circuit ? `/circuit/${circuit.id}` : "/" },
+          ]}
+          viewMenuOptions={[]}
+          helpMenuOptions={[]}
+        />
+        <Flex
+          direction="column"
+          grow={1}
+          style={{ paddingTop: 10, paddingBottom: 10, paddingLeft: 15, paddingRight: 15 }}
+        >
+          <Grid xs={1} ys={1} xfs={6} yfs={1} container grow={1}>
+            <Grid xs={1} ys={1} xfs={1} yfs={1} grow={1}>
+              <ElementSideBar />
+            </Grid>
+            <Grid
+              xs={4}
+              ys={1}
+              xfs={1}
+              yfs={1}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "100%",
+                height: "100%",
+                background: "#fff",
+              }}
             >
-              <LoadingPuls />
-            </Flex>
-          </Flex>
-        </LayoutContainer>
-      );
-    }
-    case !error.failedToGetCircuitDetailError &&
-      circuit !== undefined &&
-      guiData !== undefined &&
-      viewBox !== undefined: {
-      return (
-        <LayoutContainer>
-          <Flex
-            direction="column"
-            grow={1}
-            style={{ paddingTop: 10, paddingBottom: 10, paddingLeft: 15, paddingRight: 15 }}
-          >
-            <OverviewBar error={error.failedToGetCircuitDetailError} circuit={circuit} />
-            <Flex
-              direction="column"
-              grow={1}
-              style={{ paddingTop: 10, paddingBottom: 10, paddingLeft: 15, paddingRight: 15 }}
-            >
-              <Grid xs={1} ys={1} xfs={5} yfs={1} container grow={1}>
-                <Grid
-                  xs={2}
-                  ys={1}
-                  xfs={5}
-                  yfs={1}
-                  style={{
-                    display: "flex",
-                    width: "100%",
-                    marginTop: 10,
-                  }}
-                >
-                  <CircuitEditor
-                    circuitEditorData={circuit.circuitData}
-                    save={save}
-                    addCircuitNode={addCircuitNode}
-                    updateCircuitNode={updateCircuitNode}
-                    deleteCircuitNode={deleteCircuitNode}
-                    addCircuitEdge={addCircuitEdge}
-                    updateCircuitEdge={updateCircuitEdge}
-                    deleteCircuitEdge={deleteCircuitEdge}
-                  />
-                </Grid>
-                <Grid
-                  xs={3}
-                  ys={1}
-                  xfs={5}
-                  yfs={1}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: "100%",
-                    marginTop: 10,
-                    background: "#222",
-                  }}
-                >
-                  <CircuitDiagram
-                    data={guiData}
-                    svgRef={svgRef}
-                    viewBox={viewBox}
-                    isPanningRef={isPanningRef}
-                    handleMouseDown={handleMouseDown}
-                    handleMouseMove={handleMouseMove}
-                    handleMouseUp={handleMouseUp}
-                    handleWheel={handleWheel}
-                    preventBrowserZoom={preventBrowserZoom}
-                    focusedElement={focusedElement}
-                    focusElement={focusElement}
-                    draggingNode={draggingNode}
-                    handleNodeMouseDown={handleNodeMouseDown}
-                    handleNodeMouseMove={handleNodeMouseMove}
-                    handleNodeMouseUp={handleNodeMouseUp}
-                    draggingNodePin={draggingNodePin}
-                    handleNodePinMouseDown={handleNodePinMouseDown}
-                    handleNodePinMouseMove={handleNodePinMouseMove}
-                    handleNodePinMouseUp={handleNodePinMouseUp}
-                    tempEdge={tempEdge}
-                    uiState={uiState}
-                    openEdgeUtilityMenu={openEdgeUtilityMenu}
-                    closeEdgeUtilityMenu={closeEdgeUtilityMenu}
-                    openNodeUtilityMenu={openNodeUtilityMenu}
-                    closeNodeUtilityMenu={closeNodeUtilityMenu}
-                  />
-                </Grid>
-              </Grid>
-            </Flex>
-          </Flex>
-        </LayoutContainer>
-      );
-    }
-    case error.failedToGetCircuitDetailError: {
-      return (
-        <LayoutContainer>
-          <Flex
-            direction="column"
-            grow={1}
-            style={{ paddingTop: 10, paddingBottom: 10, paddingLeft: 15, paddingRight: 15 }}
-          >
-            <OverviewBar error={error.failedToGetCircuitDetailError} circuit={circuit} />
-            <Flex
-              direction="column"
-              alignItems="center"
-              justifyContent="center"
-              grow={1}
-              style={{ width: "100%", marginTop: 10 }}
-            >
-              <Typography>Failed to get circuit detail</Typography>
-            </Flex>
-          </Flex>
-        </LayoutContainer>
-      );
-    }
-    default: {
-      return (
-        <LayoutContainer>
-          <Flex
-            direction="column"
-            grow={1}
-            style={{ paddingTop: 10, paddingBottom: 10, paddingLeft: 15, paddingRight: 15 }}
-          >
-            <OverviewBar error={error.failedToGetCircuitDetailError} circuit={circuit} />
-            <Flex
-              direction="column"
-              alignItems="center"
-              justifyContent="center"
-              grow={1}
-              style={{ width: "100%", marginTop: 10 }}
-            >
-              <Typography>Something went wrong</Typography>
-            </Flex>
-          </Flex>
-        </LayoutContainer>
-      );
-    }
-  }
+              <Pending
+                fallback={<LoadingPuls />}
+                isLoading={!guiData}
+                error={
+                  error.failedToGetCircuitDetailError ||
+                  error.failedToParseCircuitDataError ||
+                  error.failedToRenderCircuitError ||
+                  error.failedToUpdateCircuitDataError
+                }
+                onFailure={<Typography>Something went wrong</Typography>}
+              >
+                <CircuitDiagram
+                  // biome-ignore lint/style/noNonNullAssertion: guiData is guaranteed to be present when isLoading is false
+                  data={guiData!}
+                  svgRef={svgRef}
+                  viewBox={viewBox}
+                  isPanningRef={isPanningRef}
+                  handleMouseDown={handleMouseDown}
+                  handleMouseMove={handleMouseMove}
+                  handleMouseUp={handleMouseUp}
+                  handleWheel={handleWheel}
+                  preventBrowserZoom={preventBrowserZoom}
+                  focusedElement={focusedElement}
+                  focusElement={focusElement}
+                  draggingNode={draggingNode}
+                  handleNodeMouseDown={handleNodeMouseDown}
+                  handleNodeMouseMove={handleNodeMouseMove}
+                  handleNodeMouseUp={handleNodeMouseUp}
+                  draggingNodePin={draggingNodePin}
+                  handleNodePinMouseDown={handleNodePinMouseDown}
+                  handleNodePinMouseMove={handleNodePinMouseMove}
+                  handleNodePinMouseUp={handleNodePinMouseUp}
+                  tempEdge={tempEdge}
+                  uiState={uiState}
+                  openUtilityMenu={openUtilityMenu}
+                  closeUtilityMenu={closeUtilityMenu}
+                />
+              </Pending>
+            </Grid>
+            <Grid xs={1} ys={1} xfs={1} yfs={1} grow={1}>
+              <FormatSideBar data={focusedElement} />
+            </Grid>
+          </Grid>
+        </Flex>
+      </Flex>
+    </LayoutContainer>
+  );
 }

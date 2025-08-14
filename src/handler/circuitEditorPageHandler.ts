@@ -42,10 +42,10 @@ export const useCircuitEditorPageHandler = ({
   circuitEditorUsecase,
 }: CircuitEditorPageHandlerDependencies): ICircuitEditorPageHandler => {
   const [error, setError] = usePartialState<CircuitEditorPageError>(circuitEditorPageError);
-  const [uiState, setUiState] = usePartialState<{
-    isOpenEdgeUtilityMenu: { open: boolean; at: Coordinate | null };
-    isOpenNodeUtilityMenu: { open: boolean; at: Coordinate | null };
-  }>({ isOpenEdgeUtilityMenu: { open: false, at: null }, isOpenNodeUtilityMenu: { open: false, at: null } });
+  const [uiState, setUiState] = usePartialState<ICircuitEditorPageHandler["uiState"]>({
+    toolbarMenu: { open: "none" },
+    diagramUtilityMenu: { open: "none", at: null },
+  });
 
   const [circuit, setCircuit] = useState<Circuit | undefined>(undefined);
   const [guiData, setGuiData] = useState<CircuitGuiData | undefined>(undefined);
@@ -637,32 +637,29 @@ export const useCircuitEditorPageHandler = ({
     reattachFocusedElement();
   };
 
-  const openEdgeUtilityMenu = useCallback(
-    (ev: React.MouseEvent) => {
+  const openUtilityMenu = useCallback(
+    (kind: "node" | "edge") => (ev: React.MouseEvent) => {
       const svgCoordinate = getSvgCoords(ev);
       if (!svgCoordinate.ok) return;
 
-      setUiState("isOpenEdgeUtilityMenu", { open: true, at: svgCoordinate.value });
+      setUiState("diagramUtilityMenu", { open: kind, at: svgCoordinate.value });
     },
     [getSvgCoords, setUiState],
   );
 
-  const closeEdgeUtilityMenu = useCallback(() => {
-    setUiState("isOpenEdgeUtilityMenu", { open: false, at: null });
+  const closeUtilityMenu = useCallback(() => {
+    setUiState("diagramUtilityMenu", { open: "none", at: null });
   }, [setUiState]);
 
-  const openNodeUtilityMenu = useCallback(
-    (ev: React.MouseEvent) => {
-      const svgCoordinate = getSvgCoords(ev);
-      if (!svgCoordinate.ok) return;
-
-      setUiState("isOpenNodeUtilityMenu", { open: true, at: svgCoordinate.value });
+  const openToolbarMenu = useCallback(
+    (kind: "file" | "view" | "help") => {
+      setUiState("toolbarMenu", { open: kind });
     },
-    [getSvgCoords, setUiState],
+    [setUiState],
   );
 
-  const closeNodeUtilityMenu = useCallback(() => {
-    setUiState("isOpenNodeUtilityMenu", { open: false, at: null });
+  const closeToolbarMenu = useCallback(() => {
+    setUiState("toolbarMenu", { open: "none" });
   }, [setUiState]);
 
   useEffect(() => {
@@ -706,9 +703,9 @@ export const useCircuitEditorPageHandler = ({
     handleNodePinMouseUp,
     tempEdge,
     uiState,
-    openEdgeUtilityMenu,
-    closeEdgeUtilityMenu,
-    openNodeUtilityMenu,
-    closeNodeUtilityMenu,
+    openUtilityMenu,
+    closeUtilityMenu,
+    openToolbarMenu,
+    closeToolbarMenu,
   };
 };

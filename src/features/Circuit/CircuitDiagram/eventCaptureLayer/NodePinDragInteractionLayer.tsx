@@ -7,6 +7,8 @@ interface NodePinDragInteractionLayerProps {
   // biome-ignore lint/suspicious/noExplicitAny: This is fine.
   onMouseUp?: (...args: any[]) => void;
   tempEdge?: { from: Coordinate; to: Coordinate } | null;
+  viewBoxX?: number;
+  viewBoxY?: number;
 }
 
 export default function NodePinDragInteractionLayer({
@@ -14,6 +16,8 @@ export default function NodePinDragInteractionLayer({
   onMouseMove,
   onMouseUp,
   tempEdge,
+  viewBoxX,
+  viewBoxY,
 }: NodePinDragInteractionLayerProps) {
   return (
     isActive && (
@@ -22,8 +26,8 @@ export default function NodePinDragInteractionLayer({
         {/* biome-ignore lint/nursery/useUniqueElementIds: No need for unique id. */}
         <rect
           id="node-pin-drag-interaction-layer"
-          x={0}
-          y={0}
+          x={viewBoxX}
+          y={viewBoxY}
           width="100%"
           height="100%"
           fill="transparent"

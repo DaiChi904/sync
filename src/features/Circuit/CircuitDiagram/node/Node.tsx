@@ -1,4 +1,5 @@
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
+import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 import AndNode from "./logicGates/AndNode";
 import EntryNode from "./logicGates/EntryNode";
 import ExitNode from "./logicGates/ExitNode";
@@ -11,10 +12,23 @@ interface NodeProps {
   isInFocus?: boolean;
   focusElement?: (value: CircuitGuiNode) => void;
   handleNodeMouseDown?: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
+  handleNodePinMouseDown?: (
+    ev: React.MouseEvent,
+    id: CircuitNodePinId,
+    kind: "from" | "to" | "waypoints",
+    method: "ADD" | "UPDATE",
+  ) => void;
   openNodeUtilityMenu?: (ev: React.MouseEvent) => void;
 }
 
-export default function Node({ node, isInFocus, focusElement, handleNodeMouseDown, openNodeUtilityMenu }: NodeProps) {
+export default function Node({
+  node,
+  isInFocus,
+  focusElement,
+  handleNodeMouseDown,
+  handleNodePinMouseDown,
+  openNodeUtilityMenu,
+}: NodeProps) {
   switch (node.type) {
     case "ENTRY":
       return (
@@ -23,6 +37,7 @@ export default function Node({ node, isInFocus, focusElement, handleNodeMouseDow
           isInFocus={isInFocus}
           focusElement={focusElement}
           handleNodeMouseDown={handleNodeMouseDown}
+          handleNodePinMouseDown={handleNodePinMouseDown}
           openNodeUtilityMenu={isInFocus ? openNodeUtilityMenu : undefined}
         />
       );
@@ -33,6 +48,7 @@ export default function Node({ node, isInFocus, focusElement, handleNodeMouseDow
           isInFocus={isInFocus}
           focusElement={focusElement}
           handleNodeMouseDown={handleNodeMouseDown}
+          handleNodePinMouseDown={handleNodePinMouseDown}
           openNodeUtilityMenu={isInFocus ? openNodeUtilityMenu : undefined}
         />
       );
@@ -43,6 +59,7 @@ export default function Node({ node, isInFocus, focusElement, handleNodeMouseDow
           isInFocus={isInFocus}
           focusElement={focusElement}
           handleNodeMouseDown={handleNodeMouseDown}
+          handleNodePinMouseDown={handleNodePinMouseDown}
           openNodeUtilityMenu={isInFocus ? openNodeUtilityMenu : undefined}
         />
       );
@@ -53,6 +70,7 @@ export default function Node({ node, isInFocus, focusElement, handleNodeMouseDow
           isInFocus={isInFocus}
           focusElement={focusElement}
           handleNodeMouseDown={handleNodeMouseDown}
+          handleNodePinMouseDown={handleNodePinMouseDown}
           openNodeUtilityMenu={isInFocus ? openNodeUtilityMenu : undefined}
         />
       );
@@ -63,6 +81,7 @@ export default function Node({ node, isInFocus, focusElement, handleNodeMouseDow
           isInFocus={isInFocus}
           focusElement={focusElement}
           handleNodeMouseDown={handleNodeMouseDown}
+          handleNodePinMouseDown={handleNodePinMouseDown}
           openNodeUtilityMenu={isInFocus ? openNodeUtilityMenu : undefined}
         />
       );
@@ -73,6 +92,7 @@ export default function Node({ node, isInFocus, focusElement, handleNodeMouseDow
           isInFocus={isInFocus}
           focusElement={focusElement}
           handleNodeMouseDown={handleNodeMouseDown}
+          handleNodePinMouseDown={handleNodePinMouseDown}
           openNodeUtilityMenu={isInFocus ? openNodeUtilityMenu : undefined}
         />
       );

@@ -1,10 +1,17 @@
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
+import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 
 interface OrNodeProps {
   node: CircuitGuiNode;
   isInFocus?: boolean;
   focusElement?: (value: CircuitGuiNode) => void;
   handleNodeMouseDown?: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
+  handleNodePinMouseDown?: (
+    ev: React.MouseEvent,
+    id: CircuitNodePinId,
+    kind: "from" | "to" | "waypoints",
+    method: "ADD" | "UPDATE",
+  ) => void;
   openNodeUtilityMenu?: (ev: React.MouseEvent) => void;
 }
 
@@ -13,6 +20,7 @@ export default function OrNode({
   isInFocus,
   focusElement,
   handleNodeMouseDown,
+  handleNodePinMouseDown,
   openNodeUtilityMenu,
 }: OrNodeProps) {
   // The Or node has a slight depression at the input, so if it is drawn as it is, the connection points cannot be connected neatly to the edge in the GUI, so a little play is made with this value.
@@ -21,25 +29,11 @@ export default function OrNode({
     // biome-ignore lint/a11y/noStaticElementInteractions: // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
     <g
       onClick={() => focusElement?.(node)}
-      onMouseDown={isInFocus ? (ev) => handleNodeMouseDown?.(ev, node) : undefined}
       onContextMenu={(ev) => {
         ev.preventDefault();
         openNodeUtilityMenu?.(ev);
       }}
     >
-      {isInFocus && (
-        // biome-ignore lint/nursery/useUniqueElementIds: No need for unique id.
-        <rect
-          id="node-focused-frame"
-          x={node.coordinate.x - node.size.x / 2 - 10}
-          y={node.coordinate.y - node.size.y / 2 - 10}
-          width={node.size.x + 20}
-          height={node.size.y + 20}
-          fill="rgba(0,0,0,0)"
-          stroke="#fff"
-          strokeWidth={1}
-        />
-      )}
       {/* Main body */}
       <path
         d={`
@@ -53,6 +47,61 @@ export default function OrNode({
         stroke="#fff"
         strokeWidth={1}
       />
+
+      {/* Input pins */}
+      {node.inputs.map((pin) => (
+        <circle key={pin.id} cx={pin.coordinate.x} cy={pin.coordinate.y} r={2.5} fill="#333" stroke="#fff" />
+      ))}
+
+      {/* Output pin */}
+      {node.outputs.map((pin) => (
+        <circle key={pin.id} cx={pin.coordinate.x} cy={pin.coordinate.y} r={2.5} fill="#333" stroke="#fff" />
+      ))}
+
+      {isInFocus && (
+        <>
+          {/* biome-ignore lint/nursery/useUniqueElementIds: No need for unique id. */}
+          {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support. */}
+          <rect
+            id="node-focused-frame"
+            x={node.coordinate.x - node.size.x / 2 - 10}
+            y={node.coordinate.y - node.size.y / 2 - 10}
+            width={node.size.x + 20}
+            height={node.size.y + 20}
+            fill="rgba(0,0,0,0)"
+            stroke="#fff"
+            strokeWidth={1}
+            onMouseDown={isInFocus ? (ev) => handleNodeMouseDown?.(ev, node) : undefined}
+          />
+
+          {node.inputs.map((pin) => (
+            // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
+            <circle
+              key={pin.id}
+              cx={pin.coordinate.x}
+              cy={pin.coordinate.y}
+              r={7.5}
+              fill="rgba(0,0,0,0)"
+              stroke="#4CAF50"
+              strokeWidth={2.5}
+              onMouseDown={(ev) => handleNodePinMouseDown?.(ev, pin.id, "to", "ADD")}
+            />
+          ))}
+          {node.outputs.map((pin) => (
+            // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
+            <circle
+              key={pin.id}
+              cx={pin.coordinate.x}
+              cy={pin.coordinate.y}
+              r={7.5}
+              fill="rgba(0,0,0,0)"
+              stroke="#F44336"
+              strokeWidth={2.5}
+              onMouseDown={(ev) => handleNodePinMouseDown?.(ev, pin.id, "from", "ADD")}
+            />
+          ))}
+        </>
+      )}
     </g>
   );
 }

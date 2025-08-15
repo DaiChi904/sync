@@ -1,6 +1,7 @@
 import type { CircuitGuiData } from "@/domain/model/entity/circuitGuiData";
 import type { CircuitGuiEdge } from "@/domain/model/entity/circuitGuiEdge";
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
+import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 import Node from "./Node";
 
 interface CircuitDiagramProps {
@@ -11,6 +12,12 @@ interface CircuitDiagramProps {
     (kind: "edge"): (value: CircuitGuiEdge) => void;
   };
   handleNodeMouseDown?: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
+  handleNodePinMouseDown?: (
+    ev: React.MouseEvent,
+    id: CircuitNodePinId,
+    kind: "from" | "to" | "waypoints",
+    method: "ADD" | "UPDATE",
+  ) => void;
   openNodeUtilityMenu?: (ev: React.MouseEvent) => void;
 }
 
@@ -19,6 +26,7 @@ export default function Nodes({
   focusedElement,
   focusElement,
   handleNodeMouseDown,
+  handleNodePinMouseDown,
   openNodeUtilityMenu,
 }: CircuitDiagramProps) {
   // Make focused element on top.
@@ -37,6 +45,7 @@ export default function Nodes({
         isInFocus={isInFocus}
         focusElement={focusElement?.("node")}
         handleNodeMouseDown={handleNodeMouseDown}
+        handleNodePinMouseDown={handleNodePinMouseDown}
         openNodeUtilityMenu={openNodeUtilityMenu}
       />
     );

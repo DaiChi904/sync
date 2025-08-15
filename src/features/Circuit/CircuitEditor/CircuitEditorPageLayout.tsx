@@ -132,6 +132,7 @@ export default function CircuitEditorPageLayout() {
                   handleNodeMouseMove={handleNodeMouseMove}
                   handleNodeMouseUp={handleNodeMouseUp}
                   deleteCircuitNode={deleteCircuitNode}
+                  deleteCircuitEdge={deleteCircuitEdge}
                   draggingNodePin={draggingNodePin}
                   handleNodePinMouseDown={handleNodePinMouseDown}
                   handleNodePinMouseMove={handleNodePinMouseMove}

@@ -2,6 +2,7 @@ import type { CircuitGuiData } from "@/domain/model/entity/circuitGuiData";
 import type { CircuitGuiEdge } from "@/domain/model/entity/circuitGuiEdge";
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
 import type { ICircuitEditorPageHandler } from "@/domain/model/handler/ICircuitEditorPageHandler";
+import type { CircuitEdgeId } from "@/domain/model/valueObject/circuitEdgeId";
 import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 import type { Coordinate } from "@/domain/model/valueObject/coordinate";
@@ -35,6 +36,7 @@ interface CircuitDiagramProps {
   handleNodeMouseDown?: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
   handleNodeMouseMove?: (ev: React.MouseEvent) => void;
   deleteCircuitNode?: (nodeId: CircuitNodeId) => void;
+  deleteCircuitEdge?: (edgeId: CircuitEdgeId) => void;
   handleNodeMouseUp?: () => void;
   draggingNodePin?: {
     id: CircuitNodePinId;
@@ -75,6 +77,7 @@ export default function CircuitDiagram({
   handleNodeMouseMove,
   handleNodeMouseUp,
   deleteCircuitNode,
+  deleteCircuitEdge,
   draggingNodePin,
   handleNodePinMouseDown,
   handleNodePinMouseMove,
@@ -141,6 +144,7 @@ export default function CircuitDiagram({
         focusedElement={focusedElement}
         focusElement={focusElement}
         handleNodeMouseDown={handleNodeMouseDown}
+        handleNodePinMouseDown={handleNodePinMouseDown}
         openNodeUtilityMenu={openUtilityMenu?.("node")}
       />
 
@@ -149,6 +153,8 @@ export default function CircuitDiagram({
         onMouseMove={handleNodePinMouseMove}
         onMouseUp={handleNodePinMouseUp}
         tempEdge={tempEdge}
+        viewBoxX={viewBox?.x}
+        viewBoxY={viewBox?.y}
       />
 
       <NodeDragInteractionLayer
@@ -172,7 +178,7 @@ export default function CircuitDiagram({
               {
                 label: "Delete",
                 onClickHandler: () => {
-                  console.log("not implemented");
+                  deleteCircuitEdge?.(focusedElement.value.id);
                   closeUtilityMenu?.();
                 },
               },

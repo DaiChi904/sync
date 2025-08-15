@@ -7,14 +7,32 @@ interface FlexProps extends HTMLAttributes<HTMLDivElement> {
   justifyItems?: CSSProperties["justifyItems"];
   justifyContent?: CSSProperties["justifyContent"];
   direction?: CSSProperties["flexDirection"];
+  basis?: CSSProperties["flexBasis"];
   wrap?: CSSProperties["flexWrap"];
   gap?: CSSProperties["gap"];
   grow?: CSSProperties["flexGrow"];
+  shrink?: CSSProperties["flexShrink"];
   children?: React.ReactNode;
 }
 
 const Flex = forwardRef<HTMLDivElement, FlexProps>(
-  ({ alignItems, alignContent, justifyItems, justifyContent, direction, wrap, gap, grow, children, ...props }, ref) => {
+  (
+    {
+      alignItems,
+      alignContent,
+      justifyItems,
+      justifyContent,
+      direction,
+      basis,
+      wrap,
+      gap,
+      grow,
+      shrink,
+      children,
+      ...props
+    },
+    ref,
+  ) => {
     const style: CSSProperties = {
       display: "flex",
       alignItems,
@@ -23,8 +41,10 @@ const Flex = forwardRef<HTMLDivElement, FlexProps>(
       justifyContent,
       flexDirection: direction,
       flexWrap: wrap,
+      flexBasis: basis,
       gap,
       flexGrow: grow,
+      flexShrink: shrink,
       ...props.style,
     };
 

@@ -34,6 +34,7 @@ interface CircuitDiagramProps {
   draggingNode?: CircuitGuiNode | null;
   handleNodeMouseDown?: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
   handleNodeMouseMove?: (ev: React.MouseEvent) => void;
+  deleteCircuitNode?: (nodeId: CircuitNodeId) => void;
   handleNodeMouseUp?: () => void;
   draggingNodePin?: {
     id: CircuitNodePinId;
@@ -73,6 +74,7 @@ export default function CircuitDiagram({
   handleNodeMouseDown,
   handleNodeMouseMove,
   handleNodeMouseUp,
+  deleteCircuitNode,
   draggingNodePin,
   handleNodePinMouseDown,
   handleNodePinMouseMove,
@@ -198,7 +200,7 @@ export default function CircuitDiagram({
               {
                 label: "Delete",
                 onClickHandler: () => {
-                  console.log("not implemented");
+                  deleteCircuitNode?.(focusedElement.value.id);
                   closeUtilityMenu?.();
                 },
               },

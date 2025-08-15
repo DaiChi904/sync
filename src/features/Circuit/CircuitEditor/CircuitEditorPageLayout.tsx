@@ -85,7 +85,7 @@ export default function CircuitEditorPageLayout() {
         >
           <Grid xs={1} ys={1} xfs={6} yfs={1} container grow={1}>
             <Grid xs={1} ys={1} xfs={1} yfs={1} grow={1}>
-              <ElementSideBar />
+              <ElementSideBar viewBox={viewBox} addCircuitNode={addCircuitNode} />
             </Grid>
             <Grid
               xs={4}
@@ -131,6 +131,7 @@ export default function CircuitEditorPageLayout() {
                   handleNodeMouseDown={handleNodeMouseDown}
                   handleNodeMouseMove={handleNodeMouseMove}
                   handleNodeMouseUp={handleNodeMouseUp}
+                  deleteCircuitNode={deleteCircuitNode}
                   draggingNodePin={draggingNodePin}
                   handleNodePinMouseDown={handleNodePinMouseDown}
                   handleNodePinMouseMove={handleNodePinMouseMove}

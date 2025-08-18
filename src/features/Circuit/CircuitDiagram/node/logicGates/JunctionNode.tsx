@@ -74,7 +74,7 @@ export default function JunctionNode({
             fill="rgba(0,0,0,0)"
             stroke="#4CAF50"
             strokeWidth={5}
-            onMouseDown={(ev) => handleNodePinMouseDown?.(ev, node.inputs[0].id, "from", "ADD")}
+            onMouseDown={(ev) => handleNodePinMouseDown?.(ev, node.inputs[0].id, "to", "ADD")}
           />
 
           {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.*/}

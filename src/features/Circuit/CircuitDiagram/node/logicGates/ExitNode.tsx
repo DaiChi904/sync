@@ -44,7 +44,7 @@ export default function ExitNode({
             fill="rgba(0,0,0,0)"
             stroke="#F44336"
             strokeWidth={2.5}
-            onMouseDown={(ev) => handleNodePinMouseDown?.(ev, node.inputs[0].id, "from", "ADD")}
+            onMouseDown={(ev) => handleNodePinMouseDown?.(ev, node.inputs[0].id, "to", "ADD")}
           />
 
           {/** biome-ignore lint/nursery/useUniqueElementIds: No need for unique id. */}

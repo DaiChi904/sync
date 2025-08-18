@@ -3,6 +3,8 @@ import type { ICircuitRepository } from "@/domain/model/repository/ICircuitRepos
 import type { ICircuitParserService } from "@/domain/model/service/ICircuitParserService";
 import type { ICircuitEditorUsecase } from "@/domain/model/usecase/ICircuitEditorUsecase";
 import type { CircuitData } from "@/domain/model/valueObject/circuitData";
+import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
+import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 import { Attempt } from "@/utils/attempt";
 import type { Result } from "@/utils/result";
 
@@ -57,6 +59,7 @@ export class CircuitEditorUsecase implements ICircuitEditorUsecase {
     const nodeIds = new Set<string>();
     const edgeIds = new Set<string>();
     const nodePinIds = new Set<string>();
+    const nodePinDict = new Map<CircuitNodePinId, CircuitNodeId>();
 
     const { nodes, edges } = circuit;
 
@@ -65,43 +68,47 @@ export class CircuitEditorUsecase implements ICircuitEditorUsecase {
         for (const node of nodes) {
           if (nodeIds.has(node.id)) {
             flags.foundDuplicatedNodeId = true;
-            break;
           }
           nodeIds.add(node.id);
 
           for (const inputPin of node.inputs) {
             if (nodePinIds.has(inputPin)) {
               flags.foundDuplicatedNodePinId = true;
-              break;
             }
             nodePinIds.add(inputPin);
+            nodePinDict.set(inputPin, node.id);
           }
 
           for (const outputPin of node.outputs) {
             if (nodePinIds.has(outputPin)) {
               flags.foundDuplicatedNodePinId = true;
-              break;
             }
             nodePinIds.add(outputPin);
+            nodePinDict.set(outputPin, node.id);
           }
         }
 
         for (const edge of edges) {
           if (edgeIds.has(edge.id)) {
             flags.foundDuplicatedEdgeId = true;
-            break;
           }
           edgeIds.add(edge.id);
 
           if (edge.from === edge.to) {
             flags.foundSelfLoopConnection = true;
-            break;
+          }
+
+          if (
+            nodePinDict.get(edge.from) &&
+            nodePinDict.get(edge.to) &&
+            nodePinDict.get(edge.from) === nodePinDict.get(edge.to)
+          ) {
+            flags.foundSelfLoopConnection = true;
           }
 
           const existingEdge = edges.find((e) => e.from === edge.from && e.to === edge.to);
           if (existingEdge && existingEdge.id !== edge.id) {
             flags.foundDuplicatedEdge = true;
-            break;
           }
         }
 

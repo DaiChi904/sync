@@ -311,13 +311,17 @@ export const useCircuitEditorPageHandler = ({
         () => {
           setCircuit((prev) => {
             if (!prev) {
-              throw new Attempt.Abort("circuitEditorPageHandler.deleteCircuitNode", "Circuit is not defined.", {
-                tag: "noCircuit",
-              });
+              throw new Attempt.Abort("circuitEditorPageHandler.deleteCircuitNode", "Circuit is not defined.");
+            }
+            const deleted = prev.circuitData.nodes.find((node) => node.id === nodeId);
+            if (!deleted) {
+              throw new Attempt.Abort("circuitEditorPageHandler.deleteCircuitNode", "Node to delete not found.");
             }
             const updated = CircuitData.from({
               nodes: prev.circuitData.nodes.filter((node) => node.id !== nodeId),
-              edges: prev.circuitData.edges,
+              edges: prev.circuitData.edges.filter(
+                (edge) => ![...deleted.inputs].includes(edge.to) && ![...deleted.outputs].includes(edge.from),
+              ),
             });
             return Circuit.from({
               ...prev,
@@ -581,7 +585,7 @@ export const useCircuitEditorPageHandler = ({
     if (!draggingNodePin || !toPinId) return;
 
     addCircuitEdge({
-      id: CircuitEdgeId.from(Math.random().toString()),
+      id: CircuitEdgeId.generate(),
       from: draggingNodePin.kind === "from" ? draggingNodePin.id : toPinId,
       to: draggingNodePin.kind === "from" ? toPinId : draggingNodePin.id,
       waypoints: null,

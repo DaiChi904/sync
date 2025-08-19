@@ -54,12 +54,13 @@ export class CircuitEditorUsecase implements ICircuitEditorUsecase {
       foundDuplicatedNodePinId: false,
       foundDuplicatedEdge: false,
       foundSelfLoopConnection: false,
+      foundDuplicatedNodePinKind: false,
     };
 
     const nodeIds = new Set<string>();
     const edgeIds = new Set<string>();
     const nodePinIds = new Set<string>();
-    const nodePinDict = new Map<CircuitNodePinId, CircuitNodeId>();
+    const nodePinDict = new Map<CircuitNodePinId, [CircuitNodeId, "input" | "output"]>();
 
     const { nodes, edges } = circuit;
 
@@ -76,7 +77,7 @@ export class CircuitEditorUsecase implements ICircuitEditorUsecase {
               flags.foundDuplicatedNodePinId = true;
             }
             nodePinIds.add(inputPin);
-            nodePinDict.set(inputPin, node.id);
+            nodePinDict.set(inputPin, [node.id, "input"]);
           }
 
           for (const outputPin of node.outputs) {
@@ -84,7 +85,7 @@ export class CircuitEditorUsecase implements ICircuitEditorUsecase {
               flags.foundDuplicatedNodePinId = true;
             }
             nodePinIds.add(outputPin);
-            nodePinDict.set(outputPin, node.id);
+            nodePinDict.set(outputPin, [node.id, "output"]);
           }
         }
 
@@ -98,12 +99,14 @@ export class CircuitEditorUsecase implements ICircuitEditorUsecase {
             flags.foundSelfLoopConnection = true;
           }
 
-          if (
-            nodePinDict.get(edge.from) &&
-            nodePinDict.get(edge.to) &&
-            nodePinDict.get(edge.from) === nodePinDict.get(edge.to)
-          ) {
+          const from = nodePinDict.get(edge.from);
+          const to = nodePinDict.get(edge.to);
+          if (from && to && from[0] === to[0]) {
             flags.foundSelfLoopConnection = true;
+          }
+
+          if (from && to && from[1] === to[1]) {
+            flags.foundDuplicatedNodePinKind = true;
           }
 
           const existingEdge = edges.find((e) => e.from === edge.from && e.to === edge.to);

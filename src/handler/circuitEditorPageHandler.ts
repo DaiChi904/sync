@@ -244,30 +244,35 @@ export const useCircuitEditorPageHandler = ({
       coordinate: Coordinate;
       size: CircuitNodeSize;
     }): void => {
+      const prev = circuit;
       Attempt.proceed(
         () => {
-          setCircuit((prev) => {
-            if (!prev) {
-              throw new Attempt.Abort("circuitEditorPageHandler.addCircuitNode", "Circuit is not defined.", {
-                tag: "noCircuit",
-              });
-            }
-            return Circuit.from({
-              ...prev,
-              circuitData: {
-                ...prev.circuitData,
-                nodes: [...prev.circuitData.nodes, newNode],
-                edges: prev.circuitData.edges,
-              },
-            });
+          if (!prev) {
+            throw new Attempt.Abort("circuitEditorPageHandler.addCircuitNode", "Circuit is not defined.");
+          }
+
+          const next = Circuit.from({
+            ...prev,
+            circuitData: {
+              ...prev.circuitData,
+              nodes: [...prev.circuitData.nodes, newNode],
+              edges: prev.circuitData.edges,
+            },
           });
+
+          const isValid = circuitEditorUsecase.isValidData(next.circuitData);
+          if (!isValid.ok) {
+            throw new Attempt.Abort("circuitEditorPageHandler.addCircuitNode", "Invalid data.", {
+              cause: isValid.error,
+            });
+          }
+
+          setCircuit(next);
         },
-        () => {
-          setError("failedToUpdateCircuitDataError", true);
-        },
+        () => {},
       );
     },
-    [setError],
+    [circuit, circuitEditorUsecase],
   );
 
   const updateCircuitNode = useCallback(
@@ -279,62 +284,78 @@ export const useCircuitEditorPageHandler = ({
       coordinate: Coordinate;
       size: CircuitNodeSize;
     }): void => {
+      const prev = circuit;
       Attempt.proceed(
         () => {
-          setCircuit((prev) => {
-            if (!prev) {
-              throw new Attempt.Abort("circuitEditorPageHandler.updateCircuitNode", "Circuit is not defined.", {
-                tag: "noCircuit",
-              });
-            }
-            const updated = CircuitData.from({
-              nodes: prev.circuitData.nodes.map((node) => (node.id === newNode.id ? newNode : node)),
-              edges: prev.circuitData.edges,
+          if (!prev) {
+            throw new Attempt.Abort("circuitEditorPageHandler.updateCircuitNode", "Circuit is not defined.", {
+              tag: "noCircuit",
             });
-            return Circuit.from({
-              ...prev,
-              circuitData: updated,
-            });
+          }
+
+          const updated = CircuitData.from({
+            nodes: prev.circuitData.nodes.map((node) => (node.id === newNode.id ? newNode : node)),
+            edges: prev.circuitData.edges,
           });
+
+          const next = Circuit.from({
+            ...prev,
+            circuitData: updated,
+          });
+
+          const isValid = circuitEditorUsecase.isValidData(next.circuitData);
+          if (!isValid.ok) {
+            throw new Attempt.Abort("circuitEditorPageHandler.updateCircuitNode", "Invalid data.", {
+              cause: isValid.error,
+            });
+          }
+
+          setCircuit(next);
         },
-        () => {
-          setError("failedToUpdateCircuitDataError", true);
-        },
+        () => {},
       );
     },
-    [setError],
+    [circuit, circuitEditorUsecase],
   );
 
   const deleteCircuitNode = useCallback(
     (nodeId: CircuitNodeId): void => {
+      const prev = circuit;
       Attempt.proceed(
         () => {
-          setCircuit((prev) => {
-            if (!prev) {
-              throw new Attempt.Abort("circuitEditorPageHandler.deleteCircuitNode", "Circuit is not defined.");
-            }
-            const deleted = prev.circuitData.nodes.find((node) => node.id === nodeId);
-            if (!deleted) {
-              throw new Attempt.Abort("circuitEditorPageHandler.deleteCircuitNode", "Node to delete not found.");
-            }
-            const updated = CircuitData.from({
-              nodes: prev.circuitData.nodes.filter((node) => node.id !== nodeId),
-              edges: prev.circuitData.edges.filter(
-                (edge) => ![...deleted.inputs].includes(edge.to) && ![...deleted.outputs].includes(edge.from),
-              ),
-            });
-            return Circuit.from({
-              ...prev,
-              circuitData: updated,
-            });
+          if (!prev) {
+            throw new Attempt.Abort("circuitEditorPageHandler.deleteCircuitNode", "Circuit is not defined.");
+          }
+          const deleted = prev.circuitData.nodes.find((node) => node.id === nodeId);
+          if (!deleted) {
+            throw new Attempt.Abort("circuitEditorPageHandler.deleteCircuitNode", "Node to delete not found.");
+          }
+
+          const updated = CircuitData.from({
+            nodes: prev.circuitData.nodes.filter((node) => node.id !== nodeId),
+            edges: prev.circuitData.edges.filter(
+              (edge) => ![...deleted.inputs].includes(edge.to) && ![...deleted.outputs].includes(edge.from),
+            ),
           });
+
+          const next = Circuit.from({
+            ...prev,
+            circuitData: updated,
+          });
+
+          const isValid = circuitEditorUsecase.isValidData(next.circuitData);
+          if (!isValid.ok) {
+            throw new Attempt.Abort("circuitEditorPageHandler.deleteCircuitNode", "Invalid data.", {
+              cause: isValid.error,
+            });
+          }
+
+          setCircuit(next);
         },
-        () => {
-          setError("failedToUpdateCircuitDataError", true);
-        },
+        () => {},
       );
     },
-    [setError],
+    [circuit, circuitEditorUsecase],
   );
 
   const addCircuitEdge = useCallback(
@@ -344,30 +365,34 @@ export const useCircuitEditorPageHandler = ({
       to: CircuitNodePinId;
       waypoints: Waypoint | null;
     }): void => {
+      const prev = circuit;
       Attempt.proceed(
         () => {
-          setCircuit((prev) => {
-            if (!prev) {
-              throw new Attempt.Abort("circuitEditorPageHandler.addCircuitEdge", "Circuit is not defined.", {
-                tag: "noCircuit",
-              });
-            }
-            return Circuit.from({
-              ...prev,
-              circuitData: {
-                ...prev.circuitData,
-                nodes: prev.circuitData.nodes,
-                edges: [...prev.circuitData.edges, newEdge],
-              },
-            });
+          if (!prev) {
+            throw new Attempt.Abort("circuitEditorPageHandler.addCircuitEdge", "Circuit is not defined.");
+          }
+
+          const next = Circuit.from({
+            ...prev,
+            circuitData: CircuitData.from({
+              nodes: prev.circuitData.nodes,
+              edges: [...prev.circuitData.edges, newEdge],
+            }),
           });
+
+          const isValid = circuitEditorUsecase.isValidData(next.circuitData);
+          if (!isValid.ok) {
+            throw new Attempt.Abort("circuitEditorPageHandler.addCircuitEdge", "Invalid data.", {
+              cause: isValid.error,
+            });
+          }
+
+          setCircuit(next);
         },
-        () => {
-          setError("failedToUpdateCircuitDataError", true);
-        },
+        () => {},
       );
     },
-    [setError],
+    [circuit, circuitEditorUsecase],
   );
 
   const updateCircuitEdge = useCallback(
@@ -377,56 +402,70 @@ export const useCircuitEditorPageHandler = ({
       to: CircuitNodePinId;
       waypoints: Waypoint | null;
     }): void => {
+      const prev = circuit;
       Attempt.proceed(
         () => {
-          setCircuit((prev) => {
-            if (!prev)
-              throw new Attempt.Abort("circuitEditorPageHandler.updateCircuitEdge", "Circuit is not defined.", {
-                tag: "noCircuit",
-              });
-            const updated = CircuitData.from({
-              nodes: prev.circuitData.nodes,
-              edges: prev.circuitData.edges.map((edge) => (edge.id === newEdge.id ? newEdge : edge)),
-            });
-            return Circuit.from({
-              ...prev,
-              circuitData: updated,
-            });
+          if (!prev) {
+            throw new Attempt.Abort("circuitEditorPageHandler.updateCircuitEdge", "Circuit is not defined.");
+          }
+
+          const updated = CircuitData.from({
+            nodes: prev.circuitData.nodes,
+            edges: prev.circuitData.edges.map((edge) => (edge.id === newEdge.id ? newEdge : edge)),
           });
+
+          const next = Circuit.from({
+            ...prev,
+            circuitData: updated,
+          });
+
+          const isValid = circuitEditorUsecase.isValidData(next.circuitData);
+          if (!isValid.ok) {
+            throw new Attempt.Abort("circuitEditorPageHandler.updateCircuitEdge", "Invalid data.", {
+              cause: isValid.error,
+            });
+          }
+
+          setCircuit(next);
         },
-        () => {
-          setError("failedToUpdateCircuitDataError", true);
-        },
+        () => {},
       );
     },
-    [setError],
+    [circuit, circuitEditorUsecase],
   );
 
   const deleteCircuitEdge = useCallback(
     (edgeId: CircuitEdgeId): void => {
+      const prev = circuit;
       Attempt.proceed(
         () => {
-          setCircuit((prev) => {
-            if (!prev)
-              throw new Attempt.Abort("circuitEditorPageHandler.deleteCircuitEdge", "Circuit is not defined.", {
-                tag: "noCircuit",
-              });
-            const updated = CircuitData.from({
-              nodes: prev.circuitData.nodes,
-              edges: prev.circuitData.edges.filter((edge) => edge.id !== edgeId),
-            });
-            return Circuit.from({
-              ...prev,
-              circuitData: updated,
-            });
+          if (!prev) {
+            throw new Attempt.Abort("circuitEditorPageHandler.deleteCircuitEdge", "Circuit is not defined.");
+          }
+
+          const updated = CircuitData.from({
+            nodes: prev.circuitData.nodes,
+            edges: prev.circuitData.edges.filter((edge) => edge.id !== edgeId),
           });
+
+          const next = Circuit.from({
+            ...prev,
+            circuitData: updated,
+          });
+
+          const isValid = circuitEditorUsecase.isValidData(next.circuitData);
+          if (!isValid.ok) {
+            throw new Attempt.Abort("circuitEditorPageHandler.deleteCircuitEdge", "Invalid data.", {
+              cause: isValid.error,
+            });
+          }
+
+          setCircuit(next);
         },
-        () => {
-          setError("failedToUpdateCircuitDataError", true);
-        },
+        () => {},
       );
     },
-    [setError],
+    [circuit, circuitEditorUsecase],
   );
 
   const getSvgCoords = useCallback((ev: React.MouseEvent): Result<Coordinate> => {

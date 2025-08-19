@@ -42,6 +42,11 @@ export default function CircuitEditorPageLayout() {
     handleNodePinMouseMove,
     handleNodePinMouseUp,
     tempEdge,
+    addEdgeWaypoint,
+    draggingWaypoint,
+    handleWaypointMouseDown,
+    handleWaypointMouseMove,
+    handleWaypointMouseUp,
     uiState,
     openUtilityMenu,
     closeUtilityMenu,
@@ -138,6 +143,11 @@ export default function CircuitEditorPageLayout() {
                   handleNodePinMouseMove={handleNodePinMouseMove}
                   handleNodePinMouseUp={handleNodePinMouseUp}
                   tempEdge={tempEdge}
+                  addEdgeWaypoint={addEdgeWaypoint}
+                  draggingWaypoint={draggingWaypoint}
+                  handleWaypointMouseDown={handleWaypointMouseDown}
+                  handleWaypointMouseMove={handleWaypointMouseMove}
+                  handleWaypointMouseUp={handleWaypointMouseUp}
                   uiState={uiState}
                   openUtilityMenu={openUtilityMenu}
                   closeUtilityMenu={closeUtilityMenu}

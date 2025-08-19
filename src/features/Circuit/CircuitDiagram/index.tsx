@@ -11,6 +11,7 @@ import Edges from "./edge/Edges";
 import OnClickEventBackdrop from "./eventCaptureLayer/baseLayers/onClickEventBackdrop";
 import NodeDragInteractionLayer from "./eventCaptureLayer/NodeDragInteractionLayer";
 import NodePinDragInteractionLayer from "./eventCaptureLayer/NodePinDragInteractionLayer";
+import WaypointDragInteractionLayer from "./eventCaptureLayer/WaypointDragInteractionLayer";
 import Nodes from "./node/Nodes";
 import EdgeUtilityMenu from "./utilityMenu/EdgeUtilityMenu";
 import NodeUtilityMenu from "./utilityMenu/NodeUtilityMenu";
@@ -27,10 +28,13 @@ interface CircuitDiagramProps {
   handleMouseUp?: () => void;
   handleWheel?: (ev: React.WheelEvent) => void;
   preventBrowserZoom?: (ref: React.RefObject<SVGSVGElement | null>) => void;
-  focusedElement?: { kind: "node"; value: CircuitGuiNode } | { kind: "edge"; value: CircuitGuiEdge } | null;
+  focusedElement?:
+    | { kind: "node"; value: CircuitGuiNode }
+    | { kind: "edge"; value: CircuitGuiEdge & { waypointIdx: number } }
+    | null;
   focusElement?: {
     (kind: "node"): (value: CircuitGuiNode) => void;
-    (kind: "edge"): (value: CircuitGuiEdge) => void;
+    (kind: "edge"): (value: CircuitGuiEdge & { waypointIdx: number }) => void;
   };
   draggingNode?: CircuitGuiNode | null;
   handleNodeMouseDown?: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
@@ -41,18 +45,29 @@ interface CircuitDiagramProps {
   draggingNodePin?: {
     id: CircuitNodePinId;
     offset: Coordinate;
-    kind: "from" | "to" | "waypoints";
+    kind: "from" | "to";
     method: "ADD" | "UPDATE";
   } | null;
   handleNodePinMouseDown?: (
     ev: React.MouseEvent,
     id: CircuitNodePinId,
-    kind: "from" | "to" | "waypoints",
+    kind: "from" | "to",
     method: "ADD" | "UPDATE",
   ) => void;
   handleNodePinMouseMove?: (ev: React.MouseEvent) => void;
   handleNodePinMouseUp?: (ev: React.MouseEvent) => void;
   tempEdge?: { from: Coordinate; to: Coordinate } | null;
+  addEdgeWaypoint?: (id: CircuitEdgeId) => (at: Coordinate, index: number) => void;
+  handleWaypointMouseDown?: (
+    id: CircuitEdgeId,
+  ) => (offset: Coordinate, index: number) => (ev: React.MouseEvent) => void;
+  draggingWaypoint?: {
+    id: CircuitEdgeId;
+    offset: Coordinate;
+    index: number;
+  } | null;
+  handleWaypointMouseMove?: (ev: React.MouseEvent) => void;
+  handleWaypointMouseUp?: () => void;
   uiState?: ICircuitEditorPageHandler["uiState"];
   openUtilityMenu?: (kind: "node" | "edge") => (ev: React.MouseEvent) => void;
   closeUtilityMenu?: () => void;
@@ -83,6 +98,11 @@ export default function CircuitDiagram({
   handleNodePinMouseMove,
   handleNodePinMouseUp,
   tempEdge,
+  addEdgeWaypoint,
+  draggingWaypoint,
+  handleWaypointMouseDown,
+  handleWaypointMouseMove,
+  handleWaypointMouseUp,
   uiState,
   openUtilityMenu,
   closeUtilityMenu,
@@ -134,15 +154,16 @@ export default function CircuitDiagram({
         data={data}
         outputRecord={outputRecord}
         focusedElement={focusedElement}
-        focusElement={focusElement}
+        focusElement={focusElement?.("edge")}
         handleNodePinMouseDown={handleNodePinMouseDown}
+        handleWaypointMouseDown={handleWaypointMouseDown}
         openEdgeUtilityMenu={openUtilityMenu?.("edge")}
       />
 
       <Nodes
         data={data}
         focusedElement={focusedElement}
-        focusElement={focusElement}
+        focusElement={focusElement?.("node")}
         handleNodeMouseDown={handleNodeMouseDown}
         handleNodePinMouseDown={handleNodePinMouseDown}
         openNodeUtilityMenu={openUtilityMenu?.("node")}
@@ -157,6 +178,14 @@ export default function CircuitDiagram({
         viewBoxY={viewBox?.y}
       />
 
+      <WaypointDragInteractionLayer
+        isActive={!!draggingWaypoint}
+        onMouseMove={handleWaypointMouseMove}
+        onMouseUp={handleWaypointMouseUp}
+        viewBoxX={viewBox?.x}
+        viewBoxY={viewBox?.y}
+      />
+
       <NodeDragInteractionLayer
         isActive={!!draggingNode}
         onMouseMove={handleNodeMouseMove}
@@ -165,34 +194,40 @@ export default function CircuitDiagram({
         viewBoxY={viewBox?.y}
       />
 
-      {uiState?.diagramUtilityMenu.open === "edge" && focusedElement?.kind === "edge" && (
-        <>
-          <OnClickEventBackdrop
-            onClick={() => {
-              closeUtilityMenu?.();
-            }}
-          />
-          <EdgeUtilityMenu
-            at={uiState.diagramUtilityMenu.at}
-            menuOptions={[
-              {
-                label: "Delete",
-                onClickHandler: () => {
-                  deleteCircuitEdge?.(focusedElement.value.id);
-                  closeUtilityMenu?.();
-                },
-              },
-              {
-                label: "Add Waypoint",
-                onClickHandler: () => {
-                  console.log("not implemented");
-                  closeUtilityMenu?.();
-                },
-              },
-            ]}
-          />
-        </>
-      )}
+      {uiState?.diagramUtilityMenu.open === "edge" &&
+        focusedElement?.kind === "edge" &&
+        (() => {
+          const at = uiState.diagramUtilityMenu.at;
+          if (at === null) {
+            closeUtilityMenu?.();
+            return null;
+          }
+
+          return (
+            <>
+              <OnClickEventBackdrop onClick={() => closeUtilityMenu?.()} />
+              <EdgeUtilityMenu
+                at={at}
+                menuOptions={[
+                  {
+                    label: "Delete",
+                    onClickHandler: () => {
+                      deleteCircuitEdge?.(focusedElement.value.id);
+                      closeUtilityMenu?.();
+                    },
+                  },
+                  {
+                    label: "Add Waypoint",
+                    onClickHandler: () => {
+                      addEdgeWaypoint?.(focusedElement.value.id)(at, focusedElement.value.waypointIdx);
+                      closeUtilityMenu?.();
+                    },
+                  },
+                ]}
+              />
+            </>
+          );
+        })()}
       {uiState?.diagramUtilityMenu.open === "node" && focusedElement?.kind === "node" && (
         <>
           <OnClickEventBackdrop

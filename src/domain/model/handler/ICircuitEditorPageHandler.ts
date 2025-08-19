@@ -70,10 +70,13 @@ export interface ICircuitEditorPageHandler {
   deleteCircuitEdge: (edgeId: CircuitEdgeId) => void;
   circuitDiagramContainer: React.RefObject<HTMLDivElement | null>;
   svgRef: React.RefObject<SVGSVGElement | null>;
-  focusedElement: { kind: "node"; value: CircuitGuiNode } | { kind: "edge"; value: CircuitGuiEdge } | null;
+  focusedElement:
+    | { kind: "node"; value: CircuitGuiNode }
+    | { kind: "edge"; value: CircuitGuiEdge & { waypointIdx: number } }
+    | null;
   focusElement: {
     (kind: "node"): (value: CircuitGuiNode) => void;
-    (kind: "edge"): (value: CircuitGuiEdge) => void;
+    (kind: "edge"): (value: CircuitGuiEdge & { waypointIdx: number }) => void;
   };
   draggingNode: CircuitGuiNode | null;
   handleNodeMouseDown: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
@@ -82,18 +85,27 @@ export interface ICircuitEditorPageHandler {
   draggingNodePin: {
     id: CircuitNodePinId;
     offset: Coordinate;
-    kind: "from" | "to" | "waypoints";
+    kind: "from" | "to";
     method: "ADD" | "UPDATE";
   } | null;
   handleNodePinMouseDown: (
     ev: React.MouseEvent,
     id: CircuitNodePinId,
-    kind: "from" | "to" | "waypoints",
+    kind: "from" | "to",
     method: "ADD" | "UPDATE",
   ) => void;
   handleNodePinMouseMove: (ev: React.MouseEvent) => void;
   handleNodePinMouseUp: (ev: React.MouseEvent) => void;
   tempEdge: { from: Coordinate; to: Coordinate } | null;
+  addEdgeWaypoint: (id: CircuitEdgeId) => (at: Coordinate, index: number) => void;
+  draggingWaypoint: {
+    id: CircuitEdgeId;
+    offset: Coordinate;
+    index: number;
+  } | null;
+  handleWaypointMouseDown: (id: CircuitEdgeId) => (offset: Coordinate, index: number) => (ev: React.MouseEvent) => void;
+  handleWaypointMouseMove: (ev: React.MouseEvent) => void;
+  handleWaypointMouseUp: () => void;
   uiState: {
     toolbarMenu: { open: "none" | "file" | "view" | "help" };
     diagramUtilityMenu: { open: "none" | "edge" | "node"; at: Coordinate | null };

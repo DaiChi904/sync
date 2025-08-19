@@ -9,13 +9,14 @@ interface EdgeProps {
   waypointsMap: Map<CircuitNodePinId, Coordinate[]>;
   outputMap?: Map<CircuitNodePinId, EvalResult>;
   isInFocus?: boolean;
-  focusElement?: (value: CircuitGuiEdge) => void;
+  focusElement?: (value: CircuitGuiEdge & { waypointIdx: number }) => void;
   handleNodePinMouseDown?: (
     ev: React.MouseEvent,
     id: CircuitNodePinId,
-    kind: "from" | "to" | "waypoints",
+    kind: "from" | "to",
     method: "ADD" | "UPDATE",
   ) => void;
+  handleWaypointMouseDown?: (offset: Coordinate, index: number) => (ev: React.MouseEvent) => void;
   openEdgeUtilityMenu?: (ev: React.MouseEvent) => void;
 }
 
@@ -27,6 +28,7 @@ export default function Edge({
   isInFocus,
   focusElement,
   handleNodePinMouseDown,
+  handleWaypointMouseDown,
   openEdgeUtilityMenu,
 }: EdgeProps) {
   const from = pinMap.get(edge.from);
@@ -49,7 +51,7 @@ export default function Edge({
       <>
         <defs>
           {/** biome-ignore lint/nursery/useUniqueElementIds: No need for unique id. */}
-          <marker id="arrow" markerWidth="5" markerHeight="5" refX="7.5" refY="2.5" orient="auto">
+          <marker id="arrow" markerWidth="5" markerHeight="5" refX="5" refY="2.5" orient="auto">
             <path d="M 0 0 L 5 2.5 L 0 5 z" fill="#00a120" />
           </marker>
         </defs>
@@ -72,12 +74,13 @@ export default function Edge({
             y2={to.y}
             stroke="rgba(0,0,0,0)"
             strokeWidth={30}
-            onClick={() => focusElement?.(edge)}
+            onClick={() => focusElement?.({ ...edge, waypointIdx: idx })}
             onContextMenu={(ev) => {
-              ev.preventDefault();
+              focusElement?.({ ...edge, waypointIdx: idx });
               openEdgeUtilityMenu?.(ev);
             }}
           />
+          <circle cx={from.x} cy={from.y} r={0.5} fill="#00a120" pointerEvents="all" stroke="#00a120" />
 
           {isInFocus && (
             <>
@@ -86,30 +89,34 @@ export default function Edge({
               <circle
                 cx={from.x}
                 cy={from.y}
-                r={20}
+                r={15}
                 fill="rgba(0,0,0,0)"
+                pointerEvents="all"
                 stroke="#fff"
                 strokeWidth={1}
                 onContextMenu={openEdgeUtilityMenu}
                 onMouseDown={
                   idx === 0 || edges.length < 2
-                    ? (ev) => handleNodePinMouseDown?.(ev, edge.to, "to", "UPDATE")
-                    : (ev) => handleNodePinMouseDown?.(ev, edge.from, "waypoints", "UPDATE")
+                    ? (ev) => {
+                        handleNodePinMouseDown?.(ev, edge.to, "to", "UPDATE");
+                      }
+                    : handleWaypointMouseDown?.(from, idx - 1)
                 }
               />
               {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.*/}
               <circle
                 cx={to.x}
                 cy={to.y}
-                r={20}
+                r={15}
                 fill="rgba(0,0,0,0)"
+                pointerEvents="all"
                 stroke="#fff"
                 strokeWidth={1}
                 onContextMenu={openEdgeUtilityMenu}
                 onMouseDown={
                   idx + 1 === edges.length - 1 || edges.length < 2
                     ? (ev) => handleNodePinMouseDown?.(ev, edge.from, "from", "UPDATE")
-                    : (ev) => handleNodePinMouseDown?.(ev, edge.from, "waypoints", "UPDATE")
+                    : undefined
                 }
               />
             </>

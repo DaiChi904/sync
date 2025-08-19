@@ -22,7 +22,7 @@ import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePin
 import type { CircuitNodeSize } from "@/domain/model/valueObject/circuitNodeSize";
 import type { CircuitNodeType } from "@/domain/model/valueObject/circuitNodeType";
 import { Coordinate } from "@/domain/model/valueObject/coordinate";
-import type { Waypoint } from "@/domain/model/valueObject/waypoint";
+import { Waypoint } from "@/domain/model/valueObject/waypoint";
 import { usePartialState } from "@/hooks/partialState";
 import { Attempt } from "@/utils/attempt";
 import type { Result } from "@/utils/result";
@@ -57,16 +57,21 @@ export const useCircuitEditorPageHandler = ({
   const [lastMousePosition, setLastMousePosition] = useState<{ x: number; y: number } | null>(null);
 
   const [focusedElement, setFocusedElement] = useState<
-    { kind: "node"; value: CircuitGuiNode } | { kind: "edge"; value: CircuitGuiEdge } | null
+    { kind: "node"; value: CircuitGuiNode } | { kind: "edge"; value: CircuitGuiEdge & { waypointIdx: number } } | null
   >(null);
   const [draggingNode, setDraggingNode] = useState<CircuitGuiNode | null>(null);
   const [draggingNodePin, setDraggingNodePin] = useState<{
     id: CircuitNodePinId;
     offset: Coordinate;
-    kind: "from" | "to" | "waypoints";
+    kind: "from" | "to";
     method: "ADD" | "UPDATE";
   } | null>(null);
   const [tempEdge, setTempEdge] = useState<{ from: Coordinate; to: Coordinate } | null>(null);
+  const [draggingWaypoint, setDraggingWaypoint] = useState<{
+    id: CircuitEdgeId;
+    offset: Coordinate;
+    index: number;
+  } | null>(null);
 
   const fetch = useCallback(async (): Promise<void> => {
     await Attempt.asyncProceed(
@@ -518,7 +523,7 @@ export const useCircuitEditorPageHandler = ({
           setFocusedElement(null);
           return;
         }
-        setFocusedElement({ kind: "edge", value: edge });
+        setFocusedElement({ kind: "edge", value: { ...edge, waypointIdx: focusedElement.value.waypointIdx } });
         break;
       }
     }
@@ -587,7 +592,7 @@ export const useCircuitEditorPageHandler = ({
   const handleNodePinMouseDown = (
     ev: React.MouseEvent,
     id: CircuitNodePinId,
-    kind: "from" | "to" | "waypoints",
+    kind: "from" | "to",
     method: "ADD" | "UPDATE",
   ) => {
     const svgCoordinate = getSvgCoords(ev);
@@ -668,10 +673,6 @@ export const useCircuitEditorPageHandler = ({
         });
         break;
       }
-      case "waypoints": {
-        console.error("not implemented");
-        break;
-      }
     }
   };
 
@@ -682,6 +683,68 @@ export const useCircuitEditorPageHandler = ({
 
     setDraggingNodePin(null);
     setTempEdge(null);
+    reattachFocusedElement();
+  };
+
+  const addEdgeWaypoint = useCallback(
+    (id: CircuitEdgeId) =>
+      (at: Coordinate, index: number): void => {
+        const prev = circuit?.circuitData?.edges.find((edge) => edge.id === id);
+        if (!prev) return;
+        const waypoints = prev.waypoints ? Waypoint.waypointsToCoordinateArray(prev.waypoints) : [];
+        waypoints.splice(index, 0, at);
+
+        updateCircuitEdge({
+          id: prev.id,
+          from: prev.from,
+          to: prev.to,
+          waypoints: Waypoint.coordinatesToWaypoints(waypoints),
+        });
+      },
+    [circuit, updateCircuitEdge],
+  );
+
+  const handleWaypointMouseDown =
+    (id: CircuitEdgeId) => (offset: Coordinate, index: number) => (ev: React.MouseEvent) => {
+      const svgCoordinate = getSvgCoords(ev);
+      if (!svgCoordinate.ok) return;
+
+      const { x: initialMouseX, y: initialMouseY } = svgCoordinate.value;
+
+      setDraggingWaypoint({
+        id,
+        offset: Coordinate.from({ x: initialMouseX - offset.x, y: initialMouseY - offset.y }),
+        index,
+      });
+    };
+
+  const handleWaypointMouseMove = (ev: React.MouseEvent) => {
+    if (!draggingWaypoint) return;
+
+    const svgCoordinate = getSvgCoords(ev);
+    if (!svgCoordinate.ok) return;
+
+    const { x, y } = svgCoordinate.value;
+
+    const edge = circuit?.circuitData?.edges.find((edge) => edge.id === draggingWaypoint.id);
+    if (!edge || !edge.waypoints) return;
+
+    const waypoints = Waypoint.waypointsToCoordinateArray(edge.waypoints);
+    waypoints[draggingWaypoint.index] = Coordinate.from({
+      x: x - draggingWaypoint.offset.x,
+      y: y - draggingWaypoint.offset.y,
+    });
+
+    updateCircuitEdge({
+      id: edge.id,
+      from: edge.from,
+      to: edge.to,
+      waypoints: Waypoint.coordinatesToWaypoints(waypoints),
+    });
+  };
+
+  const handleWaypointMouseUp = () => {
+    setDraggingWaypoint(null);
     reattachFocusedElement();
   };
 
@@ -751,6 +814,11 @@ export const useCircuitEditorPageHandler = ({
     handleNodePinMouseMove,
     handleNodePinMouseUp,
     tempEdge,
+    addEdgeWaypoint,
+    draggingWaypoint,
+    handleWaypointMouseDown,
+    handleWaypointMouseMove,
+    handleWaypointMouseUp,
     uiState,
     openUtilityMenu,
     closeUtilityMenu,

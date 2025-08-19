@@ -7,15 +7,12 @@ import Node from "./Node";
 interface CircuitDiagramProps {
   data: CircuitGuiData;
   focusedElement?: { kind: "node"; value: CircuitGuiNode } | { kind: "edge"; value: CircuitGuiEdge } | null;
-  focusElement?: {
-    (kind: "node"): (value: CircuitGuiNode) => void;
-    (kind: "edge"): (value: CircuitGuiEdge) => void;
-  };
+  focusElement?: (value: CircuitGuiNode) => void;
   handleNodeMouseDown?: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
   handleNodePinMouseDown?: (
     ev: React.MouseEvent,
     id: CircuitNodePinId,
-    kind: "from" | "to" | "waypoints",
+    kind: "from" | "to",
     method: "ADD" | "UPDATE",
   ) => void;
   openNodeUtilityMenu?: (ev: React.MouseEvent) => void;
@@ -43,7 +40,7 @@ export default function Nodes({
         key={node.id}
         node={node}
         isInFocus={isInFocus}
-        focusElement={focusElement?.("node")}
+        focusElement={focusElement}
         handleNodeMouseDown={handleNodeMouseDown}
         handleNodePinMouseDown={handleNodePinMouseDown}
         openNodeUtilityMenu={openNodeUtilityMenu}

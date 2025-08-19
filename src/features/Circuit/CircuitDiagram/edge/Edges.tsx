@@ -1,6 +1,7 @@
 import type { CircuitGuiData } from "@/domain/model/entity/circuitGuiData";
 import type { CircuitGuiEdge } from "@/domain/model/entity/circuitGuiEdge";
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
+import type { CircuitEdgeId } from "@/domain/model/valueObject/circuitEdgeId";
 import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 import type { Coordinate } from "@/domain/model/valueObject/coordinate";
@@ -11,16 +12,16 @@ interface EdgesProps {
   data: CircuitGuiData;
   outputRecord?: Record<CircuitNodeId, EvalResult>;
   focusedElement?: { kind: "node"; value: CircuitGuiNode } | { kind: "edge"; value: CircuitGuiEdge } | null;
-  focusElement?: {
-    (kind: "node"): (value: CircuitGuiNode) => void;
-    (kind: "edge"): (value: CircuitGuiEdge) => void;
-  };
+  focusElement?: (value: CircuitGuiEdge & { waypointIdx: number }) => void;
   handleNodePinMouseDown?: (
     ev: React.MouseEvent,
     id: CircuitNodePinId,
-    kind: "from" | "to" | "waypoints",
+    kind: "from" | "to",
     method: "ADD" | "UPDATE",
   ) => void;
+  handleWaypointMouseDown?: (
+    id: CircuitEdgeId,
+  ) => (offset: Coordinate, index: number) => (ev: React.MouseEvent) => void;
   openEdgeUtilityMenu?: (ev: React.MouseEvent) => void;
 }
 
@@ -30,6 +31,7 @@ export default function Edges({
   focusedElement,
   focusElement,
   handleNodePinMouseDown,
+  handleWaypointMouseDown,
   openEdgeUtilityMenu,
 }: EdgesProps) {
   const pinMap = new Map<CircuitNodePinId, Coordinate>();
@@ -69,8 +71,9 @@ export default function Edges({
         outputMap={outputMap}
         waypointsMap={waypointsMap}
         isInFocus={isInFocus}
-        focusElement={focusElement?.("edge")}
+        focusElement={focusElement}
         handleNodePinMouseDown={handleNodePinMouseDown}
+        handleWaypointMouseDown={handleWaypointMouseDown?.(edge.id)}
         openEdgeUtilityMenu={isInFocus ? openEdgeUtilityMenu : undefined}
       />
     );

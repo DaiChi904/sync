@@ -9,7 +9,7 @@ interface OrNodeProps {
   handleNodePinMouseDown?: (
     ev: React.MouseEvent,
     id: CircuitNodePinId,
-    kind: "from" | "to" | "waypoints",
+    kind: "from" | "to",
     method: "ADD" | "UPDATE",
   ) => void;
   openNodeUtilityMenu?: (ev: React.MouseEvent) => void;

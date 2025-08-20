@@ -116,10 +116,11 @@ export default function CircuitDiagram({
   };
 
   const MARRGIN = 20;
-  const minX = Math.min(...data.nodes.map((node) => node.coordinate.x - node.size.x / 2)) - MARRGIN;
-  const minY = Math.min(...data.nodes.map((node) => node.coordinate.y - node.size.y / 2)) - MARRGIN;
-  const maxX = Math.max(...data.nodes.map((node) => node.coordinate.x + node.size.x / 2)) + MARRGIN;
-  const maxY = Math.max(...data.nodes.map((node) => node.coordinate.y + node.size.y / 2)) + MARRGIN;
+  const hasNodes = data.nodes.length > 0;
+  const minX = hasNodes ? Math.min(...data.nodes.map((node) => node.coordinate.x - node.size.x / 2)) - MARRGIN : -500;
+  const minY = hasNodes ? Math.min(...data.nodes.map((node) => node.coordinate.y - node.size.y / 2)) - MARRGIN : -500;
+  const maxX = hasNodes ? Math.max(...data.nodes.map((node) => node.coordinate.x + node.size.x / 2)) + MARRGIN : 500;
+  const maxY = hasNodes ? Math.max(...data.nodes.map((node) => node.coordinate.y + node.size.y / 2)) + MARRGIN : 500;
   const viewWidth = maxX - minX;
   const viewHeight = maxY - minY;
 

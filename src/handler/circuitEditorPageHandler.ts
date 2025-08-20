@@ -93,9 +93,7 @@ export const useCircuitEditorPageHandler = ({
     Attempt.proceed(
       () => {
         if (!circuit) {
-          throw new Attempt.Abort("circuitEditorPageHandler.updateCircuitGuiData", "Circuit is not defined.", {
-            tag: "noCircuit",
-          });
+          throw new Attempt.Abort("circuitEditorPageHandler.updateCircuitGuiData", "Circuit is not defined.");
         }
 
         const circuitGuiData = circuitParserUsecase.parseToGuiData(circuit.circuitData);
@@ -113,6 +111,13 @@ export const useCircuitEditorPageHandler = ({
 
         //-- define INITIAL viewbox value --//
         if (viewBox) return;
+
+        if (circuitGuiData.value.nodes.length === 0) {
+          const viewWidth = circuitDiagramContainer.current?.clientWidth ?? 1000;
+          const viewHeight = circuitDiagramContainer.current?.clientHeight ?? 1000;
+          setViewBox({ x: -viewWidth / 2, y: -viewHeight / 2, w: viewWidth, h: viewHeight });
+          return;
+        }
 
         const MARRGIN = 20;
         const minX =

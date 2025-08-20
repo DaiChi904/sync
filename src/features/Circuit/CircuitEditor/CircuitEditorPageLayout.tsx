@@ -43,6 +43,7 @@ export default function CircuitEditorPageLayout() {
     handleNodePinMouseUp,
     tempEdge,
     addEdgeWaypoint,
+    deleteEdgeWaypoint,
     draggingWaypoint,
     handleWaypointMouseDown,
     handleWaypointMouseMove,
@@ -144,6 +145,7 @@ export default function CircuitEditorPageLayout() {
                   handleNodePinMouseUp={handleNodePinMouseUp}
                   tempEdge={tempEdge}
                   addEdgeWaypoint={addEdgeWaypoint}
+                  deleteEdgeWaypoint={deleteEdgeWaypoint}
                   draggingWaypoint={draggingWaypoint}
                   handleWaypointMouseDown={handleWaypointMouseDown}
                   handleWaypointMouseMove={handleWaypointMouseMove}

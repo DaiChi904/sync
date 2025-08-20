@@ -58,6 +58,7 @@ interface CircuitDiagramProps {
   handleNodePinMouseUp?: (ev: React.MouseEvent) => void;
   tempEdge?: { from: Coordinate; to: Coordinate } | null;
   addEdgeWaypoint?: (id: CircuitEdgeId) => (at: Coordinate, index: number) => void;
+  deleteEdgeWaypoint?: (id: CircuitEdgeId) => (index: number) => void;
   handleWaypointMouseDown?: (
     id: CircuitEdgeId,
   ) => (offset: Coordinate, index: number) => (ev: React.MouseEvent) => void;
@@ -99,6 +100,7 @@ export default function CircuitDiagram({
   handleNodePinMouseUp,
   tempEdge,
   addEdgeWaypoint,
+  deleteEdgeWaypoint,
   draggingWaypoint,
   handleWaypointMouseDown,
   handleWaypointMouseMove,
@@ -223,6 +225,13 @@ export default function CircuitDiagram({
                       closeUtilityMenu?.();
                     },
                   },
+                  {
+                    label: "Delete Waypoint",
+                    onClickHandler: () => {
+                      deleteEdgeWaypoint?.(focusedElement.value.id)(focusedElement.value.waypointIdx);
+                      closeUtilityMenu?.();
+                    }
+                  }
                 ]}
               />
             </>

@@ -704,6 +704,29 @@ export const useCircuitEditorPageHandler = ({
     [circuit, updateCircuitEdge],
   );
 
+  const deleteEdgeWaypoint = useCallback(
+    (id: CircuitEdgeId) =>
+      (index: number): void => {
+        const prev = circuit?.circuitData?.edges.find((edge) => edge.id === id);
+        if (!prev || !prev.waypoints) return;
+
+        const waypoints = Waypoint.waypointsToCoordinateArray(prev.waypoints);
+        if (index < 0 || index >= waypoints.length) return;
+
+        waypoints.splice(index, 1);
+
+        updateCircuitEdge({
+          id: prev.id,
+          from: prev.from,
+          to: prev.to,
+          waypoints: Waypoint.coordinatesToWaypoints(waypoints),
+        });
+      }
+    ,
+    [circuit, updateCircuitEdge],
+  );
+
+
   const handleWaypointMouseDown =
     (id: CircuitEdgeId) => (offset: Coordinate, index: number) => (ev: React.MouseEvent) => {
       const svgCoordinate = getSvgCoords(ev);
@@ -815,6 +838,7 @@ export const useCircuitEditorPageHandler = ({
     handleNodePinMouseUp,
     tempEdge,
     addEdgeWaypoint,
+    deleteEdgeWaypoint,
     draggingWaypoint,
     handleWaypointMouseDown,
     handleWaypointMouseMove,

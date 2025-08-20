@@ -98,6 +98,7 @@ export interface ICircuitEditorPageHandler {
   handleNodePinMouseUp: (ev: React.MouseEvent) => void;
   tempEdge: { from: Coordinate; to: Coordinate } | null;
   addEdgeWaypoint: (id: CircuitEdgeId) => (at: Coordinate, index: number) => void;
+  deleteEdgeWaypoint: (id: CircuitEdgeId) => (index: number) => void;
   draggingWaypoint: {
     id: CircuitEdgeId;
     offset: Coordinate;

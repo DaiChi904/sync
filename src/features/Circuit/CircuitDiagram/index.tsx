@@ -254,20 +254,6 @@ export default function CircuitDiagram({
                   closeUtilityMenu?.();
                 },
               },
-              {
-                label: "Add New Edge",
-                onClickHandler: () => {
-                  console.log("not implemented");
-                  closeUtilityMenu?.();
-                },
-              },
-              {
-                label: "Switch Inputs",
-                onClickHandler: () => {
-                  console.log("not implemented");
-                  closeUtilityMenu?.();
-                },
-              },
             ]}
           />
         </>

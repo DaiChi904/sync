@@ -29,11 +29,11 @@ export default function Nodes({
   // Make focused element on top.
   const focusedNode =
     focusedElement?.kind === "node" ? data?.nodes.find((node) => node.id === focusedElement?.value.id) : undefined;
-  const orderdNode = focusedNode
+  const orderdNodes = focusedNode
     ? [...data.nodes.filter((node) => node.id !== focusedElement?.value.id), focusedNode]
     : data.nodes;
 
-  return orderdNode.map((node) => {
+  return orderdNodes.map((node) => {
     const isInFocus = focusedElement?.kind === "node" && node.id === focusedElement?.value.id;
     return (
       <Node

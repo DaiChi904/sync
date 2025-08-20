@@ -61,7 +61,14 @@ export default function Edges({
     });
   });
 
-  return data?.edges.map((edge) => {
+  // Make focused element on top.
+  const focusedEdge =
+    focusedElement?.kind === "edge" ? data?.edges.find((node) => node.id === focusedElement?.value.id) : undefined;
+  const orderdEdges = focusedEdge
+    ? [...data.edges.filter((node) => node.id !== focusedElement?.value.id), focusedEdge]
+    : data.edges;
+
+  return orderdEdges.map((edge) => {
     const isInFocus = focusedElement?.kind === "edge" && edge.id === focusedElement?.value.id;
     return (
       <Edge

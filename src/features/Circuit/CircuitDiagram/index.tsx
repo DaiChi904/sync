@@ -231,8 +231,8 @@ export default function CircuitDiagram({
                     onClickHandler: () => {
                       deleteEdgeWaypoint?.(focusedElement.value.id)(focusedElement.value.waypointIdx);
                       closeUtilityMenu?.();
-                    }
-                  }
+                    },
+                  },
                 ]}
               />
             </>

@@ -726,11 +726,9 @@ export const useCircuitEditorPageHandler = ({
           to: prev.to,
           waypoints: Waypoint.coordinatesToWaypoints(waypoints),
         });
-      }
-    ,
+      },
     [circuit, updateCircuitEdge],
   );
-
 
   const handleWaypointMouseDown =
     (id: CircuitEdgeId) => (offset: Coordinate, index: number) => (ev: React.MouseEvent) => {

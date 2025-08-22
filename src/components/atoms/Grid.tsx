@@ -1,39 +1,38 @@
-import { type CSSProperties, forwardRef, type HTMLAttributes, type Ref } from "react";
+import type { ComponentProps, CSSProperties } from "react";
 import Box from "./Box";
 
-interface GridProps extends HTMLAttributes<HTMLDivElement> {
-  xs: number;
-  ys: number;
-  xfs: number;
-  yfs: number;
-  gap?: CSSProperties["gap"];
-  grow?: CSSProperties["flexGrow"];
+interface GridProps extends ComponentProps<typeof Box> {
   container?: boolean;
-  ref?: Ref<HTMLDivElement>;
+  grow?: CSSProperties["flexGrow"];
+  xs?: number;
+  ys?: number;
+  xfs?: number;
+  yfs?: number;
 }
 
-const Grid = forwardRef<HTMLDivElement, GridProps>(
-  ({ xs, ys, xfs, yfs, gap, grow, container, children, ...props }, ref) => {
-    const style: CSSProperties = {
-      gridColumn: `span ${xs} / span ${xs}`,
-      gridRow: `span ${ys} / span ${ys}`,
-      ...props.style,
-    };
-
-    if (container) {
-      style.display = "grid";
-      style.gridTemplateColumns = `repeat(${xfs}, minmax(0, 1fr))`;
-      style.gridTemplateRows = `repeat(${yfs}, minmax(0, 1fr))`;
-      style.flexGrow = grow;
-      style.gap = gap;
-    }
-
-    return (
-      <Box {...props} style={style} ref={ref}>
-        {children}
-      </Box>
-    );
-  },
-);
-
-export default Grid;
+export default function Grid({
+  xs = 1,
+  ys = 1,
+  xfs = 1,
+  yfs = 1,
+  grow = 1,
+  container = false,
+  children,
+  ...props
+}: GridProps) {
+  return (
+    <Box
+      {...props}
+      style={{
+        gridColumn: `span ${xs} / span ${xs}`,
+        gridRow: `span ${ys} / span ${ys}`,
+        display: container ? "grid" : undefined,
+        gridTemplateColumns: container ? `repeat(${xfs}, minmax(0, 1fr))` : undefined,
+        gridTemplateRows: container ? `repeat(${yfs}, minmax(0, 1fr))` : undefined,
+        flexGrow: container ? grow : undefined,
+      }}
+    >
+      {children}
+    </Box>
+  );
+}

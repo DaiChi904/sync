@@ -1,7 +1,7 @@
-import { type CSSProperties, forwardRef, type HTMLAttributes } from "react";
+import type { ComponentProps, CSSProperties } from "react";
 import Box from "./Box";
 
-interface FlexProps extends HTMLAttributes<HTMLDivElement> {
+interface FlexProps extends ComponentProps<typeof Box> {
   alignItems?: CSSProperties["alignItems"];
   alignContent?: CSSProperties["alignContent"];
   justifyItems?: CSSProperties["justifyItems"];
@@ -9,51 +9,41 @@ interface FlexProps extends HTMLAttributes<HTMLDivElement> {
   direction?: CSSProperties["flexDirection"];
   basis?: CSSProperties["flexBasis"];
   wrap?: CSSProperties["flexWrap"];
-  gap?: CSSProperties["gap"];
   grow?: CSSProperties["flexGrow"];
   shrink?: CSSProperties["flexShrink"];
   children?: React.ReactNode;
 }
 
-const Flex = forwardRef<HTMLDivElement, FlexProps>(
-  (
-    {
-      alignItems,
-      alignContent,
-      justifyItems,
-      justifyContent,
-      direction,
-      basis,
-      wrap,
-      gap,
-      grow,
-      shrink,
-      children,
-      ...props
-    },
-    ref,
-  ) => {
-    const style: CSSProperties = {
-      display: "flex",
-      alignItems,
-      alignContent,
-      justifyItems,
-      justifyContent,
-      flexDirection: direction,
-      flexWrap: wrap,
-      flexBasis: basis,
-      gap,
-      flexGrow: grow,
-      flexShrink: shrink,
-      ...props.style,
-    };
+export default function Flex({
+  alignItems,
+  alignContent,
+  justifyItems,
+  justifyContent,
+  direction = "row",
+  basis,
+  wrap = "nowrap",
+  grow = 0,
+  shrink = 1,
+  children,
+  ...props
+}: FlexProps) {
+  const style: CSSProperties = {
+    display: "flex",
+    alignItems,
+    alignContent,
+    justifyItems,
+    justifyContent,
+    flexDirection: direction,
+    flexWrap: wrap,
+    flexBasis: basis,
+    flexGrow: grow,
+    flexShrink: shrink,
+    ...props.style,
+  };
 
-    return (
-      <Box {...props} style={style} ref={ref}>
-        {children}
-      </Box>
-    );
-  },
-);
-
-export default Flex;
+  return (
+    <Box {...props} style={style}>
+      {children}
+    </Box>
+  );
+}

@@ -1,8 +1,6 @@
-import type { HTMLAttributes, ReactNode } from "react";
+import type { ComponentProps } from "react";
 
-interface ButtonProps extends HTMLAttributes<HTMLButtonElement> {
-  children: ReactNode;
-}
+interface ButtonProps extends ComponentProps<"button"> {}
 
 export default function Button({ children, ...props }: ButtonProps) {
   return (

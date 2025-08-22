@@ -1,8 +1,6 @@
-import type { HTMLAttributes, ReactNode } from "react";
+import type { ComponentProps } from "react";
 
-interface OptionProps extends HTMLAttributes<HTMLOptionElement> {
-  children?: ReactNode;
-}
+interface OptionProps extends ComponentProps<"option"> {}
 
 export default function Option({ children, ...props }: OptionProps) {
   return <option {...props}>{children}</option>;

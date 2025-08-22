@@ -52,7 +52,7 @@ export default function EvalMenu({
       </Typography>
       {entryInputs &&
         Object.entries(entryInputs).map(([nodeId, input]) => (
-          <Flex key={nodeId} direction="row" alignItems="center" gap={10} style={{ marginTop: 5 }}>
+          <Flex key={nodeId} direction="row" alignItems="center" style={{ marginTop: 5, gap: 10 }}>
             <Typography size="defaultPlus" style={{ marginRight: 10 }}>
               Node ID: {nodeId}
             </Typography>
@@ -75,7 +75,7 @@ export default function EvalMenu({
       </Typography>
       {outputs &&
         Object.entries(outputs).map(([nodeId, input]) => (
-          <Flex key={nodeId} direction="row" alignItems="center" gap={10} style={{ marginTop: 5 }}>
+          <Flex key={nodeId} direction="row" alignItems="center" style={{ marginTop: 5, gap: 10 }}>
             <Typography size="defaultPlus" style={{ marginRight: 10 }}>
               Node ID: {nodeId}
             </Typography>

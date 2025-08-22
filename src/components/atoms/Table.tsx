@@ -1,64 +1,48 @@
-import type { HTMLAttributes, ReactNode, TdHTMLAttributes, ThHTMLAttributes } from "react";
+import type { ComponentProps } from "react";
 
-interface TableProps extends HTMLAttributes<HTMLTableElement> {
-  children?: ReactNode;
-}
+interface TableProps extends ComponentProps<"table"> {}
 
 export function Table({ children, ...props }: TableProps) {
   return <table {...props}>{children}</table>;
 }
 
-interface TableCaptionProps extends HTMLAttributes<HTMLTableCaptionElement> {
-  children?: ReactNode;
-}
+interface TableCaptionProps extends ComponentProps<"caption"> {}
 
 export function TableCaption({ children, ...props }: TableCaptionProps) {
   return <caption {...props}>{children}</caption>;
 }
 
-interface TableHeadProps extends HTMLAttributes<HTMLTableSectionElement> {
-  children?: ReactNode;
-}
+interface TableHeadProps extends ComponentProps<"thead"> {}
 
 export function TableHead({ children, ...props }: TableHeadProps) {
   return <thead {...props}>{children}</thead>;
 }
 
-interface TableBodyProps extends HTMLAttributes<HTMLTableSectionElement> {
-  children?: ReactNode;
-}
+interface TableBodyProps extends ComponentProps<"tbody"> {}
 
 export function TableBody({ children, ...props }: TableBodyProps) {
   return <tbody {...props}>{children}</tbody>;
 }
 
-interface TableFootProps extends HTMLAttributes<HTMLTableSectionElement> {
-  children?: ReactNode;
-}
+interface TableFootProps extends ComponentProps<"tfoot"> {}
 
 export function TableFoot({ children, ...props }: TableFootProps) {
   return <tfoot {...props}>{children}</tfoot>;
 }
 
-interface TableRowProps extends HTMLAttributes<HTMLTableRowElement> {
-  children?: ReactNode;
-}
+interface TableRowProps extends ComponentProps<"tr"> {}
 
 export function TableRow({ children, ...props }: TableRowProps) {
   return <tr {...props}>{children}</tr>;
 }
 
-interface TableCellProps extends TdHTMLAttributes<HTMLTableCellElement> {
-  children?: ReactNode;
-}
+interface TableCellProps extends ComponentProps<"td"> {}
 
 export function TableCell({ children, ...props }: TableCellProps) {
   return <td {...props}>{children}</td>;
 }
 
-interface TableHeaderCellProps extends ThHTMLAttributes<HTMLTableCellElement> {
-  children?: ReactNode;
-}
+interface TableHeaderCellProps extends ComponentProps<"th"> {}
 
 export function TableHeaderCell({ children, ...props }: TableHeaderCellProps) {
   return <th {...props}>{children}</th>;

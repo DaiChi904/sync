@@ -1,8 +1,6 @@
-import type { HTMLAttributes, ReactNode } from "react";
+import type { ComponentProps } from "react";
 
-interface SelectProps extends HTMLAttributes<HTMLSelectElement> {
-  children?: ReactNode;
-}
+interface SelectProps extends ComponentProps<"select"> {}
 
 export default function Select({ children, ...props }: SelectProps) {
   return <select {...props}>{children}</select>;

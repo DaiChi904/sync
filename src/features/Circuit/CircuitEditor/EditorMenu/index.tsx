@@ -68,8 +68,8 @@ export default function CircuitEditor({
         <Typography className="font-bold" size="large">
           Nodes
         </Typography>
-        <Flex direction="column" gap={5}>
-          <Grid xs={1} ys={1} xfs={7} yfs={1} container gap={5}>
+        <Flex direction="column" style={{ gap: 5 }}>
+          <Grid xs={1} ys={1} xfs={7} yfs={1} container style={{ gap: 5 }}>
             <Grid xs={1} ys={1} xfs={1} yfs={1}>
               Id
             </Grid>
@@ -93,7 +93,7 @@ export default function CircuitEditor({
             </Grid>
           </Grid>
           {nodes?.map((node) => (
-            <Grid key={node.id} xs={1} ys={1} xfs={7} yfs={1} container gap={5}>
+            <Grid key={node.id} xs={1} ys={1} xfs={7} yfs={1} container style={{ gap: 5 }}>
               <Grid xs={1} ys={1} xfs={1} yfs={1}>
                 {node.id}
               </Grid>
@@ -256,8 +256,8 @@ export default function CircuitEditor({
         <Typography className="font-bold" size="large">
           Edges
         </Typography>
-        <Flex direction="column" gap={5}>
-          <Grid xs={1} ys={1} xfs={5} yfs={1} container gap={5}>
+        <Flex direction="column" style={{ gap: 5 }}>
+          <Grid xs={1} ys={1} xfs={5} yfs={1} container style={{ gap: 5 }}>
             <Grid xs={1} ys={1} xfs={1} yfs={1}>
               Id
             </Grid>
@@ -272,7 +272,7 @@ export default function CircuitEditor({
             </Grid>
           </Grid>
           {edges?.map((edge) => (
-            <Grid key={edge.id} xs={1} ys={1} xfs={5} yfs={1} container gap={5}>
+            <Grid key={edge.id} xs={1} ys={1} xfs={5} yfs={1} container style={{ gap: 5 }}>
               <Grid xs={1} ys={1} xfs={1} yfs={1}>
                 <input
                   type="text"

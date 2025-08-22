@@ -1,0 +1,43 @@
+:root {
+  /* ===== Base ===== */
+  --color-bg: #f9fafb;
+  --color-text: #111827;
+  --color-white: #f9fafb;
+  --color-black: #111827;
+  --color-gray: #6b7280;
+
+  /* ===== Primary ===== */
+  --color-primary: #326ff3;
+  --color-primary-hover: #2557df;
+  --color-primary-active: #1e40af;
+  --color-primary-light: #bfdbfe;
+  --color-primary-light-hover: #8cc1fd;
+  --color-primary-light-active: #60a5fa;
+
+  /* ===== Secondary ===== */
+  --color-secondary: #8c4df9;
+  --color-secondary-hover: #6d28d9;
+  --color-secondary-active: #541cad;
+  --color-secondary-light: #d9bdf7;
+  --color-secondary-light-hover: #c9a8ec;
+  --color-secondary-light-active: #b08cd5;
+
+  /* ===== Success ===== */
+  --color-success: #10b981;
+  --color-success-hover: #059669;
+  --color-success-active: #047857;
+
+  /* ===== Error ===== */
+  --color-error: #ef4444;
+  --color-error-hover: #dc2626;
+  --color-error-active: #b91c1c;
+
+  /* ===== Disabled ===== */
+  --color-disabled-bg: #e5e7eb;
+  --color-disabled-text: #9ca3af;
+
+  /* ===== Other Colors ===== */
+  --color-circuit-diagram-bg: #222;
+  --color-circuit-state-high: #00a120;
+  --color-circuit-state-low: #9ca19d;
+}

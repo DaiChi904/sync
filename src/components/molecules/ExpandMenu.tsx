@@ -68,6 +68,7 @@ export default function ExpandMenu({
                     key={option.label}
                     variant="text"
                     animation="push"
+                    disabled={option.disabled}
                     style={{ padding: 5, border: "none" }}
                   >
                     <Typography onClick={option.onClick}>{option.label}</Typography>
@@ -81,6 +82,7 @@ export default function ExpandMenu({
                     <PrimaryButton
                       variant="link"
                       animation="push"
+                      disabled={option.disabled}
                       style={{ width: "100%", padding: 5, border: "none" }}
                     >
                       <Typography>{option.label}</Typography>
@@ -94,6 +96,7 @@ export default function ExpandMenu({
                     key={option.label}
                     variant="text"
                     animation="push"
+                    disabled={option.disabled}
                     style={{ padding: 5, border: "none" }}
                   >
                     <Typography onClick={option.onClick}>{option.label}</Typography>
@@ -107,6 +110,7 @@ export default function ExpandMenu({
                     <SecondaryButton
                       variant="link"
                       animation="push"
+                      disabled={option.disabled}
                       style={{ width: "100%", padding: 5, border: "none" }}
                     >
                       <Typography>{option.label}</Typography>

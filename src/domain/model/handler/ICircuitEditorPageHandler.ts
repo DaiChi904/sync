@@ -110,9 +110,12 @@ export interface ICircuitEditorPageHandler {
   uiState: {
     toolbarMenu: { open: "none" | "file" | "view" | "help" };
     diagramUtilityMenu: { open: "none" | "edge" | "node"; at: Coordinate | null };
+    toolBarMenu: { open: "none" | "file" | "view" | "goTo" | "help" };
+    activityBarMenu: { open: "infomation" | "circuitDiagram" | "rowCircuitData" };
   };
   openUtilityMenu: (kind: "node" | "edge") => (ev: React.MouseEvent) => void;
   closeUtilityMenu: () => void;
-  openToolbarMenu: (kind: "file" | "view" | "help") => void;
-  closeToolbarMenu: () => void;
+  openToolBarMenu: (kind: "file" | "view" | "goTo" | "help") => void;
+  closeToolBarMenu: () => void;
+  changeActivityBarMenu: (kind: "infomation" | "circuitDiagram" | "rowCircuitData") => void;
 }

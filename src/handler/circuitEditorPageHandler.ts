@@ -45,6 +45,8 @@ export const useCircuitEditorPageHandler = ({
   const [uiState, setUiState] = usePartialState<ICircuitEditorPageHandler["uiState"]>({
     toolbarMenu: { open: "none" },
     diagramUtilityMenu: { open: "none", at: null },
+    toolBarMenu: { open: "none" },
+    activityBarMenu: { open: "infomation" },
   });
 
   const [circuit, setCircuit] = useState<Circuit | undefined>(undefined);
@@ -788,16 +790,23 @@ export const useCircuitEditorPageHandler = ({
     setUiState("diagramUtilityMenu", { open: "none", at: null });
   }, [setUiState]);
 
-  const openToolbarMenu = useCallback(
-    (kind: "file" | "view" | "help") => {
-      setUiState("toolbarMenu", { open: kind });
+  const openToolBarMenu = useCallback(
+    (kind: "file" | "view" | "goTo" | "help") => {
+      setUiState("toolBarMenu", { open: kind });
     },
     [setUiState],
   );
 
-  const closeToolbarMenu = useCallback(() => {
-    setUiState("toolbarMenu", { open: "none" });
+  const closeToolBarMenu = useCallback(() => {
+    setUiState("toolBarMenu", { open: "none" });
   }, [setUiState]);
+
+  const changeActivityBarMenu = useCallback(
+    (kind: "infomation" | "circuitDiagram" | "rowCircuitData") => {
+      setUiState("activityBarMenu", { open: kind });
+    },
+    [setUiState],
+  );
 
   useEffect(() => {
     fetch();
@@ -849,7 +858,8 @@ export const useCircuitEditorPageHandler = ({
     uiState,
     openUtilityMenu,
     closeUtilityMenu,
-    openToolbarMenu,
-    closeToolbarMenu,
+    openToolBarMenu,
+    closeToolBarMenu,
+    changeActivityBarMenu,
   };
 };

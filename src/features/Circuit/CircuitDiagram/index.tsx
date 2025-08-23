@@ -130,7 +130,7 @@ export default function CircuitDiagram({
       viewBox={
         viewBox ? `${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}` : `${minX} ${minY} ${viewWidth} ${viewHeight}`
       }
-      style={{ background: "#222", cursor: isPanningRef?.current ? "grabbing" : "default" }}
+      style={{ background: "var(--color-circuit-diagram-bg)", cursor: isPanningRef?.current ? "grabbing" : "default" }}
       onContextMenu={disableContextMenu}
       onWheel={handleWheel}
       onMouseDown={handleMouseDown}

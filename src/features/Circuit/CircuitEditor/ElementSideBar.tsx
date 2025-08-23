@@ -1,3 +1,4 @@
+import SecondaryButton from "@/components/atoms/buttons/SecondaryButton";
 import Flex from "@/components/atoms/Flex";
 import Typography from "@/components/atoms/Typography";
 import { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
@@ -77,23 +78,19 @@ export default function ElementSideBar({ viewBox, addCircuitNode }: ElementSideB
 
   return (
     // biome-ignore lint/nursery/useUniqueElementIds: No need for unique id.
-    <Flex
-      id="element-side-bar"
-      direction="column"
-      style={{ height: "100%", padding: 5, marginRight: 10, borderRight: "1px solid #ccc" }}
-    >
+    <Flex id="element-side-bar" direction="column" style={{ height: "100%", padding: 5 }}>
       <Typography>Logic gates</Typography>
       <Flex wrap="wrap" style={{ marginTop: 10 }}>
         {nodes.map((type) => (
-          <Flex
+          <SecondaryButton
             key={type}
-            className="animated"
-            basis="50%"
-            style={{ textAlign: "center", padding: "1px" }}
+            variant="filled"
+            animation="push"
+            style={{ textAlign: "center", height: 50, padding: "5px", width: "50%", border: "none" }}
             onClick={() => add(type)}
           >
             {type}
-          </Flex>
+          </SecondaryButton>
         ))}
       </Flex>
     </Flex>

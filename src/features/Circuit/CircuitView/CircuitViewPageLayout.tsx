@@ -1,107 +1,126 @@
+import type { ComponentProps } from "react";
 import Flex from "@/components/atoms/Flex";
 import LoadingPuls from "@/components/atoms/LoadingPuls";
+import Pending from "@/components/atoms/Pending";
 import Typography from "@/components/atoms/Typography";
 import LayoutContainer from "@/components/layouts/LayoutContainer";
 import { useCircuitViewPageHandlerContext } from "@/contexts/CircuitViewPageHandlerContext";
 import CircuitDiagram from "../CircuitDiagram";
-import OverviewBar from "./OverviewBar";
-import ToolBar from "./ToolBar";
+import BaseCircuitPageLayout from "../common/BaseCircuitPageLayout";
+import { Table, TableCaption, TableCell, TableRow } from "@/components/atoms/Table";
 
 export default function CircuitViewPageLayout() {
-  const { error, overview, guiData } = useCircuitViewPageHandlerContext();
+  const { error, overview, guiData, uiState, openToolBarMenu, closeToolBarMenu, changeActivityBarMenu } =
+    useCircuitViewPageHandlerContext();
 
-  switch (true) {
-    case !error.failedToGetCircuitDetailError && overview === undefined && guiData === undefined: {
-      return (
-        <LayoutContainer>
-          <Flex
-            direction="column"
-            grow={1}
-            style={{ paddingTop: 10, paddingBottom: 10, paddingLeft: 15, paddingRight: 15 }}
+  const isInError = error.failedToGetCircuitDetailError || error.failedToParseCircuitDataError;
+
+  const toolBarOptions: ComponentProps<typeof BaseCircuitPageLayout>["toolBarOptions"] = [
+    {
+      label: "File",
+      menuOptions: [{ label: "Close Circuit", kind: "link", href: "/" }],
+      isExpanded: uiState.toolBarMenu.open === "file",
+      onClickExpand: () => openToolBarMenu("file"),
+      onClickClose: () => closeToolBarMenu(),
+    },
+    {
+      label: "View",
+      menuOptions: [],
+      isExpanded: uiState.toolBarMenu.open === "view",
+      onClickExpand: () => openToolBarMenu("view"),
+      onClickClose: () => closeToolBarMenu(),
+    },
+    {
+      label: "Go to",
+      menuOptions: [
+        { label: "Edit", kind: "link", href: `/circuit/${overview?.id}/edit` },
+        { label: "Emulation", kind: "link", href: `/circuit/${overview?.id}/emulation` },
+      ],
+      isExpanded: uiState.toolBarMenu.open === "goTo",
+      onClickExpand: () => openToolBarMenu("goTo"),
+      onClickClose: () => closeToolBarMenu(),
+    },
+    {
+      label: "Help",
+      menuOptions: [],
+      isExpanded: uiState.toolBarMenu.open === "help",
+      onClickExpand: () => openToolBarMenu("help"),
+      onClickClose: () => closeToolBarMenu(),
+    },
+  ];
+  const activityBarOptions: ComponentProps<typeof BaseCircuitPageLayout>["activityBarOptions"] = [
+    { label: "Infomaiton", onClick: () => changeActivityBarMenu("infomation") },
+    { label: "Circuit Diagram", onClick: () => changeActivityBarMenu("circuitDiagram") },
+  ];
+
+  return (
+    <LayoutContainer>
+      <BaseCircuitPageLayout toolBarOptions={toolBarOptions} activityBarOptions={activityBarOptions}>
+        <Flex direction="column" alignItems="center" justifyContent="center" grow={1}>
+          <Pending
+            isLoading={!overview && !isInError}
+            fallback={<LoadingPuls />}
+            error={isInError}
+            onFailure={<Typography>Failed to load circuit data.</Typography>}
           >
-            <OverviewBar error={error.failedToGetCircuitDetailError} overview={overview} />
-            <ToolBar />
-            <Flex
-              direction="column"
-              alignItems="center"
-              justifyContent="center"
-              grow={1}
-              style={{ width: "100%", marginTop: 10 }}
-            >
-              <LoadingPuls />
-            </Flex>
-          </Flex>
-        </LayoutContainer>
-      );
-    }
-    case !error.failedToGetCircuitDetailError && overview !== undefined && guiData !== undefined: {
-      return (
-        <LayoutContainer>
-          <Flex
-            direction="column"
-            grow={1}
-            style={{ paddingTop: 10, paddingBottom: 10, paddingLeft: 15, paddingRight: 15 }}
-          >
-            <OverviewBar error={error.failedToGetCircuitDetailError} overview={overview} />
-            <ToolBar circuitId={overview.id} />
-            <Flex
-              direction="column"
-              alignItems="center"
-              justifyContent="center"
-              grow={1}
-              style={{ width: "100%", marginTop: 10, background: "#222" }}
-            >
-              <CircuitDiagram data={guiData} />
-            </Flex>
-          </Flex>
-        </LayoutContainer>
-      );
-    }
-    case error.failedToGetCircuitDetailError: {
-      return (
-        <LayoutContainer>
-          <Flex
-            direction="column"
-            grow={1}
-            style={{ paddingTop: 10, paddingBottom: 10, paddingLeft: 15, paddingRight: 15 }}
-          >
-            <OverviewBar error={error.failedToGetCircuitDetailError} overview={overview} />
-            <ToolBar />
-            <Flex
-              direction="column"
-              alignItems="center"
-              justifyContent="center"
-              grow={1}
-              style={{ width: "100%", marginTop: 10 }}
-            >
-              <Typography>Failed to get circuit detail</Typography>
-            </Flex>
-          </Flex>
-        </LayoutContainer>
-      );
-    }
-    default: {
-      return (
-        <LayoutContainer>
-          <Flex
-            direction="column"
-            grow={1}
-            style={{ paddingTop: 10, paddingBottom: 10, paddingLeft: 15, paddingRight: 15 }}
-          >
-            <OverviewBar error={error.failedToGetCircuitDetailError} overview={overview} />
-            <ToolBar />
-            <Flex
-              direction="column"
-              alignItems="center"
-              justifyContent="center"
-              grow={1}
-              style={{ width: "100%", marginTop: 10 }}
-            >
-              <Typography>Something went wrong</Typography>
-            </Flex>
-          </Flex>
-        </LayoutContainer>
-      );
-    }
-  }
+            {uiState.activityBarMenu.open === "infomation" ? (
+              <Flex direction="column" grow={1} style={{ height: "100%", width: "100%", padding: 20 }}>
+                <Typography size="superLarge">Infomation</Typography>
+                <Flex>
+                  <Flex direction="column" basis="60%" style={{ padding: 10 }}>
+                    <Typography size="huge">{overview?.title}</Typography>
+                    <Typography size="medium">{overview?.description}</Typography>
+                  </Flex>
+                  <Flex direction="column" basis="40%" style={{ padding: 10, minWidth: "450px" }}>
+                    <Table>
+                      <TableCaption>
+                        <Typography size="medium" style={{ paddingLeft: 20, textAlign: "start"}}>Property</Typography>
+                      </TableCaption>
+                      <TableRow>
+                        <TableCell style={{ padding: "8px 20px" }}>
+                          <Typography size="defaultPlus">ID</Typography>
+                        </TableCell>
+                        <TableCell style={{ padding: "8px 20px" }}>
+                          <Typography size="defaultPlus">{overview?.id}</Typography>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell style={{ padding: "8px 20px" }}>
+                          <Typography size="defaultPlus">Created At</Typography>
+                        </TableCell>
+                        <TableCell style={{ padding: "8px 20px" }}>
+                          <Typography size="defaultPlus">{overview?.createdAt}</Typography>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell style={{ padding: "8px 20px" }}>
+                          <Typography size="defaultPlus">Updated At</Typography>
+                        </TableCell>
+                        <TableCell style={{ padding: "8px 20px" }}>
+                          <Typography size="defaultPlus">{overview?.updatedAt}</Typography>
+                        </TableCell>
+                      </TableRow>
+                    </Table>
+                  </Flex>
+                </Flex>
+              </Flex>
+            ) : (
+              <Flex
+                direction="column"
+                alignItems="center"
+                justifyContent="center"
+                grow={1}
+                style={{ height: "100%", width: "100%", background: "var(--color-circuit-diagram-bg)" }}
+              >
+                <CircuitDiagram
+                  // biome-ignore lint/style/noNonNullAssertion: guiData is guaranteed to be present when isLoading is false
+                  data={guiData!}
+                />
+              </Flex>
+            )}
+          </Pending>
+        </Flex>
+      </BaseCircuitPageLayout>
+    </LayoutContainer>
+  );
 }

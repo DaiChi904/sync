@@ -26,6 +26,10 @@ export const useCircuitViewPageHandler = ({
   circuitParserUsecase,
 }: CircuitViewPageHandlerDependencies): ICircuitViewPageHandler => {
   const [error, setError] = usePartialState<CircuitViewPageError>(circuitViewPageError);
+  const [uiState, setUiState] = usePartialState<ICircuitViewPageHandler["uiState"]>({
+    toolBarMenu: { open: "none" },
+    activityBarMenu: { open: "infomation" },
+  });
 
   const [overview, setOverview] = useState<CircuitOverview | undefined>(undefined);
   const [guiData, setGuiData] = useState<CircuitGuiData | undefined>(undefined);
@@ -82,6 +86,24 @@ export const useCircuitViewPageHandler = ({
     );
   }, [query, getCircuitDetailUsecase, setError, circuitParserUsecase]);
 
+  const openToolBarMenu = useCallback(
+    (kind: "file" | "view" | "goTo" | "help") => {
+      setUiState("toolBarMenu", { open: kind });
+    },
+    [setUiState],
+  );
+
+  const closeToolBarMenu = useCallback(() => {
+    setUiState("toolBarMenu", { open: "none" });
+  }, [setUiState]);
+
+  const changeActivityBarMenu = useCallback(
+    (kind: "infomation" | "circuitDiagram") => {
+      setUiState("activityBarMenu", { open: kind });
+    },
+    [setUiState],
+  );
+
   useEffect(() => {
     fetch();
   }, [fetch]);
@@ -90,5 +112,9 @@ export const useCircuitViewPageHandler = ({
     error,
     overview,
     guiData,
+    uiState,
+    openToolBarMenu,
+    closeToolBarMenu,
+    changeActivityBarMenu,
   };
 };

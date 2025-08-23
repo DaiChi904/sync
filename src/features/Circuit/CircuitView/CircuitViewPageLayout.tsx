@@ -2,12 +2,12 @@ import type { ComponentProps } from "react";
 import Flex from "@/components/atoms/Flex";
 import LoadingPuls from "@/components/atoms/LoadingPuls";
 import Pending from "@/components/atoms/Pending";
+import { Table, TableCaption, TableCell, TableRow } from "@/components/atoms/Table";
 import Typography from "@/components/atoms/Typography";
 import LayoutContainer from "@/components/layouts/LayoutContainer";
 import { useCircuitViewPageHandlerContext } from "@/contexts/CircuitViewPageHandlerContext";
 import CircuitDiagram from "../CircuitDiagram";
 import BaseCircuitPageLayout from "../common/BaseCircuitPageLayout";
-import { Table, TableCaption, TableCell, TableRow } from "@/components/atoms/Table";
 
 export default function CircuitViewPageLayout() {
   const { error, overview, guiData, uiState, openToolBarMenu, closeToolBarMenu, changeActivityBarMenu } =
@@ -74,7 +74,9 @@ export default function CircuitViewPageLayout() {
                   <Flex direction="column" basis="40%" style={{ padding: 10, minWidth: "450px" }}>
                     <Table>
                       <TableCaption>
-                        <Typography size="medium" style={{ paddingLeft: 20, textAlign: "start"}}>Property</Typography>
+                        <Typography size="medium" style={{ paddingLeft: 20, textAlign: "start" }}>
+                          Property
+                        </Typography>
                       </TableCaption>
                       <TableRow>
                         <TableCell style={{ padding: "8px 20px" }}>

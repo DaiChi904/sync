@@ -52,7 +52,7 @@ export default function Edge({
         <defs>
           {/** biome-ignore lint/nursery/useUniqueElementIds: No need for unique id. */}
           <marker id="arrow" markerWidth="5" markerHeight="5" refX="5" refY="2.5" orient="auto">
-            <path d="M 0 0 L 5 2.5 L 0 5 z" fill="#00a120" />
+            <path d="M 0 0 L 5 2.5 L 0 5 z" fill="var(--color-circuit-state-high)" />
           </marker>
         </defs>
 
@@ -62,7 +62,9 @@ export default function Edge({
             y1={from.y}
             x2={to.x}
             y2={to.y}
-            stroke={outputMap?.get(edge.from) === true ? "#00a120" : "#9ca19d"}
+            stroke={
+              outputMap?.get(edge.from) === true ? "var(--color-circuit-state-high)" : "var(--color-circuit-state-low)"
+            }
             strokeWidth={2}
             markerEnd={isInFocus ? "url(#arrow)" : "none"}
           />
@@ -80,7 +82,18 @@ export default function Edge({
               openEdgeUtilityMenu?.(ev);
             }}
           />
-          <circle cx={from.x} cy={from.y} r={0.5} fill="#00a120" pointerEvents="all" stroke="#00a120" />
+          <circle
+            cx={from.x}
+            cy={from.y}
+            r={0.5}
+            pointerEvents="all"
+            fill={
+              outputMap?.get(edge.from) === true ? "var(--color-circuit-state-high)" : "var(--color-circuit-state-low)"
+            }
+            stroke={
+              outputMap?.get(edge.from) === true ? "var(--color-circuit-state-high)" : "var(--color-circuit-state-low)"
+            }
+          />
 
           {isInFocus && (
             <>

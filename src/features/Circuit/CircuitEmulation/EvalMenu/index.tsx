@@ -1,5 +1,8 @@
 import Box from "@/components/atoms/Box";
+import Button from "@/components/atoms/buttons/Button";
+import SecondaryButton from "@/components/atoms/buttons/SecondaryButton";
 import Flex from "@/components/atoms/Flex";
+import { Table, TableCaption, TableCell, TableRow } from "@/components/atoms/Table";
 import Typography from "@/components/atoms/Typography";
 import { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import { EvalResult } from "@/domain/model/valueObject/evalResult";
@@ -27,15 +30,16 @@ export default function EvalMenu({
   evalCircuit,
 }: EvalMenuProps) {
   return (
-    <Flex direction="column" grow={1} style={{ paddingTop: 10, paddingBottom: 10, paddingLeft: 15, paddingRight: 15 }}>
+    <Flex direction="column" grow={1} style={{ padding: 50 }}>
       <Typography size="large">Circuit Evaluation Menu</Typography>
-      <Box
+      <SecondaryButton
         onClick={evalCircuit}
-        className="animated"
-        style={{ marginTop: 10, cursor: "pointer", border: "1px solid #ccc", padding: 10 }}
+        variant="outlined"
+        animation="slide"
+        style={{ border: "none", width: "300px", height: "50px" }}
       >
-        <Typography size="mediumPlus">Eval</Typography>
-      </Box>
+        <Typography size="mediumPlus">{`Eval >>>`}</Typography>
+      </SecondaryButton>
       {error.failedToSetupEmulatorServiceError && (
         <Typography size="medium" style={{ color: "red", marginTop: 10 }}>
           Failed to setup the circuit emulator service.
@@ -46,50 +50,74 @@ export default function EvalMenu({
           Failed to evaluate the circuit.
         </Typography>
       )}
+
       <Typography size="mediumPlus">Current Phase: {currentPhase}</Typography>
-      <Typography size="medium" style={{ marginRight: 10 }}>
-        Entry Inputs
-      </Typography>
-      {entryInputs &&
-        Object.entries(entryInputs).map(([nodeId, input]) => (
-          <Flex key={nodeId} direction="row" alignItems="center" style={{ marginTop: 5, gap: 10 }}>
-            <Typography size="defaultPlus" style={{ marginRight: 10 }}>
-              Node ID: {nodeId}
-            </Typography>
-            <Box
-              onClick={() => updateEntryInputs(CircuitNodeId.from(nodeId), EvalResult.from(!input))}
-              className="animated"
-              style={{
-                padding: 5,
-                backgroundColor: input ? "#4caf50" : "#f44336",
-                color: "white",
-                cursor: "pointer",
-              }}
-            >
-              {input ? "True" : "False"}
-            </Box>
-          </Flex>
-        ))}
-      <Typography size="medium" style={{ marginRight: 10 }}>
-        Outputs
-      </Typography>
-      {outputs &&
-        Object.entries(outputs).map(([nodeId, input]) => (
-          <Flex key={nodeId} direction="row" alignItems="center" style={{ marginTop: 5, gap: 10 }}>
-            <Typography size="defaultPlus" style={{ marginRight: 10 }}>
-              Node ID: {nodeId}
-            </Typography>
-            <Box
-              style={{
-                padding: 5,
-                backgroundColor: input ? "#4caf50" : "#f44336",
-                color: "white",
-              }}
-            >
-              {input ? "True" : "False"}
-            </Box>
-          </Flex>
-        ))}
+
+      <Table style={{ width: "400px" }}>
+        <TableCaption>
+          <Typography size="medium">Entry Inputs</Typography>
+        </TableCaption>
+        {entryInputs &&
+          Object.entries(entryInputs).map(([nodeId, input]) => (
+            <TableRow key={nodeId}>
+              <TableCell style={{ width: "300px" }}>
+                <Typography size="defaultPlus" style={{ marginRight: 10 }}>
+                  Node ID: {nodeId}
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Button
+                  className="button-animation-push"
+                  style={{
+                    color: "white",
+                    cursor: "pointer",
+                    width: "100px",
+                    height: "30px",
+                    padding: 5,
+                    backgroundColor: input ? "var(--color-circuit-state-high)" : "var(--color-circuit-state-low)",
+                    border: "none",
+                  }}
+                  onClick={() => updateEntryInputs(CircuitNodeId.from(nodeId), EvalResult.from(!input))}
+                >
+                  <Typography>{input ? "True" : "False"}</Typography>
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+      </Table>
+
+      <Table style={{ width: "400px" }}>
+        <TableCaption>
+          <Typography size="medium">Outputs</Typography>
+        </TableCaption>
+        {entryInputs &&
+          Object.entries(outputs).map(([nodeId, input]) => (
+            <TableRow key={nodeId}>
+              <TableCell style={{ width: "300px" }}>
+                <Typography size="defaultPlus" style={{ marginRight: 10 }}>
+                  Node ID: {nodeId}
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Box
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "white",
+                    width: "100px",
+                    height: "30px",
+                    padding: 5,
+                    backgroundColor: input ? "var(--color-circuit-state-high)" : "var(--color-circuit-state-low)",
+                    border: "none",
+                  }}
+                >
+                  <Typography style={{ textAlign: "center" }}>{input ? "True" : "False"}</Typography>
+                </Box>
+              </TableCell>
+            </TableRow>
+          ))}
+      </Table>
     </Flex>
   );
 }

@@ -28,4 +28,15 @@ export interface ICircuitEmulationPageHandler {
   outputs: Record<CircuitNodeId, EvalResult>;
   updateEntryInputs: (nodeID: CircuitNodeId, value: EvalResult) => void;
   evalCircuit: () => void;
+  uiState: {
+    toolBarMenu: {
+      open: "none" | "file" | "view" | "goTo" | "help";
+    };
+    activityBarMenu: {
+      open: "evalMenu";
+    };
+  };
+  openToolBarMenu: (kind: "file" | "view" | "goTo" | "help") => void;
+  closeToolBarMenu: () => void;
+  changeActivityBarMenu: (kind: "evalMenu") => void;
 }

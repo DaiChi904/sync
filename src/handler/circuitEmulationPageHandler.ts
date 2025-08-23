@@ -34,6 +34,10 @@ export const useCircuitEmulationPageHandler = ({
   circuitParserUsecase,
 }: CircuitEmulationPageHandlerDependencies): ICircuitEmulationPageHandler => {
   const [error, setError] = usePartialState<CircuitEmulationPageError>(circuitEmulationPageError);
+  const [uiState, setUiState] = usePartialState<ICircuitEmulationPageHandler["uiState"]>({
+    toolBarMenu: { open: "none" },
+    activityBarMenu: { open: "evalMenu" },
+  });
 
   const [overview, setOverview] = useState<CircuitOverview | undefined>(undefined);
   const [guiData, setGuiData] = useState<CircuitGuiData | undefined>(undefined);
@@ -264,6 +268,24 @@ export const useCircuitEmulationPageHandler = ({
     );
   }, [client, registOutputs, setError, entryInputs, currentPhase]);
 
+  const openToolBarMenu = useCallback(
+    (kind: "file" | "view" | "goTo" | "help") => {
+      setUiState("toolBarMenu", { open: kind });
+    },
+    [setUiState],
+  );
+
+  const closeToolBarMenu = useCallback(() => {
+    setUiState("toolBarMenu", { open: "none" });
+  }, [setUiState]);
+
+  const changeActivityBarMenu = useCallback(
+    (kind: "evalMenu") => {
+      setUiState("activityBarMenu", { open: kind });
+    },
+    [setUiState],
+  );
+
   useEffect(() => {
     fetch();
   }, [fetch]);
@@ -286,5 +308,9 @@ export const useCircuitEmulationPageHandler = ({
     outputs,
     updateEntryInputs,
     evalCircuit,
+    uiState,
+    openToolBarMenu,
+    closeToolBarMenu,
+    changeActivityBarMenu,
   };
 };

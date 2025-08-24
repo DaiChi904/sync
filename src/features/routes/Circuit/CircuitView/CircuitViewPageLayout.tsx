@@ -6,7 +6,7 @@ import { Table, TableCaption, TableCell, TableRow } from "@/components/atoms/Tab
 import Typography from "@/components/atoms/Typography";
 import LayoutContainer from "@/components/layouts/LayoutContainer";
 import { useCircuitViewPageHandlerContext } from "@/contexts/CircuitViewPageHandlerContext";
-import CircuitDiagram from "../CircuitDiagram";
+import CircuitDiagram from "../../../common/CircuitDiagram";
 import BaseCircuitPageLayout from "../common/BaseCircuitPageLayout";
 
 export default function CircuitViewPageLayout() {

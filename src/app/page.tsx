@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { HomePageHandlerContext } from "@/contexts/HomePageHandlerContext";
-import HomePageLayout from "@/features/Home/HomePageLayout";
+import HomePageLayout from "@/features/routes/Home/HomePageLayout";
 import { useHomePageHandler } from "@/handler/homePageHandler";
 import { CircuitOverviewsQueryService } from "@/infrastructure/queryService/circuitOverviewsQueryService";
 import { CircuitRepository } from "@/infrastructure/repository/circuitRepository";

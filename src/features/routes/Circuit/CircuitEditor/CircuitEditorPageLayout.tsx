@@ -6,7 +6,7 @@ import Pending from "@/components/atoms/Pending";
 import Typography from "@/components/atoms/Typography";
 import LayoutContainer from "@/components/layouts/LayoutContainer";
 import { useCircuitEditorPageHandlerContext } from "@/contexts/CircuitEditorPageHandlerContext";
-import CircuitDiagram from "../CircuitDiagram";
+import CircuitDiagram from "../../../common/CircuitDiagram";
 import BaseCircuitPageLayout from "../common/BaseCircuitPageLayout";
 import ElementSideBar from "./ElementSideBar";
 import FormatSideBar from "./FormatSideBar";

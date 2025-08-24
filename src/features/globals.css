@@ -294,3 +294,92 @@ body {
   background-color: transparent;
   cursor: not-allowed;
 }
+
+/* --- Base for all textareas --- */
+.textarea-primary-filled,
+.textarea-primary-outlined,
+.textarea-secondary-filled,
+.textarea-secondary-outlined {
+  display: block;
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  line-height: 1.5;
+  color: var(--color-text);
+  background-clip: padding-box;
+  border-radius: 0.25rem;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+  outline: 0;
+  min-height: 120px;
+  resize: vertical;
+}
+
+.textarea-primary-filled::placeholder,
+.textarea-primary-outlined::placeholder,
+.textarea-secondary-filled::placeholder,
+.textarea-secondary-outlined::placeholder {
+  color: var(--color-gray);
+}
+
+.textarea-primary-filled,
+.textarea-secondary-filled {
+  background-color: var(--color-white);
+  border: 2px solid var(--color-light-gray);
+}
+.textarea-primary-filled:hover:not(:disabled),
+.textarea-secondary-filled:hover:not(:disabled) {
+  border-color: var(--color-gray);
+}
+.textarea-primary-filled:disabled,
+.textarea-secondary-filled:disabled {
+  background-color: var(--color-disabled-bg);
+  color: var(--color-disabled-text);
+  border-color: var(--color-disabled-bg);
+  cursor: not-allowed;
+  resize: none;
+}
+
+.textarea-primary-filled:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+.textarea-secondary-filled:focus {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px var(--color-secondary-light);
+}
+
+.textarea-primary-outlined {
+  background-color: transparent;
+  border: 2px solid var(--color-primary);
+}
+.textarea-primary-outlined:focus {
+  border-color: var(--color-primary-active);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+.textarea-primary-outlined:disabled {
+  border-color: var(--color-disabled-text);
+  color: var(--color-disabled-text);
+  background-color: transparent;
+  cursor: not-allowed;
+  resize: none;
+}
+
+.textarea-secondary-outlined {
+  background-color: transparent;
+  border: 2px solid var(--color-secondary);
+}
+.textarea-secondary-outlined:focus {
+  border-color: var(--color-secondary-active);
+  box-shadow: 0 0 0 3px var(--color-secondary-light);
+}
+.textarea-secondary-outlined:disabled {
+  border-color: var(--color-disabled-text);
+  color: var(--color-disabled-text);
+  background-color: transparent;
+  cursor: not-allowed;
+  resize: none;
+}

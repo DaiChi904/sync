@@ -13,12 +13,12 @@ import PrimaryTextarea from "@/components/atoms/textarea/PrimaryTextarea";
 import SecondaryTextarea from "@/components/atoms/textarea/SecondaryTextarea";
 import LayoutContainer from "@/components/layouts/LayoutContainer";
 import { useCircuitEditorPageHandlerContext } from "@/contexts/CircuitEditorPageHandlerContext";
+import { CircuitDescription } from "@/domain/model/valueObject/circuitDescription";
+import { CircuitTitle } from "@/domain/model/valueObject/circuitTitle";
 import CircuitDiagram from "../../../common/CircuitDiagram";
 import BaseCircuitPageLayout from "../common/BaseCircuitPageLayout";
 import ElementSideBar from "./ElementSideBar";
 import FormatSideBar from "./FormatSideBar";
-import { CircuitTitle } from "@/domain/model/valueObject/circuitTitle";
-import { CircuitDescription } from "@/domain/model/valueObject/circuitDescription";
 
 export default function CircuitEditorPageLayout() {
   const {
@@ -36,10 +36,7 @@ export default function CircuitEditorPageLayout() {
     changeTitle,
     changeDescription,
     addCircuitNode,
-    updateCircuitNode,
     deleteCircuitNode,
-    addCircuitEdge,
-    updateCircuitEdge,
     deleteCircuitEdge,
     circuitDiagramContainer,
     svgRef,
@@ -148,11 +145,20 @@ export default function CircuitEditorPageLayout() {
                     <Form>
                       <Label>
                         <Typography size="large">Title</Typography>
-                        <SecondaryInput type="text" placeholder="Title" value={circuit?.title} onChange={(ev) => changeTitle(CircuitTitle.from(ev.target.value))} />
+                        <SecondaryInput
+                          type="text"
+                          placeholder="Title"
+                          value={circuit?.title}
+                          onChange={(ev) => changeTitle(CircuitTitle.from(ev.target.value))}
+                        />
                       </Label>
                       <Label>
                         <Typography size="large">Description</Typography>
-                        <SecondaryTextarea placeholder="Description" value={circuit?.description} onChange={(ev) => changeDescription(CircuitDescription.from(ev.target.value))} />
+                        <SecondaryTextarea
+                          placeholder="Description"
+                          value={circuit?.description}
+                          onChange={(ev) => changeDescription(CircuitDescription.from(ev.target.value))}
+                        />
                       </Label>
                     </Form>
                   </Flex>

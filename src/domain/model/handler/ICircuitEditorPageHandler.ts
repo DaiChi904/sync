@@ -50,27 +50,7 @@ export interface ICircuitEditorPageHandler {
     coordinate: Coordinate;
     size: CircuitNodeSize;
   }) => void;
-  updateCircuitNode: (newNode: {
-    id: CircuitNodeId;
-    type: CircuitNodeType;
-    inputs: CircuitNodePinId[];
-    outputs: CircuitNodePinId[];
-    coordinate: Coordinate;
-    size: CircuitNodeSize;
-  }) => void;
   deleteCircuitNode: (nodeId: CircuitNodeId) => void;
-  addCircuitEdge: (newEdge: {
-    id: CircuitEdgeId;
-    from: CircuitNodePinId;
-    to: CircuitNodePinId;
-    waypoints: Waypoint | null;
-  }) => void;
-  updateCircuitEdge: (newEdge: {
-    id: CircuitEdgeId;
-    from: CircuitNodePinId;
-    to: CircuitNodePinId;
-    waypoints: Waypoint | null;
-  }) => void;
   deleteCircuitEdge: (edgeId: CircuitEdgeId) => void;
   circuitDiagramContainer: React.RefObject<HTMLDivElement | null>;
   svgRef: React.RefObject<SVGSVGElement | null>;

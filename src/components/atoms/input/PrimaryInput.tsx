@@ -5,10 +5,5 @@ interface PrimaryInput extends ComponentProps<"input"> {
 }
 
 export default function PrimaryInput({ variant = "outlined", ...props }: PrimaryInput) {
-  return (
-    <input
-      {...props}
-      className={`input-primary-${variant}`}
-    />
-  );
+  return <input {...props} className={`input-primary-${variant}`} />;
 }

@@ -10,7 +10,6 @@ import type { CircuitNodeSize } from "../valueObject/circuitNodeSize";
 import type { CircuitNodeType } from "../valueObject/circuitNodeType";
 import type { CircuitTitle } from "../valueObject/circuitTitle";
 import type { Coordinate } from "../valueObject/coordinate";
-import type { Waypoint } from "../valueObject/waypoint";
 
 export interface CircuitEditorPageError {
   failedToGetCircuitDetailError: boolean;

@@ -10,5 +10,10 @@ export const homePageError: HomePageError = {
 
 export interface IHomePageHandler {
   error: HomePageError;
+  uiState: {
+    tab: { open: "home" | "new" };
+  };
   circuitOverviews: Array<CircuitOverview> | undefined;
+  changeActivityBarMenu: (kind: "home" | "new") => void;
+  addNewCircuit: (kind: "empty") => void;
 }

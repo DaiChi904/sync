@@ -1,4 +1,5 @@
 import type { Brand } from "@/utils/brand";
+import { generateId } from "@/utils/id";
 
 const brandSymbol = Symbol("CircuitId");
 
@@ -11,5 +12,9 @@ export namespace CircuitId {
 
   export const unBrand = (value: CircuitId): string => {
     return value as unknown as string;
+  };
+
+  export const generate = (): CircuitId => {
+    return from(generateId("circuit"));
   };
 }

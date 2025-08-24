@@ -28,6 +28,25 @@ export class CircuitEditorUsecase implements ICircuitEditorUsecase {
     this.circuitRepository = circuitRepository;
   }
 
+  async add(newCircuit: Circuit): Promise<Result<void>> {
+    return await Attempt.asyncProceed(
+      async () => {
+        const res = await this.circuitRepository.save("ADD", newCircuit);
+        if (!res.ok) {
+          throw new Attempt.Abort("CircuitEditorUsecase.add", "Failed to add circuit.", { cause: res.error });
+        }
+
+        return { ok: true, value: undefined } as const;
+      },
+      (err: unknown) => {
+        return {
+          ok: false,
+          error: err,
+        } as const;
+      },
+    );
+  }
+
   async save(newCircuit: Circuit): Promise<Result<void>> {
     return await Attempt.asyncProceed(
       async () => {

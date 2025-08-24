@@ -247,6 +247,23 @@ export const useCircuitEditorPageHandler = ({
     );
   }, [circuit, circuitEditorUsecase, setError]);
 
+  const deleteCircuit = useCallback(async () => {
+    await Attempt.asyncProceed(
+      async () => {
+        if (!circuit) {
+          throw new Attempt.Abort("circuitEditorPageHandler.delete", "Circuit is not defined.");
+        }
+        const res = await circuitEditorUsecase.delete(circuit.id);
+        if (!res.ok) {
+          throw new Attempt.Abort("circuitEditorPageHandler.delete", "Failed to delete circuit.", {
+            cause: res.error,
+          });
+        }
+      },
+      () => {},
+    );
+  }, [circuit, circuitEditorUsecase]);
+
   const changeTitle = useCallback((title: CircuitTitle): void => {
     Attempt.proceed(
       () => {
@@ -865,6 +882,7 @@ export const useCircuitEditorPageHandler = ({
     handleWheel,
     preventBrowserZoom,
     save,
+    deleteCircuit,
     changeTitle,
     changeDescription,
     addCircuitNode,

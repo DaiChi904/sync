@@ -3,6 +3,7 @@ import type { ICircuitRepository } from "@/domain/model/repository/ICircuitRepos
 import type { ICircuitParserService } from "@/domain/model/service/ICircuitParserService";
 import type { ICircuitEditorUsecase } from "@/domain/model/usecase/ICircuitEditorUsecase";
 import type { CircuitData } from "@/domain/model/valueObject/circuitData";
+import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 import { Attempt } from "@/utils/attempt";
@@ -53,6 +54,25 @@ export class CircuitEditorUsecase implements ICircuitEditorUsecase {
         const res = await this.circuitRepository.save("UPDATE", newCircuit);
         if (!res.ok) {
           throw new Attempt.Abort("CircuitEditorUsecase.save", "Failed to save circuit.", { cause: res.error });
+        }
+
+        return { ok: true, value: undefined } as const;
+      },
+      (err: unknown) => {
+        return {
+          ok: false,
+          error: err,
+        } as const;
+      },
+    );
+  }
+
+  async delete(id: CircuitId): Promise<Result<void>> {
+    return await Attempt.asyncProceed(
+      async () => {
+        const res = await this.circuitRepository.delete(id);
+        if (!res.ok) {
+          throw new Attempt.Abort("CircuitEditorUsecase.delete", "Failed to delete circuit.", { cause: res.error });
         }
 
         return { ok: true, value: undefined } as const;

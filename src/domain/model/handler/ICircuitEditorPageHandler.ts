@@ -39,6 +39,7 @@ export interface ICircuitEditorPageHandler {
   handleWheel: (ev: React.WheelEvent) => void;
   preventBrowserZoom: (ref: React.RefObject<SVGSVGElement | null>) => void;
   save: () => void;
+  deleteCircuit: () => void;
   changeTitle: (title: CircuitTitle) => void;
   changeDescription: (description: CircuitDescription) => void;
   addCircuitNode: (newNode: {

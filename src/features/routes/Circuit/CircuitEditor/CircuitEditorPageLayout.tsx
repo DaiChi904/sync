@@ -2,14 +2,11 @@ import type { ComponentProps } from "react";
 import Flex from "@/components/atoms/Flex";
 import Form from "@/components/atoms/Form";
 import Grid from "@/components/atoms/Grid";
-import Input from "@/components/atoms/input/Input";
-import PrimaryInput from "@/components/atoms/input/PrimaryInput";
 import SecondaryInput from "@/components/atoms/input/SecondaryInput";
 import Label from "@/components/atoms/Label";
 import LoadingPuls from "@/components/atoms/LoadingPuls";
 import Pending from "@/components/atoms/Pending";
 import Typography from "@/components/atoms/Typography";
-import PrimaryTextarea from "@/components/atoms/textarea/PrimaryTextarea";
 import SecondaryTextarea from "@/components/atoms/textarea/SecondaryTextarea";
 import LayoutContainer from "@/components/layouts/LayoutContainer";
 import { useCircuitEditorPageHandlerContext } from "@/contexts/CircuitEditorPageHandlerContext";
@@ -33,6 +30,7 @@ export default function CircuitEditorPageLayout() {
     handleWheel,
     preventBrowserZoom,
     save,
+    deleteCircuit,
     changeTitle,
     changeDescription,
     addCircuitNode,
@@ -78,6 +76,13 @@ export default function CircuitEditorPageLayout() {
           onClick: () => {
             save();
             closeToolBarMenu();
+          },
+        },
+        {
+          label: "Delete",
+          kind: "func",
+          onClick: () => {
+            deleteCircuit();
           },
         },
         { label: "Close Edit Page", kind: "link", href: `/circuit/${circuit?.id}` },

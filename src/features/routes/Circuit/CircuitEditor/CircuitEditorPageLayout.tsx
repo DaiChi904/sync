@@ -1,15 +1,24 @@
 import type { ComponentProps } from "react";
 import Flex from "@/components/atoms/Flex";
+import Form from "@/components/atoms/Form";
 import Grid from "@/components/atoms/Grid";
+import Input from "@/components/atoms/input/Input";
+import PrimaryInput from "@/components/atoms/input/PrimaryInput";
+import SecondaryInput from "@/components/atoms/input/SecondaryInput";
+import Label from "@/components/atoms/Label";
 import LoadingPuls from "@/components/atoms/LoadingPuls";
 import Pending from "@/components/atoms/Pending";
 import Typography from "@/components/atoms/Typography";
+import PrimaryTextarea from "@/components/atoms/textarea/PrimaryTextarea";
+import SecondaryTextarea from "@/components/atoms/textarea/SecondaryTextarea";
 import LayoutContainer from "@/components/layouts/LayoutContainer";
 import { useCircuitEditorPageHandlerContext } from "@/contexts/CircuitEditorPageHandlerContext";
 import CircuitDiagram from "../../../common/CircuitDiagram";
 import BaseCircuitPageLayout from "../common/BaseCircuitPageLayout";
 import ElementSideBar from "./ElementSideBar";
 import FormatSideBar from "./FormatSideBar";
+import { CircuitTitle } from "@/domain/model/valueObject/circuitTitle";
+import { CircuitDescription } from "@/domain/model/valueObject/circuitDescription";
 
 export default function CircuitEditorPageLayout() {
   const {
@@ -24,6 +33,8 @@ export default function CircuitEditorPageLayout() {
     handleWheel,
     preventBrowserZoom,
     save,
+    changeTitle,
+    changeDescription,
     addCircuitNode,
     updateCircuitNode,
     deleteCircuitNode,
@@ -132,14 +143,18 @@ export default function CircuitEditorPageLayout() {
             switch (uiState.activityBarMenu.open) {
               case "infomation":
                 return (
-                  <Flex
-                    direction="column"
-                    alignItems="center"
-                    justifyContent="center"
-                    grow={1}
-                    style={{ width: "100%", height: "100%" }}
-                  >
-                    <Typography>Not Implemented yet.</Typography>
+                  <Flex direction="column" grow={1} style={{ width: "100%", height: "100%", padding: 10 }}>
+                    <Typography size="superLarge">Infomation</Typography>
+                    <Form>
+                      <Label>
+                        <Typography size="large">Title</Typography>
+                        <SecondaryInput type="text" placeholder="Title" value={circuit?.title} onChange={(ev) => changeTitle(CircuitTitle.from(ev.target.value))} />
+                      </Label>
+                      <Label>
+                        <Typography size="large">Description</Typography>
+                        <SecondaryTextarea placeholder="Description" value={circuit?.description} onChange={(ev) => changeDescription(CircuitDescription.from(ev.target.value))} />
+                      </Label>
+                    </Form>
                   </Flex>
                 );
               case "circuitDiagram":

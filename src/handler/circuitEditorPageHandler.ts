@@ -15,12 +15,14 @@ import type { ICircuitParserService } from "@/domain/model/service/ICircuitParse
 import type { ICircuitEditorUsecase } from "@/domain/model/usecase/ICircuitEditorUsecase";
 import type { IGetCircuitDetailUsecase } from "@/domain/model/usecase/IGetCircuitDetailUsecase";
 import { CircuitData } from "@/domain/model/valueObject/circuitData";
+import type { CircuitDescription } from "@/domain/model/valueObject/circuitDescription";
 import { CircuitEdgeId } from "@/domain/model/valueObject/circuitEdgeId";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 import type { CircuitNodeSize } from "@/domain/model/valueObject/circuitNodeSize";
 import type { CircuitNodeType } from "@/domain/model/valueObject/circuitNodeType";
+import type { CircuitTitle } from "@/domain/model/valueObject/circuitTitle";
 import { Coordinate } from "@/domain/model/valueObject/coordinate";
 import { Waypoint } from "@/domain/model/valueObject/waypoint";
 import { usePartialState } from "@/hooks/partialState";
@@ -244,6 +246,40 @@ export const useCircuitEditorPageHandler = ({
       () => setError("failedToSaveCircuitError", true),
     );
   }, [circuit, circuitEditorUsecase, setError]);
+
+  const changeTitle = useCallback((title: CircuitTitle): void => {
+    Attempt.proceed(
+      () => {
+        setCircuit((prev) => {
+          if (!prev) {
+            throw new Attempt.Abort("circuitEditorPageHandler.changeTitle", "Circuit is not defined.");
+          }
+          return Circuit.from({
+            ...prev,
+            title: title,
+          });
+        });
+      },
+      () => {},
+    );
+  }, []);
+
+  const changeDescription = useCallback((description: CircuitDescription): void => {
+    Attempt.proceed(
+      () => {
+        setCircuit((prev) => {
+          if (!prev) {
+            throw new Attempt.Abort("circuitEditorPageHandler.changeDescription", "Circuit is not defined.");
+          }
+          return Circuit.from({
+            ...prev,
+            description: description,
+          });
+        });
+      },
+      () => {},
+    );
+  }, []);
 
   const addCircuitNode = useCallback(
     (newNode: {
@@ -829,6 +865,8 @@ export const useCircuitEditorPageHandler = ({
     handleWheel,
     preventBrowserZoom,
     save,
+    changeTitle,
+    changeDescription,
     addCircuitNode,
     updateCircuitNode,
     deleteCircuitNode,

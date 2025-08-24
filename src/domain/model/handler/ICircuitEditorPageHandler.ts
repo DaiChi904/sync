@@ -2,11 +2,13 @@ import type { Circuit } from "../aggregate/circuit";
 import type { CircuitGuiData } from "../entity/circuitGuiData";
 import type { CircuitGuiEdge } from "../entity/circuitGuiEdge";
 import type { CircuitGuiNode } from "../entity/circuitGuiNode";
+import type { CircuitDescription } from "../valueObject/circuitDescription";
 import type { CircuitEdgeId } from "../valueObject/circuitEdgeId";
 import type { CircuitNodeId } from "../valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "../valueObject/circuitNodePinId";
 import type { CircuitNodeSize } from "../valueObject/circuitNodeSize";
 import type { CircuitNodeType } from "../valueObject/circuitNodeType";
+import type { CircuitTitle } from "../valueObject/circuitTitle";
 import type { Coordinate } from "../valueObject/coordinate";
 import type { Waypoint } from "../valueObject/waypoint";
 
@@ -38,6 +40,8 @@ export interface ICircuitEditorPageHandler {
   handleWheel: (ev: React.WheelEvent) => void;
   preventBrowserZoom: (ref: React.RefObject<SVGSVGElement | null>) => void;
   save: () => void;
+  changeTitle: (title: CircuitTitle) => void;
+  changeDescription: (description: CircuitDescription) => void;
   addCircuitNode: (newNode: {
     id: CircuitNodeId;
     type: CircuitNodeType;

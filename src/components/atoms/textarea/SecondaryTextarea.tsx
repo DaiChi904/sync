@@ -5,5 +5,5 @@ interface SecondaryTextareaProps extends ComponentProps<"textarea"> {
 }
 
 export default function SecondaryTextarea({ variant = "outlined", ...props }: SecondaryTextareaProps) {
-  return <textarea {...props} className={`textarea-primary-${variant}`} />;
+  return <textarea {...props} className={`textarea-secondary-${variant}`} />;
 }

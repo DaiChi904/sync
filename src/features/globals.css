@@ -210,3 +210,87 @@ body {
   cursor: not-allowed;
   pointer-events: none;
 }
+
+/* --- Base for all inputs --- */
+.input-primary-filled,
+.input-primary-outlined,
+.input-secondary-filled,
+.input-secondary-outlined {
+  display: block;
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  line-height: 1.5;
+  color: var(--color-text);
+  background-clip: padding-box;
+  border-radius: 0.25rem;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+  outline: 0;
+}
+
+.input-primary-filled::placeholder,
+.input-primary-outlined::placeholder,
+.input-secondary-filled::placeholder,
+.input-secondary-outlined::placeholder {
+  color: var(--color-gray);
+}
+
+.input-primary-filled,
+.input-secondary-filled {
+  background-color: var(--color-white);
+  border: 2px solid var(--color-light-gray);
+}
+.input-primary-filled:hover:not(:disabled),
+.input-secondary-filled:hover:not(:disabled) {
+  border-color: var(--color-gray);
+}
+.input-primary-filled:disabled,
+.input-secondary-filled:disabled {
+  background-color: var(--color-disabled-bg);
+  color: var(--color-disabled-text);
+  border-color: var(--color-disabled-bg);
+  cursor: not-allowed;
+}
+
+.input-primary-filled:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+.input-secondary-filled:focus {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px var(--color-secondary-light);
+}
+
+.input-primary-outlined {
+  background-color: transparent;
+  border: 2px solid var(--color-primary);
+}
+.input-primary-outlined:focus {
+  border-color: var(--color-primary-active);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+.input-primary-outlined:disabled {
+  border-color: var(--color-disabled-text);
+  color: var(--color-disabled-text);
+  background-color: transparent;
+  cursor: not-allowed;
+}
+
+.input-secondary-outlined {
+  background-color: transparent;
+  border: 2px solid var(--color-secondary);
+}
+.input-secondary-outlined:focus {
+  border-color: var(--color-secondary-active);
+  box-shadow: 0 0 0 3px var(--color-secondary-light);
+}
+.input-secondary-outlined:disabled {
+  border-color: var(--color-disabled-text);
+  color: var(--color-disabled-text);
+  background-color: transparent;
+  cursor: not-allowed;
+}

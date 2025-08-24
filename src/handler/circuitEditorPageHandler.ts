@@ -112,26 +112,24 @@ export const useCircuitEditorPageHandler = ({
         setGuiData(circuitGuiData.value);
 
         //-- define INITIAL viewbox value --//
-        if (viewBox) return;
-
-        if (circuitGuiData.value.nodes.length === 0) {
-          const viewWidth = circuitDiagramContainer.current?.clientWidth ?? 1000;
-          const viewHeight = circuitDiagramContainer.current?.clientHeight ?? 1000;
-          setViewBox({ x: -viewWidth / 2, y: -viewHeight / 2, w: viewWidth, h: viewHeight });
-          return;
-        }
+        if (viewBox || !circuitDiagramContainer.current) return;
 
         const MARRGIN = 20;
-        const minX =
-          Math.min(...circuitGuiData.value.nodes.map((node) => node.coordinate.x - node.size.x / 2)) - MARRGIN;
-        const minY =
-          Math.min(...circuitGuiData.value.nodes.map((node) => node.coordinate.y - node.size.y / 2)) - MARRGIN;
-        const maxX =
-          Math.max(...circuitGuiData.value.nodes.map((node) => node.coordinate.x + node.size.x / 2)) + MARRGIN;
-        const maxY =
-          Math.max(...circuitGuiData.value.nodes.map((node) => node.coordinate.y + node.size.y / 2)) + MARRGIN;
-        const viewWidth = circuitDiagramContainer.current?.clientWidth ?? maxX - minX;
-        const viewHeight = circuitDiagramContainer.current?.clientHeight ?? maxY - minY;
+        const hasNodes = circuit.circuitData.nodes.length > 0;
+        const minX = hasNodes
+          ? Math.min(...circuit.circuitData.nodes.map((node) => node.coordinate.x - node.size.x / 2)) - MARRGIN
+          : 0;
+        const minY = hasNodes
+          ? Math.min(...circuit.circuitData.nodes.map((node) => node.coordinate.y - node.size.y / 2)) - MARRGIN
+          : 0;
+        const maxX = hasNodes
+          ? Math.max(...circuit.circuitData.nodes.map((node) => node.coordinate.x + node.size.x / 2)) + MARRGIN
+          : 0;
+        const maxY = hasNodes
+          ? Math.max(...circuit.circuitData.nodes.map((node) => node.coordinate.y + node.size.y / 2)) + MARRGIN
+          : 0;
+        const viewWidth = circuitDiagramContainer.current.clientWidth;
+        const viewHeight = circuitDiagramContainer.current.clientHeight;
         const centerX = (minX + maxX) / 2;
         const centerY = (minY + maxY) / 2;
 
@@ -812,11 +810,12 @@ export const useCircuitEditorPageHandler = ({
     fetch();
   }, [fetch]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: updateCircuitGuiData is depends on circuitDiagramContainer defined when activityBarMenu.open is "circuitDiagram". To define viewbox correctly, uiState.activityBarMenu.open in dependencies are essential.
   useEffect(() => {
     if (!circuit) return;
 
     updateCircuitGuiData();
-  }, [circuit, updateCircuitGuiData]);
+  }, [circuit, updateCircuitGuiData, uiState.activityBarMenu.open]);
 
   return {
     error,

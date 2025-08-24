@@ -165,41 +165,43 @@ export default function CircuitEditorPageLayout() {
                         grow={1}
                         style={{ height: "100%", width: "100%", background: "var(--color-circuit-diagram-bg)" }}
                       >
-                        <CircuitDiagram
-                          showTouchableArea={true}
-                          // biome-ignore lint/style/noNonNullAssertion: guiData is guaranteed to be present when isLoading is false
-                          data={guiData!}
-                          svgRef={svgRef}
-                          viewBox={viewBox}
-                          isPanningRef={isPanningRef}
-                          handleMouseDown={handleMouseDown}
-                          handleMouseMove={handleMouseMove}
-                          handleMouseUp={handleMouseUp}
-                          handleWheel={handleWheel}
-                          preventBrowserZoom={preventBrowserZoom}
-                          focusedElement={focusedElement}
-                          focusElement={focusElement}
-                          draggingNode={draggingNode}
-                          handleNodeMouseDown={handleNodeMouseDown}
-                          handleNodeMouseMove={handleNodeMouseMove}
-                          handleNodeMouseUp={handleNodeMouseUp}
-                          deleteCircuitNode={deleteCircuitNode}
-                          deleteCircuitEdge={deleteCircuitEdge}
-                          draggingNodePin={draggingNodePin}
-                          handleNodePinMouseDown={handleNodePinMouseDown}
-                          handleNodePinMouseMove={handleNodePinMouseMove}
-                          handleNodePinMouseUp={handleNodePinMouseUp}
-                          tempEdge={tempEdge}
-                          addEdgeWaypoint={addEdgeWaypoint}
-                          deleteEdgeWaypoint={deleteEdgeWaypoint}
-                          draggingWaypoint={draggingWaypoint}
-                          handleWaypointMouseDown={handleWaypointMouseDown}
-                          handleWaypointMouseMove={handleWaypointMouseMove}
-                          handleWaypointMouseUp={handleWaypointMouseUp}
-                          uiState={uiState}
-                          openUtilityMenu={openUtilityMenu}
-                          closeUtilityMenu={closeUtilityMenu}
-                        />
+                        <Pending isLoading={!viewBox}>
+                          <CircuitDiagram
+                            showTouchableArea
+                            // biome-ignore lint/style/noNonNullAssertion: guiData is guaranteed to be present when isLoading is false
+                            data={guiData!}
+                            svgRef={svgRef}
+                            viewBox={viewBox}
+                            isPanningRef={isPanningRef}
+                            handleMouseDown={handleMouseDown}
+                            handleMouseMove={handleMouseMove}
+                            handleMouseUp={handleMouseUp}
+                            handleWheel={handleWheel}
+                            preventBrowserZoom={preventBrowserZoom}
+                            focusedElement={focusedElement}
+                            focusElement={focusElement}
+                            draggingNode={draggingNode}
+                            handleNodeMouseDown={handleNodeMouseDown}
+                            handleNodeMouseMove={handleNodeMouseMove}
+                            handleNodeMouseUp={handleNodeMouseUp}
+                            deleteCircuitNode={deleteCircuitNode}
+                            deleteCircuitEdge={deleteCircuitEdge}
+                            draggingNodePin={draggingNodePin}
+                            handleNodePinMouseDown={handleNodePinMouseDown}
+                            handleNodePinMouseMove={handleNodePinMouseMove}
+                            handleNodePinMouseUp={handleNodePinMouseUp}
+                            tempEdge={tempEdge}
+                            addEdgeWaypoint={addEdgeWaypoint}
+                            deleteEdgeWaypoint={deleteEdgeWaypoint}
+                            draggingWaypoint={draggingWaypoint}
+                            handleWaypointMouseDown={handleWaypointMouseDown}
+                            handleWaypointMouseMove={handleWaypointMouseMove}
+                            handleWaypointMouseUp={handleWaypointMouseUp}
+                            uiState={uiState}
+                            openUtilityMenu={openUtilityMenu}
+                            closeUtilityMenu={closeUtilityMenu}
+                          />
+                        </Pending>
                       </Flex>
                     </Grid>
                     <Grid xs={1} grow={1}>

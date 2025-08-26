@@ -43,9 +43,7 @@ export default function Edges({
     node.outputs.forEach((pin) => pinMap.set(pin.id, pin.coordinate));
   });
 
-  data.edges.forEach((edge) =>
-    waypointsMap.set(edge.id, edge.waypoints),
-  );
+  data.edges.forEach((edge) => waypointsMap.set(edge.id, edge.waypoints));
 
   data?.nodes.forEach((node) => {
     node.inputs.forEach((pin) => {

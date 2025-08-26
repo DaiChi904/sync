@@ -35,7 +35,7 @@ export default function Edges({
   openEdgeUtilityMenu,
 }: EdgesProps) {
   const pinMap = new Map<CircuitNodePinId, Coordinate>();
-  const waypointsMap = new Map<CircuitNodePinId, Coordinate[]>();
+  const waypointsMap = new Map<CircuitEdgeId, Coordinate[] | undefined>();
   const outputMap = new Map<CircuitNodePinId, EvalResult>();
 
   data.nodes.forEach((node) => {
@@ -43,12 +43,9 @@ export default function Edges({
     node.outputs.forEach((pin) => pinMap.set(pin.id, pin.coordinate));
   });
 
-  data.edges.forEach((edge) => {
-    if (edge.waypoints) {
-      waypointsMap.set(edge.from, edge.waypoints);
-      waypointsMap.set(edge.to, edge.waypoints);
-    }
-  });
+  data.edges.forEach((edge) =>
+    waypointsMap.set(edge.id, edge.waypoints),
+  );
 
   data?.nodes.forEach((node) => {
     node.inputs.forEach((pin) => {

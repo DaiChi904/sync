@@ -1,4 +1,5 @@
 import type { CircuitGuiEdge } from "@/domain/model/entity/circuitGuiEdge";
+import type { CircuitEdgeId } from "@/domain/model/valueObject/circuitEdgeId";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 import type { Coordinate } from "@/domain/model/valueObject/coordinate";
 import type { EvalResult } from "@/domain/model/valueObject/evalResult";
@@ -6,7 +7,7 @@ import type { EvalResult } from "@/domain/model/valueObject/evalResult";
 interface EdgeProps {
   edge: CircuitGuiEdge;
   pinMap: Map<CircuitNodePinId, Coordinate>;
-  waypointsMap: Map<CircuitNodePinId, Coordinate[]>;
+  waypointsMap: Map<CircuitEdgeId, Coordinate[] | undefined>;
   outputMap?: Map<CircuitNodePinId, EvalResult>;
   isInFocus?: boolean;
   focusElement?: (value: CircuitGuiEdge & { waypointIdx: number }) => void;
@@ -35,11 +36,7 @@ export default function Edge({
   const to = pinMap.get(edge.to);
   if (!from || !to) return null;
 
-  const waypoints =
-    JSON.stringify(waypointsMap.get(edge.from)) === JSON.stringify(waypointsMap.get(edge.to))
-      ? waypointsMap.get(edge.from)
-      : [];
-
+  const waypoints = waypointsMap.get(edge.id);
   const edges = [from, ...(waypoints ?? []), to].map((point) => {
     return point;
   });

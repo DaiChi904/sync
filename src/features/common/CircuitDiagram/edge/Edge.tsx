@@ -71,7 +71,7 @@ export default function Edge({
             y1={from.y}
             x2={to.x}
             y2={to.y}
-            stroke="rgba(0,0,0,0)"
+            stroke="transparent"
             strokeWidth={30}
             onClick={() => focusElement?.({ ...edge, waypointIdx: idx })}
             onContextMenu={(ev) => {
@@ -100,9 +100,9 @@ export default function Edge({
                 cx={from.x}
                 cy={from.y}
                 r={15}
-                fill="rgba(0,0,0,0)"
+                fill="transparent"
                 pointerEvents="all"
-                stroke="#fff"
+                stroke="var(--color-white)"
                 strokeWidth={1}
                 onContextMenu={openEdgeUtilityMenu}
                 onMouseDown={
@@ -118,9 +118,9 @@ export default function Edge({
                 cx={to.x}
                 cy={to.y}
                 r={15}
-                fill="rgba(0,0,0,0)"
+                fill="transparent"
                 pointerEvents="all"
-                stroke="#fff"
+                stroke="var(--color-white)"
                 strokeWidth={1}
                 onContextMenu={openEdgeUtilityMenu}
                 onMouseDown={

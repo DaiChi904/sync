@@ -1,14 +1,13 @@
 import type { CircuitGuiData } from "@/domain/model/entity/circuitGuiData";
 import type { CircuitGuiEdge } from "@/domain/model/entity/circuitGuiEdge";
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
-import type { ICircuitEditorPageHandler } from "@/domain/model/handler/ICircuitEditorPageHandler";
 import type { CircuitEdgeId } from "@/domain/model/valueObject/circuitEdgeId";
 import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 import type { Coordinate } from "@/domain/model/valueObject/coordinate";
 import type { EvalResult } from "@/domain/model/valueObject/evalResult";
 import Edges from "./edge/Edges";
-import OnClickEventBackdrop from "./eventCaptureLayer/baseLayers/onClickEventBackdrop";
+import DiagramUtilityMenuBackdrop from "./eventCaptureLayer/DiagramUtilityMenuBackdrop";
 import NodeDragInteractionLayer from "./eventCaptureLayer/NodeDragInteractionLayer";
 import NodePinDragInteractionLayer from "./eventCaptureLayer/NodePinDragInteractionLayer";
 import WaypointDragInteractionLayer from "./eventCaptureLayer/WaypointDragInteractionLayer";
@@ -18,6 +17,10 @@ import NodeUtilityMenu from "./utilityMenu/NodeUtilityMenu";
 
 interface CircuitDiagramProps {
   showTouchableArea?: boolean;
+  diagramUtilityMenuState?: {
+    open: "none" | "node" | "edge";
+    at: Coordinate | null;
+  };
   data: CircuitGuiData;
   outputRecord?: Record<CircuitNodeId, EvalResult>;
   svgRef?: React.RefObject<SVGSVGElement | null>;
@@ -69,13 +72,13 @@ interface CircuitDiagramProps {
   } | null;
   handleWaypointMouseMove?: (ev: React.MouseEvent) => void;
   handleWaypointMouseUp?: () => void;
-  uiState?: ICircuitEditorPageHandler["uiState"];
   openUtilityMenu?: (kind: "node" | "edge") => (ev: React.MouseEvent) => void;
   closeUtilityMenu?: () => void;
 }
 
 export default function CircuitDiagram({
   showTouchableArea = false,
+  diagramUtilityMenuState = { open: "none", at: null },
   data,
   outputRecord,
   svgRef,
@@ -105,7 +108,6 @@ export default function CircuitDiagram({
   handleWaypointMouseDown,
   handleWaypointMouseMove,
   handleWaypointMouseUp,
-  uiState,
   openUtilityMenu,
   closeUtilityMenu,
 }: CircuitDiagramProps) {
@@ -197,10 +199,10 @@ export default function CircuitDiagram({
         viewBoxY={viewBox?.y}
       />
 
-      {uiState?.diagramUtilityMenu.open === "edge" &&
+      {diagramUtilityMenuState.open === "edge" &&
         focusedElement?.kind === "edge" &&
         (() => {
-          const at = uiState.diagramUtilityMenu.at;
+          const at = diagramUtilityMenuState.at;
           if (at === null) {
             closeUtilityMenu?.();
             return null;
@@ -208,7 +210,13 @@ export default function CircuitDiagram({
 
           return (
             <>
-              <OnClickEventBackdrop onClick={() => closeUtilityMenu?.()} />
+              {/** biome-ignore lint/nursery/useUniqueElementIds: No need for unique id. */}
+              <DiagramUtilityMenuBackdrop
+                id="edge-utility-menu-backdrop"
+                viewBoxX={viewBox?.x}
+                viewBoxY={viewBox?.y}
+                onClick={() => closeUtilityMenu?.()}
+              />
               <EdgeUtilityMenu
                 at={at}
                 menuOptions={[
@@ -238,27 +246,40 @@ export default function CircuitDiagram({
             </>
           );
         })()}
-      {uiState?.diagramUtilityMenu.open === "node" && focusedElement?.kind === "node" && (
-        <>
-          <OnClickEventBackdrop
-            onClick={() => {
-              closeUtilityMenu?.();
-            }}
-          />
-          <NodeUtilityMenu
-            at={uiState.diagramUtilityMenu.at}
-            menuOptions={[
-              {
-                label: "Delete",
-                onClickHandler: () => {
-                  deleteCircuitNode?.(focusedElement.value.id);
-                  closeUtilityMenu?.();
-                },
-              },
-            ]}
-          />
-        </>
-      )}
+
+      {diagramUtilityMenuState.open === "node" &&
+        focusedElement?.kind === "node" &&
+        (() => {
+          const at = diagramUtilityMenuState.at;
+          if (at === null) {
+            closeUtilityMenu?.();
+            return null;
+          }
+
+          return (
+            <>
+              {/** biome-ignore lint/nursery/useUniqueElementIds: No need for unique id. */}
+              <DiagramUtilityMenuBackdrop
+                id="node-utility-menu-backdrop"
+                viewBoxX={viewBox?.x}
+                viewBoxY={viewBox?.y}
+                onClick={() => closeUtilityMenu?.()}
+              />
+              <NodeUtilityMenu
+                at={at}
+                menuOptions={[
+                  {
+                    label: "Delete",
+                    onClickHandler: () => {
+                      deleteCircuitNode?.(focusedElement.value.id);
+                      closeUtilityMenu?.();
+                    },
+                  },
+                ]}
+              />
+            </>
+          );
+        })()}
     </svg>
   );
 }

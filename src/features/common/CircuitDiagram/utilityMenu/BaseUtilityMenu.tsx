@@ -1,8 +1,10 @@
+import SecondaryButton from "@/components/atoms/buttons/SecondaryButton";
 import Flex from "@/components/atoms/Flex";
+import Typography from "@/components/atoms/Typography";
 import type { Coordinate } from "@/domain/model/valueObject/coordinate";
 
 interface BaseUtilityMenuProps {
-  at: Coordinate | null;
+  at: Coordinate;
   menuOptions: Array<{
     label: string;
     // biome-ignore lint/suspicious/noExplicitAny: This is fine.
@@ -11,21 +13,28 @@ interface BaseUtilityMenuProps {
 }
 
 export default function BaseUtilityMenu({ at, menuOptions }: BaseUtilityMenuProps) {
+  const MENU_HEIGHT = 30
   return (
-    <foreignObject x={at?.x ?? 0} y={at?.y ?? 0} width={75} height={200}>
+    <foreignObject x={at.x} y={at.y} width={150} height={MENU_HEIGHT * menuOptions.length}>
       <Flex
         direction="column"
         style={{
           position: "relative",
-          border: "solid 1px #fff",
-          background: "#fff",
+          border: "solid 1px var(--color-white)",
+          background: "var(--color-white)",
         }}
       >
         {menuOptions.map((option) => {
           return (
-            <Flex key={option.label} className="animated" onClick={option.onClickHandler}>
-              {option.label}
-            </Flex>
+            <SecondaryButton
+              key={option.label}
+              style={{ height: MENU_HEIGHT, padding: 5, border: "none" }}
+              variant="outlined"
+              animation="push"
+              onClick={option.onClickHandler}
+            >
+              <Typography size="default">{option.label}</Typography>
+            </SecondaryButton>
           );
         })}
       </Flex>

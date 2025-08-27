@@ -1,3 +1,5 @@
+import DragInteractionLayer from "./baseLayers/DragInteractionLayer";
+
 interface WaypointDragInteractionLayerProps {
   isActive: boolean;
   // biome-ignore lint/suspicious/noExplicitAny: This is fine.
@@ -19,14 +21,11 @@ export default function WaypointDragInteractionLayer({
     isActive && (
       // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
       // biome-ignore lint/nursery/useUniqueElementIds: No need for unique id.
-      <rect
+      <DragInteractionLayer
+        isActive={isActive}
         id="node-drag-interaction-layer"
-        x={viewBoxX}
-        y={viewBoxY}
-        width="100%"
-        height="100%"
-        fill="transparent"
-        pointerEvents="all"
+        viewBoxX={viewBoxX}
+        viewBoxY={viewBoxY}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
       />

@@ -41,7 +41,7 @@ export default function ExitNode({
             cx={node.coordinate.x}
             cy={node.coordinate.y}
             r={20}
-            fill="rgba(0,0,0,0)"
+            fill="transparent"
             stroke="#F44336"
             strokeWidth={2.5}
             onMouseDown={(ev) => handleNodePinMouseDown?.(ev, node.inputs[0].id, "to", "ADD")}
@@ -54,8 +54,8 @@ export default function ExitNode({
             cx={node.coordinate.x}
             cy={node.coordinate.y}
             r={10}
-            fill="rgba(0,0,0,0)"
-            stroke="#fff"
+            fill="transparent"
+            stroke="var(--color-white)"
             strokeWidth={1}
             onMouseDown={isInFocus ? (ev) => handleNodeMouseDown?.(ev, node) : undefined}
           />

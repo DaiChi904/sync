@@ -194,6 +194,7 @@ export default function CircuitEditorPageLayout() {
                         <Pending isLoading={!viewBox}>
                           <CircuitDiagram
                             showTouchableArea
+                            diagramUtilityMenuState={uiState.diagramUtilityMenu}
                             // biome-ignore lint/style/noNonNullAssertion: guiData is guaranteed to be present when isLoading is false
                             data={guiData!}
                             svgRef={svgRef}
@@ -223,7 +224,6 @@ export default function CircuitEditorPageLayout() {
                             handleWaypointMouseDown={handleWaypointMouseDown}
                             handleWaypointMouseMove={handleWaypointMouseMove}
                             handleWaypointMouseUp={handleWaypointMouseUp}
-                            uiState={uiState}
                             openUtilityMenu={openUtilityMenu}
                             closeUtilityMenu={closeUtilityMenu}
                           />

@@ -41,18 +41,18 @@ export default function NotNode({
             Z
         `}
         fill="#333"
-        stroke="#fff"
+        stroke="var(--color-white)"
         strokeWidth={1}
       />
 
       {/* Input pin */}
       {node.inputs.map((pin) => (
-        <circle key={pin.id} cx={pin.coordinate.x} cy={pin.coordinate.y} r={2.5} fill="#333" stroke="#fff" />
+        <circle key={pin.id} cx={pin.coordinate.x} cy={pin.coordinate.y} r={2.5} fill="#333" stroke="var(--color-white)" />
       ))}
 
       {/* Output pin */}
       {node.outputs.map((pin) => (
-        <circle key={pin.id} cx={pin.coordinate.x} cy={pin.coordinate.y} r={2.5} fill="#333" stroke="#fff" />
+        <circle key={pin.id} cx={pin.coordinate.x} cy={pin.coordinate.y} r={2.5} fill="#333" stroke="var(--color-white)" />
       ))}
 
       {isInFocus && (
@@ -65,8 +65,8 @@ export default function NotNode({
             y={node.coordinate.y - node.size.y / 2 - 10}
             width={node.size.x + 20}
             height={node.size.y + 20}
-            fill="rgba(0,0,0,0)"
-            stroke="#fff"
+            fill="transparent"
+            stroke="var(--color-white)"
             strokeWidth={1}
             onMouseDown={isInFocus ? (ev) => handleNodeMouseDown?.(ev, node) : undefined}
           />
@@ -78,7 +78,7 @@ export default function NotNode({
               cx={pin.coordinate.x}
               cy={pin.coordinate.y}
               r={7.5}
-              fill="rgba(0,0,0,0)"
+              fill="transparent"
               stroke="#4CAF50"
               strokeWidth={2.5}
               onMouseDown={(ev) => handleNodePinMouseDown?.(ev, pin.id, "to", "ADD")}
@@ -91,7 +91,7 @@ export default function NotNode({
               cx={pin.coordinate.x}
               cy={pin.coordinate.y}
               r={7.5}
-              fill="rgba(0,0,0,0)"
+              fill="transparent"
               stroke="#F44336"
               strokeWidth={2.5}
               onMouseDown={(ev) => handleNodePinMouseDown?.(ev, pin.id, "from", "ADD")}

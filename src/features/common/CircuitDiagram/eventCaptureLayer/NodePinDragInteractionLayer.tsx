@@ -1,3 +1,4 @@
+import { SvgLine } from "@/components/atoms/svg";
 import type { Coordinate } from "@/domain/model/valueObject/coordinate";
 import DragInteractionLayer from "./baseLayers/DragInteractionLayer";
 
@@ -33,8 +34,7 @@ export default function NodePinDragInteractionLayer({
           onMouseMove={onMouseMove}
           onMouseUp={onMouseUp}
         />
-        {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support. */}
-        <line
+        <SvgLine
           x1={tempEdge?.from.x}
           y1={tempEdge?.from.y}
           x2={tempEdge?.to.x}

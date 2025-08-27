@@ -1,3 +1,4 @@
+import { SvgCircle, SvgGroup, SvgPath, SvgRect } from "@/components/atoms/svg";
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 
@@ -26,8 +27,7 @@ export default function OrNode({
   // The Or node has a slight depression at the input, so if it is drawn as it is, the connection points cannot be connected neatly to the edge in the GUI, so a little play is made with this value.
   const extraInputWidth = node.size.x * 0.1;
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
-    <g
+    <SvgGroup
       onClick={() => focusElement?.(node)}
       onContextMenu={(ev) => {
         ev.preventDefault();
@@ -35,7 +35,7 @@ export default function OrNode({
       }}
     >
       {/* Main body */}
-      <path
+      <SvgPath
         d={`
             M ${node.coordinate.x - node.size.x / 2 - extraInputWidth} ${node.coordinate.y - node.size.y / 2}
             Q ${node.coordinate.x} ${node.coordinate.y - node.size.y / 2} ${node.coordinate.x + node.size.x / 2} ${node.coordinate.y}
@@ -50,7 +50,7 @@ export default function OrNode({
 
       {/* Input pins */}
       {node.inputs.map((pin) => (
-        <circle
+        <SvgCircle
           key={pin.id}
           cx={pin.coordinate.x}
           cy={pin.coordinate.y}
@@ -62,7 +62,7 @@ export default function OrNode({
 
       {/* Output pin */}
       {node.outputs.map((pin) => (
-        <circle
+        <SvgCircle
           key={pin.id}
           cx={pin.coordinate.x}
           cy={pin.coordinate.y}
@@ -76,7 +76,7 @@ export default function OrNode({
         <>
           {/* biome-ignore lint/nursery/useUniqueElementIds: No need for unique id. */}
           {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support. */}
-          <rect
+          <SvgRect
             id="node-focused-frame"
             x={node.coordinate.x - node.size.x / 2 - 10}
             y={node.coordinate.y - node.size.y / 2 - 10}
@@ -89,8 +89,7 @@ export default function OrNode({
           />
 
           {node.inputs.map((pin) => (
-            // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
-            <circle
+            <SvgCircle
               key={pin.id}
               cx={pin.coordinate.x}
               cy={pin.coordinate.y}
@@ -102,8 +101,7 @@ export default function OrNode({
             />
           ))}
           {node.outputs.map((pin) => (
-            // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
-            <circle
+            <SvgCircle
               key={pin.id}
               cx={pin.coordinate.x}
               cy={pin.coordinate.y}
@@ -116,6 +114,6 @@ export default function OrNode({
           ))}
         </>
       )}
-    </g>
+    </SvgGroup>
   );
 }

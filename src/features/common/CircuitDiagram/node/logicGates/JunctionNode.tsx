@@ -1,3 +1,4 @@
+import { SvgCircle, SvgClipPath, SvgDefs, SvgGroup, SvgPath } from "@/components/atoms/svg";
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 
@@ -24,18 +25,17 @@ export default function JunctionNode({
   openNodeUtilityMenu,
 }: JunctionNodeProps) {
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
-    <g
+    <SvgGroup
       onClick={() => focusElement?.(node)}
       onContextMenu={(ev) => {
         ev.preventDefault();
         openNodeUtilityMenu?.(ev);
       }}
     >
-      <defs>
+      <SvgDefs>
         {/* 左半分 */}
-        <clipPath id={`leftClip-${node.id}`}>
-          <path
+        <SvgClipPath id={`leftClip-${node.id}`}>
+          <SvgPath
             d={`
         M ${node.coordinate.x} ${node.coordinate.y}
         m -20,0
@@ -45,11 +45,11 @@ export default function JunctionNode({
         z
       `}
           />
-        </clipPath>
+        </SvgClipPath>
 
         {/* 右半分 */}
-        <clipPath id={`rightClip-${node.id}`}>
-          <path
+        <SvgClipPath id={`rightClip-${node.id}`}>
+          <SvgPath
             d={`
         M ${node.coordinate.x} ${node.coordinate.y}
         m 0,-20
@@ -58,15 +58,14 @@ export default function JunctionNode({
         z
       `}
           />
-        </clipPath>
-      </defs>
+        </SvgClipPath>
+      </SvgDefs>
 
       {/* Main body */}
-      <circle cx={node.coordinate.x} cy={node.coordinate.y} r={5} fill="#FFC107" />
+      <SvgCircle cx={node.coordinate.x} cy={node.coordinate.y} r={5} fill="#FFC107" />
       {isInFocus && (
         <>
-          {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.*/}
-          <circle
+          <SvgCircle
             cx={node.coordinate.x}
             cy={node.coordinate.y}
             r={20}
@@ -77,8 +76,7 @@ export default function JunctionNode({
             onMouseDown={(ev) => handleNodePinMouseDown?.(ev, node.inputs[0].id, "to", "ADD")}
           />
 
-          {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.*/}
-          <circle
+          <SvgCircle
             cx={node.coordinate.x}
             cy={node.coordinate.y}
             r={20}
@@ -90,8 +88,7 @@ export default function JunctionNode({
           />
 
           {/** biome-ignore lint/nursery/useUniqueElementIds: No need for unique id. */}
-          {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.*/}
-          <circle
+          <SvgCircle
             id="node-focused-frame"
             cx={node.coordinate.x}
             cy={node.coordinate.y}
@@ -103,6 +100,6 @@ export default function JunctionNode({
           />
         </>
       )}
-    </g>
+    </SvgGroup>
   );
 }

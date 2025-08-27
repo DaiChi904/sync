@@ -1,3 +1,4 @@
+import { SvgCircle, SvgGroup, SvgPath } from "@/components/atoms/svg";
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 
@@ -24,8 +25,7 @@ export default function AndNode({
   openNodeUtilityMenu,
 }: AndNodeProps) {
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
-    <g
+    <SvgGroup
       onClick={() => focusElement?.(node)}
       onContextMenu={(ev) => {
         ev.preventDefault();
@@ -33,7 +33,7 @@ export default function AndNode({
       }}
     >
       {/* Main body */}
-      <path
+      <SvgPath
         d={`
             M ${node.coordinate.x - node.size.x / 2} ${node.coordinate.y - node.size.y / 2}
             H ${node.coordinate.x + node.size.x / 2 - node.size.y / 2}
@@ -48,7 +48,7 @@ export default function AndNode({
 
       {/* Input pins */}
       {node.inputs.map((pin) => (
-        <circle
+        <SvgCircle
           key={pin.id}
           cx={pin.coordinate.x}
           cy={pin.coordinate.y}
@@ -60,7 +60,7 @@ export default function AndNode({
 
       {/* Output pin */}
       {node.outputs.map((pin) => (
-        <circle
+        <SvgCircle
           key={pin.id}
           cx={pin.coordinate.x}
           cy={pin.coordinate.y}
@@ -87,8 +87,7 @@ export default function AndNode({
           />
 
           {node.inputs.map((pin) => (
-            // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
-            <circle
+            <SvgCircle
               key={pin.id}
               cx={pin.coordinate.x}
               cy={pin.coordinate.y}
@@ -100,8 +99,7 @@ export default function AndNode({
             />
           ))}
           {node.outputs.map((pin) => (
-            // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
-            <circle
+            <SvgCircle
               key={pin.id}
               cx={pin.coordinate.x}
               cy={pin.coordinate.y}
@@ -114,6 +112,6 @@ export default function AndNode({
           ))}
         </>
       )}
-    </g>
+    </SvgGroup>
   );
 }

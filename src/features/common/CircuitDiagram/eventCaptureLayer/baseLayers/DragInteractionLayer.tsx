@@ -1,3 +1,5 @@
+import { SvgRect } from "@/components/atoms/svg";
+
 interface DragInteractionLayerProps {
   id: string;
   isActive: boolean;
@@ -19,8 +21,7 @@ export default function DragInteractionLayer({
 }: DragInteractionLayerProps) {
   return (
     isActive && (
-      // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
-      <rect
+      <SvgRect
         id={id}
         x={viewBoxX}
         y={viewBoxY}

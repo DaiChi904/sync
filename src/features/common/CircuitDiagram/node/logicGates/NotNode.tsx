@@ -1,3 +1,4 @@
+import { SvgCircle, SvgGroup, SvgPath, SvgRect } from "@/components/atoms/svg";
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 
@@ -24,8 +25,7 @@ export default function NotNode({
   openNodeUtilityMenu,
 }: NotNodeProps) {
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
-    <g
+    <SvgGroup
       onClick={() => focusElement?.(node)}
       onContextMenu={(ev) => {
         ev.preventDefault();
@@ -33,7 +33,7 @@ export default function NotNode({
       }}
     >
       {/* Main body */}
-      <path
+      <SvgPath
         d={`
             M ${node.coordinate.x - node.size.x / 2} ${node.coordinate.y - node.size.y / 2}
             L ${node.coordinate.x + node.size.x / 2} ${node.coordinate.y}
@@ -47,7 +47,7 @@ export default function NotNode({
 
       {/* Input pin */}
       {node.inputs.map((pin) => (
-        <circle
+        <SvgCircle
           key={pin.id}
           cx={pin.coordinate.x}
           cy={pin.coordinate.y}
@@ -59,7 +59,7 @@ export default function NotNode({
 
       {/* Output pin */}
       {node.outputs.map((pin) => (
-        <circle
+        <SvgCircle
           key={pin.id}
           cx={pin.coordinate.x}
           cy={pin.coordinate.y}
@@ -73,7 +73,7 @@ export default function NotNode({
         <>
           {/* biome-ignore lint/nursery/useUniqueElementIds: No need for unique id. */}
           {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support. */}
-          <rect
+          <SvgRect
             id="node-focused-frame"
             x={node.coordinate.x - node.size.x / 2 - 10}
             y={node.coordinate.y - node.size.y / 2 - 10}
@@ -86,8 +86,7 @@ export default function NotNode({
           />
 
           {node.inputs.map((pin) => (
-            // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
-            <circle
+            <SvgCircle
               key={pin.id}
               cx={pin.coordinate.x}
               cy={pin.coordinate.y}
@@ -99,8 +98,7 @@ export default function NotNode({
             />
           ))}
           {node.outputs.map((pin) => (
-            // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
-            <circle
+            <SvgCircle
               key={pin.id}
               cx={pin.coordinate.x}
               cy={pin.coordinate.y}
@@ -113,6 +111,6 @@ export default function NotNode({
           ))}
         </>
       )}
-    </g>
+    </SvgGroup>
   );
 }

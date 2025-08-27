@@ -1,3 +1,4 @@
+import { SvgCircle, SvgDefs, SvgGroup, SvgLine, SvgMarker, SvgPath } from "@/components/atoms/svg";
 import type { CircuitGuiEdge } from "@/domain/model/entity/circuitGuiEdge";
 import type { CircuitEdgeId } from "@/domain/model/valueObject/circuitEdgeId";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
@@ -46,15 +47,15 @@ export default function Edge({
     const to = edges[idx + 1];
     return (
       <>
-        <defs>
+        <SvgDefs>
           {/** biome-ignore lint/nursery/useUniqueElementIds: No need for unique id. */}
-          <marker id="arrow" markerWidth="5" markerHeight="5" refX="5" refY="2.5" orient="auto">
-            <path d="M 0 0 L 5 2.5 L 0 5 z" fill="var(--color-circuit-state-high)" />
-          </marker>
-        </defs>
+          <SvgMarker id="arrow" markerWidth="5" markerHeight="5" refX="5" refY="2.5" orient="auto">
+            <SvgPath d="M 0 0 L 5 2.5 L 0 5 z" fill="var(--color-circuit-state-high)" />
+          </SvgMarker>
+        </SvgDefs>
 
-        <g key={`${edge.id}-${idx}`}>
-          <line
+        <SvgGroup key={`${edge.id}-${idx}`}>
+          <SvgLine
             x1={from.x}
             y1={from.y}
             x2={to.x}
@@ -65,8 +66,7 @@ export default function Edge({
             strokeWidth={2}
             markerEnd={isInFocus ? "url(#arrow)" : "none"}
           />
-          {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support. */}
-          <line
+          <SvgLine
             x1={from.x}
             y1={from.y}
             x2={to.x}
@@ -79,7 +79,7 @@ export default function Edge({
               openEdgeUtilityMenu?.(ev);
             }}
           />
-          <circle
+          <SvgCircle
             cx={from.x}
             cy={from.y}
             r={0.5}
@@ -95,8 +95,7 @@ export default function Edge({
           {isInFocus && (
             <>
               {/** When manipulating edges that are connected on both sides, it is more intuitive to reverse the kind, so we will reverse it. */}
-              {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.*/}
-              <circle
+              <SvgCircle
                 cx={from.x}
                 cy={from.y}
                 r={15}
@@ -113,8 +112,7 @@ export default function Edge({
                     : handleWaypointMouseDown?.(from, idx - 1)
                 }
               />
-              {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.*/}
-              <circle
+              <SvgCircle
                 cx={to.x}
                 cy={to.y}
                 r={15}
@@ -131,7 +129,7 @@ export default function Edge({
               />
             </>
           )}
-        </g>
+        </SvgGroup>
       </>
     );
   });

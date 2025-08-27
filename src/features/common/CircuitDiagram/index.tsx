@@ -1,3 +1,4 @@
+import { Svg, SvgRect, SvgTitle } from "@/components/atoms/svg";
 import type { CircuitGuiData } from "@/domain/model/entity/circuitGuiData";
 import type { CircuitGuiEdge } from "@/domain/model/entity/circuitGuiEdge";
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
@@ -127,7 +128,7 @@ export default function CircuitDiagram({
   const viewHeight = maxY - minY;
 
   return (
-    <svg
+    <Svg
       ref={svgRef}
       viewBox={
         viewBox ? `${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}` : `${minX} ${minY} ${viewWidth} ${viewHeight}`
@@ -139,11 +140,11 @@ export default function CircuitDiagram({
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
     >
-      <title>Circuit Diagram</title>
+      <SvgTitle>Circuit Diagram</SvgTitle>
 
       {showTouchableArea && (
         // biome-ignore lint/nursery/useUniqueElementIds: No need for unique id.
-        <rect
+        <SvgRect
           id="circuit-diagram-area"
           x={minX}
           y={minY}
@@ -280,6 +281,6 @@ export default function CircuitDiagram({
             </>
           );
         })()}
-    </svg>
+    </Svg>
   );
 }

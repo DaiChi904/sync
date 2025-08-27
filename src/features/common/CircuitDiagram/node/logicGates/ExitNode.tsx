@@ -1,3 +1,4 @@
+import { SvgCircle, SvgGroup } from "@/components/atoms/svg";
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 
@@ -24,8 +25,7 @@ export default function ExitNode({
   openNodeUtilityMenu,
 }: ExitNodeProps) {
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
-    <g
+    <SvgGroup
       onClick={() => focusElement?.(node)}
       onContextMenu={(ev) => {
         ev.preventDefault();
@@ -33,11 +33,10 @@ export default function ExitNode({
       }}
     >
       {/* Main body */}
-      <circle cx={node.coordinate.x} cy={node.coordinate.y} r={5} fill="#F44336" />
+      <SvgCircle cx={node.coordinate.x} cy={node.coordinate.y} r={5} fill="#F44336" />
       {isInFocus && (
         <>
-          {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.*/}
-          <circle
+          <SvgCircle
             cx={node.coordinate.x}
             cy={node.coordinate.y}
             r={20}
@@ -49,7 +48,7 @@ export default function ExitNode({
 
           {/** biome-ignore lint/nursery/useUniqueElementIds: No need for unique id. */}
           {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.*/}
-          <circle
+          <SvgCircle
             id="node-focused-frame"
             cx={node.coordinate.x}
             cy={node.coordinate.y}
@@ -61,6 +60,6 @@ export default function ExitNode({
           />
         </>
       )}
-    </g>
+    </SvgGroup>
   );
 }

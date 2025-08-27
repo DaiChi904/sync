@@ -1,3 +1,5 @@
+import { SvgRect } from "@/components/atoms/svg";
+
 interface OnClickEventBackdropProps {
   id?: string;
   viewBoxX?: number;
@@ -8,8 +10,7 @@ interface OnClickEventBackdropProps {
 
 export default function OnClickEventBackdrop({ id, viewBoxX, viewBoxY, onClick }: OnClickEventBackdropProps) {
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
-    <rect
+    <SvgRect
       id={id}
       x={viewBoxX}
       y={viewBoxY}

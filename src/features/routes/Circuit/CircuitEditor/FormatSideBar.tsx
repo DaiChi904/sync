@@ -1,4 +1,5 @@
 import Flex from "@/components/atoms/Flex";
+import Typography from "@/components/atoms/Typography";
 import {
   Table,
   TableBody,
@@ -7,8 +8,7 @@ import {
   TableHead,
   TableHeaderCell,
   TableRow,
-} from "@/components/atoms/Table";
-import Typography from "@/components/atoms/Typography";
+} from "@/components/atoms/table";
 import type { CircuitGuiEdge } from "@/domain/model/entity/circuitGuiEdge";
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
 

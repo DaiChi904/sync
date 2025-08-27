@@ -13,7 +13,7 @@ interface BaseUtilityMenuProps {
 }
 
 export default function BaseUtilityMenu({ at, menuOptions }: BaseUtilityMenuProps) {
-  const MENU_HEIGHT = 30
+  const MENU_HEIGHT = 30;
   return (
     <foreignObject x={at.x} y={at.y} width={150} height={MENU_HEIGHT * menuOptions.length}>
       <Flex

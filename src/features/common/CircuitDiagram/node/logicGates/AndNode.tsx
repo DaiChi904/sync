@@ -48,12 +48,26 @@ export default function AndNode({
 
       {/* Input pins */}
       {node.inputs.map((pin) => (
-        <circle key={pin.id} cx={pin.coordinate.x} cy={pin.coordinate.y} r={2.5} fill="#333" stroke="var(--color-white)" />
+        <circle
+          key={pin.id}
+          cx={pin.coordinate.x}
+          cy={pin.coordinate.y}
+          r={2.5}
+          fill="#333"
+          stroke="var(--color-white)"
+        />
       ))}
 
       {/* Output pin */}
       {node.outputs.map((pin) => (
-        <circle key={pin.id} cx={pin.coordinate.x} cy={pin.coordinate.y} r={2.5} fill="#333" stroke="var(--color-white)" />
+        <circle
+          key={pin.id}
+          cx={pin.coordinate.x}
+          cy={pin.coordinate.y}
+          r={2.5}
+          fill="#333"
+          stroke="var(--color-white)"
+        />
       ))}
 
       {isInFocus && (

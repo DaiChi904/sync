@@ -52,7 +52,6 @@ export namespace Attempt {
 
   const logger = (err: unknown) => {
     switch (true) {
-      case err instanceof ModelValidationError:
       case err instanceof Abort: {
         console.error(err);
         break;
@@ -63,13 +62,6 @@ export namespace Attempt {
       }
     }
   };
-
-  export class ModelValidationError extends Error {
-    constructor(modelName: string, received: unknown) {
-      super(`Invalid model: ${modelName}. Received: ${JSON.stringify(received)}`);
-      this.name = "ModelValidationError";
-    }
-  }
 
   export class Abort extends Error {
     readonly tag: string | undefined;

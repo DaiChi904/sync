@@ -2,7 +2,7 @@ export const throwOnlyInTry = {
   meta: {
     type: "problem",
     docs: {
-      description: "Disallow throw statement outside of try, catch, or finally blocks.",
+      description: "Disallow throw statement outside of try blocks and nested within catch/finally blocks.",
       category: "Best Practices",
       recommended: false,
     },
@@ -16,37 +16,51 @@ export const throwOnlyInTry = {
   },
   create(context) {
     return {
-      // Directly invoke the visitor in the ThrowStatement node.
       ThrowStatement(node) {
-        let current = node.parent;
+        let isInsideTryBlock = false;
+        let isInsideCatchOrFinally = false;
 
-        // Trace the parent node to check whether it is within a try/catch/finally block.
+        // Trace the parent nodes up the AST.
+        let current = node.parent;
         while (current) {
           if (current.type === "TryStatement") {
-            // Whether the node is within a try block.
-            if (current.block.range <= node.range && node.range <= current.block.range) {
-              return; // It's within a try block, so it's fine.
-            }
-            // Whether the node is within a catch block.
+            // Check if the node is within the 'try' block's body.
             if (
-              current.handler &&
-              current.handler.body.range <= node.range &&
-              node.range <= current.handler.body.range
+              current.block.body.includes(node) ||
+              current.block.body.some((child) => child.range[0] <= node.range[0] && child.range[1] >= node.range[1])
             ) {
-              context.report({ node, messageId: "throwInCatch" });
-              return;
+              isInsideTryBlock = true;
+              break; // Found it, no need to go further up.
             }
-            // Whether the node is within a finally block.
-            if (current.finalizer && current.finalizer.range <= node.range && node.range <= current.finalizer.range) {
-              context.report({ node, messageId: "throwInFinally" });
-              return;
+
+            // Check if the node is within a 'catch' block.
+            if (
+              current.handler?.body.body.includes(node) ||
+              current.handler.body.body.some(
+                (child) => child.range[0] <= node.range[0] && child.range[1] >= node.range[1],
+              )
+            ) {
+              isInsideCatchOrFinally = true;
+              break;
+            }
+
+            // Check if the node is within a 'finally' block.
+            if (
+              current.finalizer?.body.includes(node) ||
+              current.finalizer.body.some((child) => child.range[0] <= node.range[0] && child.range[1] >= node.range[1])
+            ) {
+              isInsideCatchOrFinally = true;
+              break;
             }
           }
           current = current.parent;
         }
 
-        // If it is not within any try block
-        context.report({ node, messageId: "throwOutsideTry" });
+        if (isInsideCatchOrFinally) {
+          context.report({ node, messageId: "throwInCatch" });
+        } else if (!isInsideTryBlock) {
+          context.report({ node, messageId: "throwOutsideTry" });
+        }
       },
     };
   },

@@ -39,11 +39,17 @@ export default function Edges({
   const outputMap = new Map<CircuitNodePinId, EvalResult>();
 
   data.nodes.forEach((node) => {
-    node.inputs.forEach((pin) => pinMap.set(pin.id, pin.coordinate));
-    node.outputs.forEach((pin) => pinMap.set(pin.id, pin.coordinate));
+    node.inputs.forEach((pin) => {
+      pinMap.set(pin.id, pin.coordinate);
+    });
+    node.outputs.forEach((pin) => {
+      pinMap.set(pin.id, pin.coordinate);
+    });
   });
 
-  data.edges.forEach((edge) => waypointsMap.set(edge.id, edge.waypoints));
+  data.edges.forEach((edge) => {
+    waypointsMap.set(edge.id, edge.waypoints);
+  });
 
   data?.nodes.forEach((node) => {
     node.inputs.forEach((pin) => {

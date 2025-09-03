@@ -19,8 +19,7 @@ export default function NodeDragInteractionLayer({
 }: NodeDragInteractionLayerProps) {
   return (
     isActive && (
-      // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.
-      // biome-ignore lint/nursery/useUniqueElementIds: No need for unique id.
+      // biome-ignore lint/correctness/useUniqueElementIds: No need for unique id.
       <DragInteractionLayer
         isActive={isActive}
         id="node-drag-interaction-layer"

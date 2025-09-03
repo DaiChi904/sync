@@ -77,7 +77,7 @@ export default function ElementSideBar({ viewBox, addCircuitNode }: ElementSideB
   };
 
   return (
-    // biome-ignore lint/nursery/useUniqueElementIds: No need for unique id.
+    // biome-ignore lint/correctness/useUniqueElementIds: No need for unique id.
     <Flex id="element-side-bar" direction="column" style={{ height: "100%", padding: 5 }}>
       <Typography>Logic gates</Typography>
       <Flex wrap="wrap" style={{ marginTop: 10 }}>

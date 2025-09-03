@@ -71,8 +71,7 @@ export default function NotNode({
 
       {isInFocus && (
         <>
-          {/* biome-ignore lint/nursery/useUniqueElementIds: No need for unique id. */}
-          {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support. */}
+          {/* biome-ignore lint/correctness/useUniqueElementIds: No need for unique id. */}
           <SvgRect
             id="node-focused-frame"
             x={node.coordinate.x - node.size.x / 2 - 10}

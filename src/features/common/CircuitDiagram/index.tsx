@@ -143,7 +143,7 @@ export default function CircuitDiagram({
       <SvgTitle>Circuit Diagram</SvgTitle>
 
       {showTouchableArea && (
-        // biome-ignore lint/nursery/useUniqueElementIds: No need for unique id.
+        // biome-ignore lint/correctness/useUniqueElementIds: No need for unique id.
         <SvgRect
           id="circuit-diagram-area"
           x={minX}
@@ -211,7 +211,7 @@ export default function CircuitDiagram({
 
           return (
             <>
-              {/** biome-ignore lint/nursery/useUniqueElementIds: No need for unique id. */}
+              {/** biome-ignore lint/correctness/useUniqueElementIds: No need for unique id. */}
               <DiagramUtilityMenuBackdrop
                 id="edge-utility-menu-backdrop"
                 viewBoxX={viewBox?.x}
@@ -259,7 +259,7 @@ export default function CircuitDiagram({
 
           return (
             <>
-              {/** biome-ignore lint/nursery/useUniqueElementIds: No need for unique id. */}
+              {/** biome-ignore lint/correctness/useUniqueElementIds: No need for unique id. */}
               <DiagramUtilityMenuBackdrop
                 id="node-utility-menu-backdrop"
                 viewBoxX={viewBox?.x}

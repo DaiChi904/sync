@@ -48,7 +48,7 @@ export default function Edge({
     return (
       <>
         <SvgDefs>
-          {/** biome-ignore lint/nursery/useUniqueElementIds: No need for unique id. */}
+          {/** biome-ignore lint/correctness/useUniqueElementIds: No need for unique id. */}
           <SvgMarker id="arrow" markerWidth="5" markerHeight="5" refX="5" refY="2.5" orient="auto">
             <SvgPath d="M 0 0 L 5 2.5 L 0 5 z" fill="var(--color-circuit-state-high)" />
           </SvgMarker>

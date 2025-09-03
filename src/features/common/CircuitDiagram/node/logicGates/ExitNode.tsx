@@ -46,8 +46,7 @@ export default function ExitNode({
             onMouseDown={(ev) => handleNodePinMouseDown?.(ev, node.inputs[0].id, "to", "ADD")}
           />
 
-          {/** biome-ignore lint/nursery/useUniqueElementIds: No need for unique id. */}
-          {/** biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support.*/}
+          {/** biome-ignore lint/correctness/useUniqueElementIds: No need for unique id. */}
           <SvgCircle
             id="node-focused-frame"
             cx={node.coordinate.x}

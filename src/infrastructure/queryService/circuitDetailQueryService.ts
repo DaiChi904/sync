@@ -1,10 +1,11 @@
-import type {
-  CircuitDetailQueryServiceGetByIdOutput,
-  ICircuitDetailQueryService,
+import type { Circuit } from "@/domain/model/aggregate/circuit";
+import {
+  CircuitDetailQueryServiceError,
+  type ICircuitDetailQueryService,
 } from "@/domain/model/queryService/ICircuitDetailQueryService";
 import type { ICircuitRepository } from "@/domain/model/repository/ICircuitRepository";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
-import { Attempt } from "@/utils/attempt";
+import type { Result } from "@/utils/result";
 
 interface CircuitDetailQueryServiceDependencies {
   circuitRepository: ICircuitRepository;
@@ -17,27 +18,21 @@ export class CircuitDetailQueryService implements ICircuitDetailQueryService {
     this.circuitRepository = circuitRepository;
   }
 
-  async getById(id: CircuitId): Promise<CircuitDetailQueryServiceGetByIdOutput> {
-    return await Attempt.asyncProceed(
-      async () => {
-        const res = await this.circuitRepository.getById(id);
-        if (!res.ok) {
-          throw new Attempt.Abort("CircuitDetailQueryService.getById", `Failed to get circuit. Id: ${id}`, {
-            cause: res.error,
-          });
-        }
+  async getById(id: CircuitId): Promise<Result<Circuit, CircuitDetailQueryServiceError>> {
+    const res = await this.circuitRepository.getById(id);
+    if (!res.ok) {
+      console.error(res.error);
+      return {
+        ok: false,
+        error: new CircuitDetailQueryServiceError(`Failed to get circuit. Id: ${id}`, {
+          cause: res.error,
+        }),
+      };
+    }
 
-        return {
-          ok: true,
-          value: res.value,
-        } as const;
-      },
-      (err: unknown) => {
-        return {
-          ok: false,
-          error: err,
-        } as const;
-      },
-    );
+    return {
+      ok: true,
+      value: res.value,
+    };
   }
 }

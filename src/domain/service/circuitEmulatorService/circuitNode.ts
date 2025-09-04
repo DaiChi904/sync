@@ -51,11 +51,14 @@ export abstract class CircuitNode implements ICircuitNode {
         return { ok: true, value: new NotNode(id, inputs, outputs) };
       case "JUNCTION":
         return { ok: true, value: new JunctionNode(id, inputs, outputs) };
-      default:
+      default: {
+        const err = new CircuitNodeError(`Failed to generate circuit node. Received invalid node type: ${type}`);
+        console.error(err);
         return {
           ok: false,
-          error: new CircuitNodeError(`Failed to generate circuit node. Received invalid node type: ${type}`),
+          error: err,
         };
+      }
     }
   }
 
@@ -82,6 +85,7 @@ export abstract class CircuitNode implements ICircuitNode {
 
       this.history = EvalHistory.from(new Map([[Phase.from(0), initialHistory]]));
     } catch (err: unknown) {
+      console.error(err);
       if (err instanceof CircuitNodeError) {
         return { ok: false, error: err };
       }
@@ -137,6 +141,7 @@ class EntryNode extends CircuitNode {
 
       return { ok: true, value: result.output };
     } catch (err: unknown) {
+      console.error(err);
       if (err instanceof CircuitNodeError) {
         return { ok: false, error: err };
       }
@@ -192,6 +197,7 @@ class ExitNode extends CircuitNode {
 
       return { ok: true, value: result.output } as const;
     } catch (err: unknown) {
+      console.error(err);
       if (err instanceof CircuitNodeError) {
         return { ok: false, error: err };
       }
@@ -248,6 +254,7 @@ class AndNode extends CircuitNode {
 
       return { ok: true, value: result.output } as const;
     } catch (err: unknown) {
+      console.error(err);
       if (err instanceof CircuitNodeError) {
         return { ok: false, error: err };
       }
@@ -303,6 +310,7 @@ class OrNode extends CircuitNode {
 
       return { ok: true, value: result.output } as const;
     } catch (err: unknown) {
+      console.error(err);
       if (err instanceof CircuitNodeError) {
         return { ok: false, error: err };
       }
@@ -358,6 +366,7 @@ class NotNode extends CircuitNode {
 
       return { ok: true, value: result.output } as const;
     } catch (err: unknown) {
+      console.error(err);
       if (err instanceof CircuitNodeError) {
         return { ok: false, error: err };
       }
@@ -411,7 +420,7 @@ class JunctionNode extends CircuitNode {
       if (!this.history.has(phase)) {
         this.history.set(phase, new Map());
       }
-      
+
       result.forEach((result) => {
         this.saveOutput(phase, tick, result.output);
       });
@@ -419,6 +428,7 @@ class JunctionNode extends CircuitNode {
       // As all JUNCTION outputs are identical, it is allowed to return one of the multiple outputs.
       return { ok: true, value: result[0].output } as const;
     } catch (err: unknown) {
+      console.error(err);
       if (err instanceof CircuitNodeError) {
         return { ok: false, error: err };
       }

@@ -9,7 +9,7 @@ import {
   HomePageHandlerError,
   type HomePageUiStateModel,
   type IHomePageHandler,
-  initialHomePageErrorsValue,
+  initialHomePageError,
 } from "@/domain/model/handler/IHomePageHandler";
 import type { ICircuitEditorUsecase } from "@/domain/model/usecase/ICircuitEditorUsecase";
 import type { IGetCircuitOverviewsUsecase } from "@/domain/model/usecase/IGetCircuitOverviewsUsecase";
@@ -33,7 +33,7 @@ export const useHomePageHandler = ({
 }: HomePageHandlerDependencies): IHomePageHandler => {
   const router = useRouter();
 
-  const [error, setError] = usePartialState<HomePageErrorModel>(initialHomePageErrorsValue);
+  const [error, setError] = usePartialState<HomePageErrorModel>(initialHomePageError);
   const [uiState, setUiState] = usePartialState<HomePageUiStateModel>({
     tab: { open: "home" },
   });

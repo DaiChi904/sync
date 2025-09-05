@@ -4,7 +4,7 @@ export interface HomePageErrorModel {
   failedToGetCircuitOverviewsError: boolean;
 }
 
-export const initialHomePageErrorsValue: HomePageErrorModel = {
+export const initialHomePageError: HomePageErrorModel = {
   failedToGetCircuitOverviewsError: false,
 };
 

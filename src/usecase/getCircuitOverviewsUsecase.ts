@@ -1,9 +1,10 @@
+import type { CircuitOverview } from "@/domain/model/entity/circuitOverview";
 import type { ICircuitOverviewsQueryService } from "@/domain/model/queryService/ICircuitOverviewsQueryService";
-import type {
-  IGetCircuitOverviewsUsecase,
-  IGetCircuitOverviewsUsecaseGetOverviewsOutput,
+import {
+  GetCircuitOverviewsUsecaseError,
+  type IGetCircuitOverviewsUsecase,
 } from "@/domain/model/usecase/IGetCircuitOverviewsUsecase";
-import { Attempt } from "@/utils/attempt";
+import type { Result } from "@/utils/result";
 
 interface GetCircuitOverviewsUsecaseDependencies {
   circuitOverviewsQueryService: ICircuitOverviewsQueryService;
@@ -16,21 +17,28 @@ export class GetCircuitOverviewsUsecase implements IGetCircuitOverviewsUsecase {
     this.circuitOverviewsQueryService = circuitOverviewsQueryService;
   }
 
-  async getOverviews(): Promise<IGetCircuitOverviewsUsecaseGetOverviewsOutput> {
-    return await Attempt.asyncProceed(
-      async () => {
-        const res = await this.circuitOverviewsQueryService.getAll();
-        if (!res.ok) {
-          throw new Attempt.Abort("GetCircuitOverviewsUsecase.getOverviews", "Failed to get circuits", {
-            cause: res.error,
-          });
-        }
+  async getOverviews(): Promise<Result<Array<CircuitOverview>, GetCircuitOverviewsUsecaseError>> {
+    try {
+      const res = await this.circuitOverviewsQueryService.getAll();
+      if (!res.ok) {
+        throw new GetCircuitOverviewsUsecaseError("Failed to get circuit overviews.", {
+          cause: res.error,
+        });
+      }
 
-        return { ok: true, value: res.value } as const;
-      },
-      (err: unknown) => {
-        return { ok: false, error: err } as const;
-      },
-    );
+      return { ok: true, value: res.value } as const;
+    } catch (err: unknown) {
+      console.error(err);
+      if (err instanceof GetCircuitOverviewsUsecaseError) {
+        return { ok: false, error: err };
+      }
+
+      return {
+        ok: false,
+        error: new GetCircuitOverviewsUsecaseError("Unknown error occurred while getting circuit overviews.", {
+          cause: err,
+        }),
+      };
+    }
   }
 }

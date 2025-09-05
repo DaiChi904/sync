@@ -27,7 +27,7 @@ export class CircuitEditorUsecase implements ICircuitEditorUsecase {
         throw new CircuitEditorUsecaseError("Failed to add circuit.", { cause: res.error });
       }
 
-      return { ok: true, value: undefined } as const;
+      return { ok: true, value: undefined };
     } catch (err: unknown) {
       console.error(err);
       if (err instanceof CircuitEditorUsecaseError) {
@@ -50,7 +50,7 @@ export class CircuitEditorUsecase implements ICircuitEditorUsecase {
         throw new CircuitEditorUsecaseError("Failed to save circuit.", { cause: res.error });
       }
 
-      return { ok: true, value: undefined } as const;
+      return { ok: true, value: undefined };
     } catch (err: unknown) {
       console.error(err);
       if (err instanceof CircuitEditorUsecaseError) {
@@ -73,7 +73,7 @@ export class CircuitEditorUsecase implements ICircuitEditorUsecase {
         throw new CircuitEditorUsecaseError("Failed to delete circuit.", { cause: res.error });
       }
 
-      return { ok: true, value: undefined } as const;
+      return { ok: true, value: undefined };
     } catch (err: unknown) {
       console.error(err);
       if (err instanceof CircuitEditorUsecaseError) {

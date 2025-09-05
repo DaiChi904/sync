@@ -42,7 +42,7 @@ export class GenerateCircuitEmulatorServiceClientUsecase implements IGenerateCir
 
       return {
         ok: false,
-        error: new CircuitParserUsecaseError("Unknown error occurred while parsing circuit data.", { cause: err }),
+        error: new CircuitParserUsecaseError("Unknown error occurred while generating circuit data.", { cause: err }),
       };
     }
   }

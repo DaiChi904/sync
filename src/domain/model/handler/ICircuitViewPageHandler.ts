@@ -1,28 +1,38 @@
 import type { CircuitGuiData } from "../entity/circuitGuiData";
 import type { CircuitOverview } from "../entity/circuitOverview";
 
-export interface CircuitViewPageError {
+export interface CircuitViewPageErrorModel {
   failedToGetCircuitDetailError: boolean;
   failedToParseCircuitDataError: boolean;
 }
 
-export const circuitViewPageError: CircuitViewPageError = {
+export const initialCircuitViewPageError: CircuitViewPageErrorModel = {
   failedToGetCircuitDetailError: false,
   failedToParseCircuitDataError: false,
 };
 
+export interface CircuitViewPageUiStateModel {
+  toolBarMenu: {
+    open: "none" | "file" | "view" | "goTo" | "help";
+  };
+  activityBarMenu: {
+    open: "infomation" | "circuitDiagram";
+  };
+}
+
+export class CircuitViewPageHandlerError extends Error {
+  constructor(message: string, options?: { cause?: unknown }) {
+    super(message);
+    this.name = "HomePageHandlerError";
+    this.cause = options?.cause;
+  }
+}
+
 export interface ICircuitViewPageHandler {
-  error: CircuitViewPageError;
+  error: CircuitViewPageErrorModel;
+  uiState: CircuitViewPageUiStateModel;
   overview: CircuitOverview | undefined;
   guiData: CircuitGuiData | undefined;
-  uiState: {
-    toolBarMenu: {
-      open: "none" | "file" | "view" | "goTo" | "help";
-    };
-    activityBarMenu: {
-      open: "infomation" | "circuitDiagram";
-    };
-  };
   openToolBarMenu: (kind: "file" | "view" | "goTo" | "help") => void;
   closeToolBarMenu: () => void;
   changeActivityBarMenu: (kind: "infomation" | "circuitDiagram") => void;

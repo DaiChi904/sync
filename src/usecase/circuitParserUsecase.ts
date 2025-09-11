@@ -1,11 +1,9 @@
+import type { CircuitGraphData } from "@/domain/model/entity/circuitGraphData";
+import type { CircuitGuiData } from "@/domain/model/entity/circuitGuiData";
 import type { ICircuitParserService } from "@/domain/model/service/ICircuitParserService";
-import type {
-  ICircuitParserUsecase,
-  ICircuitParserUsecaseParseToGraphDataOutput,
-  ICircuitParserUsecaseParseToGuiDataOutput,
-} from "@/domain/model/usecase/ICircuitParserUsecase";
+import { CircuitParserUsecaseError, type ICircuitParserUsecase } from "@/domain/model/usecase/ICircuitParserUsecase";
 import type { CircuitData } from "@/domain/model/valueObject/circuitData";
-import { Attempt } from "@/utils/attempt";
+import type { Result } from "@/utils/result";
 
 interface CircuitParserUsecaseDependencies {
   circuitParserService: ICircuitParserService;
@@ -18,39 +16,49 @@ export class CircuitParserUsecase implements ICircuitParserUsecase {
     this.circuitParserService = circuitParserService;
   }
 
-  parseToGuiData(circuitData: CircuitData): ICircuitParserUsecaseParseToGuiDataOutput {
-    return Attempt.proceed(
-      () => {
-        const res = this.circuitParserService.parseToGuiData(circuitData);
-        if (!res.ok) {
-          throw new Attempt.Abort("CircuitParserUsecase.parseToGuiData", "Failed to parse circuit data.", {
-            cause: res.error,
-          });
-        }
+  parseToGuiData(circuitData: CircuitData): Result<CircuitGuiData, CircuitParserUsecaseError> {
+    try {
+      const res = this.circuitParserService.parseToGuiData(circuitData);
+      if (!res.ok) {
+        throw new CircuitParserUsecaseError("Failed to parse circuit data.", {
+          cause: res.error,
+        });
+      }
 
-        return { ok: true, value: res.value } as const;
-      },
-      (err: unknown) => {
-        return { ok: false, error: err } as const;
-      },
-    );
+      return { ok: true, value: res.value };
+    } catch (err: unknown) {
+      console.error(err);
+      if (err instanceof CircuitParserUsecaseError) {
+        return { ok: false, error: err };
+      }
+
+      return {
+        ok: false,
+        error: new CircuitParserUsecaseError("Unknown error occurred while parsing circuit data.", { cause: err }),
+      };
+    }
   }
 
-  parseToGraphData(circuitData: CircuitData): ICircuitParserUsecaseParseToGraphDataOutput {
-    return Attempt.proceed(
-      () => {
-        const res = this.circuitParserService.parseToGraphData(circuitData);
-        if (!res.ok) {
-          throw new Attempt.Abort("CircuitParserUsecase.parseToGraphData", "Failed to parse circuit data.", {
-            cause: res.error,
-          });
-        }
+  parseToGraphData(circuitData: CircuitData): Result<CircuitGraphData, CircuitParserUsecaseError> {
+    try {
+      const res = this.circuitParserService.parseToGraphData(circuitData);
+      if (!res.ok) {
+        throw new CircuitParserUsecaseError("Failed to parse circuit data.", {
+          cause: res.error,
+        });
+      }
 
-        return { ok: true, value: res.value } as const;
-      },
-      (err: unknown) => {
-        return { ok: false, error: err } as const;
-      },
-    );
+      return { ok: true, value: res.value };
+    } catch (err: unknown) {
+      console.error(err);
+      if (err instanceof CircuitParserUsecaseError) {
+        return { ok: false, error: err };
+      }
+
+      return {
+        ok: false,
+        error: new CircuitParserUsecaseError("Unknown error occurred while parsing circuit data.", { cause: err }),
+      };
+    }
   }
 }

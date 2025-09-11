@@ -1,5 +1,4 @@
 import type { PrimitiveWaypoint } from "@/domain/model/valueObject/waypoint";
-import { Attempt } from "@/utils/attempt";
 import type { Result } from "@/utils/result";
 
 type NameSpace = "circuit";
@@ -36,31 +35,21 @@ type NameSpaceValueMap = {
   }>;
 };
 
+export class LocalStorageError extends Error {
+  readonly key: string;
+
+  constructor(message: string, key: string, options?: { cause?: unknown }) {
+    super(message);
+    this.name = "LocalStorageError";
+    this.key = key;
+    this.cause = options?.cause;
+  }
+}
+
 export interface ILocalStorage<T extends NameSpace> {
-  save(value: NameSpaceValueMap[T]): Promise<Result<void>>;
-  get(): Promise<Result<NameSpaceValueMap[T] | null>>;
-  remove(): Promise<Result<void>>;
-}
-
-export class LocalStorageSaveError extends Error {
-  constructor(message: string, options?: { cause?: unknown }) {
-    super(message, { cause: options?.cause ?? undefined });
-    this.name = "LocalStorageSaveError";
-  }
-}
-
-export class LocalStorageGetError extends Error {
-  constructor(message: string, options?: { cause?: unknown }) {
-    super(message, { cause: options?.cause ?? undefined });
-    this.name = "LocalStorageGetError";
-  }
-}
-
-export class LocalStorageRemoveError extends Error {
-  constructor(message: string, options?: { cause?: unknown }) {
-    super(message, { cause: options?.cause ?? undefined });
-    this.name = "LocalStorageRemoveError";
-  }
+  save(value: NameSpaceValueMap[T]): Promise<Result<void, LocalStorageError>>;
+  get(): Promise<Result<NameSpaceValueMap[T] | null, LocalStorageError>>;
+  remove(): Promise<Result<void, LocalStorageError>>;
 }
 
 export class LocalStorage<T extends NameSpace> implements ILocalStorage<T> {
@@ -70,54 +59,42 @@ export class LocalStorage<T extends NameSpace> implements ILocalStorage<T> {
     this.KEY = `sync::${nameSpace}`;
   }
 
-  async save(value: NameSpaceValueMap[T]): Promise<Result<void>> {
-    return Attempt.proceed(
-      () => {
-        localStorage.setItem(this.KEY, JSON.stringify(value));
-        return { ok: true, value: undefined } as const;
-      },
-      (err: unknown) => {
-        return {
-          ok: false,
-          error: new LocalStorageSaveError(
-            `Failed to save to localStorage: ${err instanceof Error ? err.message : String(err)}`,
-            { cause: err },
-          ),
-        } as const;
-      },
-    );
+  async save(value: NameSpaceValueMap[T]): Promise<Result<void, LocalStorageError>> {
+    try {
+      localStorage.setItem(this.KEY, JSON.stringify(value));
+      return { ok: true, value: undefined } as const;
+    } catch (err: unknown) {
+      console.error(err);
+      return {
+        ok: false,
+        error: new LocalStorageError(`Failed to save to localStorage.`, this.KEY, { cause: err }),
+      };
+    }
   }
 
-  async get(): Promise<Result<NameSpaceValueMap[T] | null>> {
-    return Attempt.proceed(
-      () => {
-        const rawItem = localStorage.getItem(this.KEY);
-        const item = rawItem !== null ? JSON.parse(rawItem) : null;
-        return { ok: true, value: item as NameSpaceValueMap[T] | null } as const;
-      },
-      (err: unknown) => {
-        return {
-          ok: false,
-          error: new LocalStorageGetError(
-            `Failed to get from localStorage: ${err instanceof Error ? err.message : String(err)}`,
-            { cause: err },
-          ),
-        } as const;
-      },
-    );
+  async get(): Promise<Result<NameSpaceValueMap[T] | null, LocalStorageError>> {
+    try {
+      const rawItem = localStorage.getItem(this.KEY);
+      const item = rawItem !== null ? JSON.parse(rawItem) : null;
+      return { ok: true, value: item as NameSpaceValueMap[T] | null } as const;
+    } catch (err: unknown) {
+      console.error(err);
+      return {
+        ok: false,
+        error: new LocalStorageError(`Failed to get from localStorage.`, this.KEY, { cause: err }),
+      };
+    }
   }
 
-  async remove(): Promise<Result<void>> {
+  async remove(): Promise<Result<void, LocalStorageError>> {
     try {
       localStorage.removeItem(this.KEY);
       return { ok: true, value: undefined };
     } catch (err: unknown) {
+      console.error(err);
       return {
         ok: false,
-        error: new LocalStorageRemoveError(
-          `Failed to remove from localStorage: ${err instanceof Error ? err.message : String(err)}`,
-          { cause: err },
-        ),
+        error: new LocalStorageError(`Failed to remove from localStorage.`, this.KEY, { cause: err }),
       };
     }
   }

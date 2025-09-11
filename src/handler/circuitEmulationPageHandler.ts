@@ -2,9 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import type { CircuitGuiData } from "@/domain/model/entity/circuitGuiData";
 import { CircuitOverview } from "@/domain/model/entity/circuitOverview";
 import {
-  type CircuitEmulationPageError,
-  circuitEmulationPageError,
+  type CircuitEmulationPageErrorModel,
+  CircuitEmulationPageHandlerError,
   type ICircuitEmulationPageHandler,
+  initialCircuitEmulationPageError,
 } from "@/domain/model/handler/ICircuitEmulationPageHandler";
 import type { ICircuitEmulatorService } from "@/domain/model/service/ICircuitEmulatorService";
 import type { IGenerateCircuitEmulatorServiceClientUsecase } from "@/domain/model/usecase/IGenerateCircuitEmulatorServiceClientUsecase";
@@ -18,7 +19,6 @@ import { InputRecord } from "@/domain/model/valueObject/inputRecord";
 import { Phase } from "@/domain/model/valueObject/phase";
 import type { CircuitParserService } from "@/domain/service/circuitParserService";
 import { usePartialState } from "@/hooks/partialState";
-import { Attempt } from "@/utils/attempt";
 
 interface CircuitEmulationPageHandlerDependencies {
   query: CircuitId;
@@ -33,7 +33,7 @@ export const useCircuitEmulationPageHandler = ({
   generateCircuitEmulatorServiceClientUsecase,
   circuitParserUsecase,
 }: CircuitEmulationPageHandlerDependencies): ICircuitEmulationPageHandler => {
-  const [error, setError] = usePartialState<CircuitEmulationPageError>(circuitEmulationPageError);
+  const [error, setError] = usePartialState<CircuitEmulationPageErrorModel>(initialCircuitEmulationPageError);
   const [uiState, setUiState] = usePartialState<ICircuitEmulationPageHandler["uiState"]>({
     toolBarMenu: { open: "none" },
     activityBarMenu: { open: "evalMenu" },
@@ -49,190 +49,152 @@ export const useCircuitEmulationPageHandler = ({
   const [outputs, setOutputs] = useState<Record<CircuitNodeId, EvalResult>>({});
 
   const fetch = useCallback(async (): Promise<void> => {
-    await Attempt.asyncProceed(
-      async () => {
-        const circuitDetail = await getCircuitDetailUsecase.getById(query);
-        if (!circuitDetail.ok) {
-          throw new Attempt.Abort("circuitEmulationPageHandler.fetch", "Failed to get circuit detail.", {
-            cause: circuitDetail.error,
-            tag: "getCircuitDetail",
-          });
-        }
+    const circuitDetail = await getCircuitDetailUsecase.getById(query);
+    if (!circuitDetail.ok) {
+      const err = new CircuitEmulationPageHandlerError("Failed to get circuit detail.", {
+        cause: circuitDetail.error,
+      });
+      console.error(err);
 
-        setOverview(
-          CircuitOverview.from({
-            id: circuitDetail.value.id,
-            title: circuitDetail.value.title,
-            description: circuitDetail.value.description,
-            createdAt: circuitDetail.value.createdAt,
-            updatedAt: circuitDetail.value.updatedAt,
-          }),
-        );
+      setError("failedToGetCircuitDetailError", true);
+      setError("failedToGenGuiCircuitDataError", true);
+      setError("failedToSetupEmulatorServiceError", true);
+      return;
+    }
 
-        const circuitGuiData = circuitParserUsecase.parseToGuiData(circuitDetail.value.circuitData);
-        if (!circuitGuiData.ok) {
-          throw new Attempt.Abort("circuitEmulationPageHandler.fetch", "Failed to parse circuit data to gui data.", {
-            cause: circuitGuiData.error,
-            tag: "genGuiData",
-          });
-        }
-
-        setGuiData(circuitGuiData.value);
-
-        const circuitGraphData = circuitParserUsecase.parseToGraphData(circuitDetail.value.circuitData);
-        if (!circuitGraphData.ok) {
-          throw new Attempt.Abort("circuitEmulationPageHandler.fetch", "Failed to parse circuit data to graph data.", {
-            cause: circuitGraphData.error,
-            tag: "genGraphData",
-          });
-        }
-
-        const circuitEmulatorService = generateCircuitEmulatorServiceClientUsecase.generate(circuitGraphData.value);
-        if (!circuitEmulatorService.ok) {
-          throw new Attempt.Abort("circuitEmulationPageHandler.fetch", "Failed to generate circuit emulator service.", {
-            cause: circuitEmulatorService.error,
-            tag: "genEmulatorService",
-          });
-        }
-
-        setAvailableNodeIds(circuitGraphData.value.map((node) => node.id));
-        setClient(circuitEmulatorService.value);
-      },
-      (err: unknown) => {
-        switch (true) {
-          case Attempt.isAborted(err) && err.tag === "getCircuitDetail": {
-            setError("failedToGetCircuitDetailError", true);
-            setError("failedToGenGuiCircuitDataError", true);
-            setError("failedToSetupEmulatorServiceError", true);
-            break;
-          }
-          case Attempt.isAborted(err) && err.tag === "genGuiData": {
-            setError("failedToGenGuiCircuitDataError", true);
-            setError("failedToSetupEmulatorServiceError", true);
-            break;
-          }
-          case Attempt.isAborted(err) && err.tag === "genEmulatorService":
-          case Attempt.isAborted(err) && err.tag === "genGraphData": {
-            setError("failedToSetupEmulatorServiceError", true);
-            break;
-          }
-          default: {
-            setError("failedToGetCircuitDetailError", true);
-            setError("failedToGenGuiCircuitDataError", true);
-            setError("failedToSetupEmulatorServiceError", true);
-            break;
-          }
-        }
-      },
+    setOverview(
+      CircuitOverview.from({
+        id: circuitDetail.value.id,
+        title: circuitDetail.value.title,
+        description: circuitDetail.value.description,
+        createdAt: circuitDetail.value.createdAt,
+        updatedAt: circuitDetail.value.updatedAt,
+      }),
     );
+
+    const circuitGuiData = circuitParserUsecase.parseToGuiData(circuitDetail.value.circuitData);
+    if (!circuitGuiData.ok) {
+      const err = new CircuitEmulationPageHandlerError("Failed to parse circuit data to gui data.", {
+        cause: circuitGuiData.error,
+      });
+      console.error(err);
+
+      setError("failedToGenGuiCircuitDataError", true);
+      setError("failedToSetupEmulatorServiceError", true);
+      return;
+    }
+
+    setGuiData(circuitGuiData.value);
+
+    const circuitGraphData = circuitParserUsecase.parseToGraphData(circuitDetail.value.circuitData);
+    if (!circuitGraphData.ok) {
+      const err = new CircuitEmulationPageHandlerError("Failed to parse circuit data to graph data.", {
+        cause: circuitGraphData.error,
+      });
+      console.error(err);
+
+      setError("failedToSetupEmulatorServiceError", true);
+      return;
+    }
+
+    const circuitEmulatorService = generateCircuitEmulatorServiceClientUsecase.generate(circuitGraphData.value);
+    if (!circuitEmulatorService.ok) {
+      const err = new CircuitEmulationPageHandlerError("Failed to generate circuit emulator service.", {
+        cause: circuitEmulatorService.error,
+      });
+      console.error(err);
+
+      setError("failedToSetupEmulatorServiceError", true);
+      return;
+    }
+
+    setAvailableNodeIds(circuitGraphData.value.map((node) => node.id));
+    setClient(circuitEmulatorService.value);
   }, [query, getCircuitDetailUsecase, circuitParserUsecase, generateCircuitEmulatorServiceClientUsecase, setError]);
 
   const setupCircuitEmulatorServiceClient = useCallback((): void => {
-    Attempt.proceed(
-      () => {
-        if (!client) {
-          throw new Attempt.Abort(
-            "circuitEmulationPageHandler.setupCircuitEmulatorServiceClient",
-            "EmulatorService is not defined.",
-            { tag: "noClient" },
-          );
-        }
+    if (!client) {
+      const err = new CircuitEmulationPageHandlerError(
+        "Failed to setup emulator service. EmulatorService is not defined.",
+      );
+      console.error(err);
 
-        const res = client.setup();
-        if (!res.ok) {
-          throw new Attempt.Abort(
-            "circuitEmulationPageHandler.setupCircuitEmulatorServiceClient",
-            "Failed to setup emulator service.",
-            {
-              cause: res.error,
-              tag: "setupClient",
-            },
-          );
-        }
-      },
-      () => {
-        setError("failedToSetupEmulatorServiceError", true);
-      },
-    );
+      setError("failedToSetupEmulatorServiceError", true);
+      return;
+    }
+
+    const res = client.setup();
+    if (!res.ok) {
+      const err = new CircuitEmulationPageHandlerError("Failed to setup emulator service.", {
+        cause: res.error,
+      });
+      console.error(err);
+
+      setError("failedToSetupEmulatorServiceError", true);
+      return;
+    }
   }, [client, setError]);
 
   const registInputNodes = useCallback((): void => {
     // In available states, using guiData is suitable for efficient.
-    Attempt.proceed(
-      () => {
-        if (!guiData) {
-          throw new Attempt.Abort("circuitEmulationPageHandler.registInputNodes", "GuiData is not defined.", {
-            tag: "noGuiData",
-          });
-        }
+    if (!guiData) {
+      const err = new CircuitEmulationPageHandlerError("Failed to regist input nodes. GuiData is not defined.");
+      console.error(err);
 
-        const entryNodes = guiData.nodes.filter((node) => node.type === CircuitNodeType.from("ENTRY"));
-        const inputRecord = InputRecord.from({});
-        entryNodes.forEach((node) => {
-          inputRecord[CircuitNodeInputId.from(node.id)] = EvalResult.from(false);
-        });
-        setEntryInputs(inputRecord);
-      },
-      () => {
-        setError("failedToSetupEmulatorServiceError", true);
-      },
-    );
+      setError("failedToSetupEmulatorServiceError", true);
+      return;
+    }
+
+    const entryNodes = guiData.nodes.filter((node) => node.type === CircuitNodeType.from("ENTRY"));
+    const inputRecord = InputRecord.from({});
+
+    entryNodes.forEach((node) => {
+      inputRecord[CircuitNodeInputId.from(node.id)] = EvalResult.from(false);
+    });
+
+    setEntryInputs(inputRecord);
   }, [guiData, setError]);
 
   const registOutputs = useCallback((): void => {
-    Attempt.proceed(
-      () => {
-        if (!client) {
-          throw new Attempt.Abort("circuitEmulationPageHandler.registOutputs", "EmulatorService is not defined.", {
-            tag: "noClient",
-          });
-        }
-        if (!availableNodeIds) {
-          throw new Attempt.Abort("circuitEmulationPageHandler.registOutputs", "AvailableNodeIds is not defined.", {
-            tag: "noAvailableNodeIds",
-          });
-        }
+    try {
+      if (!client) {
+        throw new CircuitEmulationPageHandlerError("Failed to regist outputs. EmulatorService is not defined.");
+      }
+      if (!availableNodeIds) {
+        throw new CircuitEmulationPageHandlerError("Failed to regist outputs. AvailableNodeIds is not defined.");
+      }
 
-        const outputRecord: Record<CircuitNodeId, EvalResult> = {};
-        availableNodeIds.forEach((nodeId) => {
-          const res = client.getInfomationById(nodeId);
-          if (!res.ok) {
-            throw new Attempt.Abort("circuitEmulationPageHandler.registOutputs", "Failed to get information by id.", {
+      const outputRecord: Record<CircuitNodeId, EvalResult> = {};
+      availableNodeIds.forEach((nodeId) => {
+        const res = client.getInfomationById(nodeId);
+        if (!res.ok) {
+          throw new CircuitEmulationPageHandlerError(
+            `Failed to regist outputs. Couldn't to get information. id: ${nodeId}`,
+            {
               cause: res.error,
-              tag: "generatingOutputRecord",
-            });
-          }
+            },
+          );
+        }
 
-          const source = res.value.history.get(currentPhase)?.entries();
-          if (!source) {
-            throw new Attempt.Abort(
-              "circuitEmulationPageHandler.registOutputs",
-              "No history found for the current phase",
-              {
-                tag: "generatingOutputRecord",
-              },
-            );
-          }
-          const output = Array.from(source).at(-1);
-          if (!output) {
-            throw new Attempt.Abort(
-              "circuitEmulationPageHandler.registOutputs",
-              "No output found for the current phase",
-              {
-                tag: "generatingOutputRecord",
-              },
-            );
-          }
+        const source = res.value.history.get(currentPhase)?.entries();
+        if (!source) {
+          throw new CircuitEmulationPageHandlerError(
+            "Failed to regist outputs. No history found for the current phase",
+          );
+        }
+        const output = Array.from(source).at(-1);
+        if (!output) {
+          throw new CircuitEmulationPageHandlerError("Failed to regist outputs. No output found for the current phase");
+        }
 
-          outputRecord[nodeId] = EvalResult.from(output[1]);
-        });
+        outputRecord[nodeId] = EvalResult.from(output[1]);
+      });
 
-        setOutputs(outputRecord);
-      },
-      () => {
-        setError("failedToEvalCircuitError", true);
-      },
-    );
+      setOutputs(outputRecord);
+    } catch (err: unknown) {
+      console.error(err);
+      setError("failedToEvalCircuitError", true);
+    }
   }, [client, availableNodeIds, currentPhase, setError]);
 
   const updateEntryInputs = useCallback((nodeId: CircuitNodeId, value: EvalResult): void => {
@@ -243,29 +205,28 @@ export const useCircuitEmulationPageHandler = ({
   }, []);
 
   const evalCircuit = useCallback((): void => {
-    Attempt.proceed(
-      () => {
-        if (!client)
-          throw new Attempt.Abort("circuitEmulationPageHandler.updateEntryInputs", "EmulatorService is not defined.", {
-            tag: "noClient",
-          });
+    if (!client) {
+      const err = new CircuitEmulationPageHandlerError("Failed to eval circuit. EmulatorService is not defined.");
+      console.error(err);
 
-        setCurrentPhase((prev) => Phase.from(prev + 1));
+      setError("failedToEvalCircuitError", true);
+      return;
+    }
 
-        const res = client.eval(entryInputs, currentPhase);
-        if (!res.ok) {
-          throw new Attempt.Abort("circuitEmulationPageHandler.updateEntryInputs", "Failed to eval circuit.", {
-            cause: res.error,
-            tag: "evalCircuit",
-          });
-        }
+    setCurrentPhase((prev) => Phase.from(prev + 1));
 
-        registOutputs();
-      },
-      () => {
-        setError("failedToEvalCircuitError", true);
-      },
-    );
+    const res = client.eval(entryInputs, currentPhase);
+    if (!res.ok) {
+      const err = new CircuitEmulationPageHandlerError("Failed to eval circuit. EmulatorService is not defined.", {
+        cause: res.error,
+      });
+      console.error(err);
+
+      setError("failedToEvalCircuitError", true);
+      return;
+    }
+
+    registOutputs();
   }, [client, registOutputs, setError, entryInputs, currentPhase]);
 
   const openToolBarMenu = useCallback(
@@ -301,6 +262,7 @@ export const useCircuitEmulationPageHandler = ({
 
   return {
     error,
+    uiState,
     overview,
     guiData,
     currentPhase,
@@ -308,7 +270,6 @@ export const useCircuitEmulationPageHandler = ({
     outputs,
     updateEntryInputs,
     evalCircuit,
-    uiState,
     openToolBarMenu,
     closeToolBarMenu,
     changeActivityBarMenu,

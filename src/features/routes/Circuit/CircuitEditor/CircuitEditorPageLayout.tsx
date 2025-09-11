@@ -24,10 +24,10 @@ export default function CircuitEditorPageLayout() {
     guiData,
     viewBox,
     isPanningRef,
-    handleMouseDown,
-    handleMouseMove,
-    handleMouseUp,
-    handleWheel,
+    handleViewBoxMouseDown,
+    handleViewBoxMouseMove,
+    handleViewBoxMouseUp,
+    handleViewBoxZoom,
     preventBrowserZoom,
     save,
     deleteCircuit,
@@ -200,10 +200,10 @@ export default function CircuitEditorPageLayout() {
                             svgRef={svgRef}
                             viewBox={viewBox}
                             isPanningRef={isPanningRef}
-                            handleMouseDown={handleMouseDown}
-                            handleMouseMove={handleMouseMove}
-                            handleMouseUp={handleMouseUp}
-                            handleWheel={handleWheel}
+                            handleViewBoxMouseDown={handleViewBoxMouseDown}
+                            handleViewBoxMouseMove={handleViewBoxMouseMove}
+                            handleViewBoxMouseUp={handleViewBoxMouseUp}
+                            handleViewBoxZoom={handleViewBoxZoom}
                             preventBrowserZoom={preventBrowserZoom}
                             focusedElement={focusedElement}
                             focusElement={focusElement}

@@ -11,7 +11,7 @@ import type { CircuitNodeType } from "../valueObject/circuitNodeType";
 import type { CircuitTitle } from "../valueObject/circuitTitle";
 import type { Coordinate } from "../valueObject/coordinate";
 
-export interface CircuitEditorPageError {
+export interface CircuitEditorPageErrorModel {
   failedToGetCircuitDetailError: boolean;
   failedToParseCircuitDataError: boolean;
   failedToUpdateCircuitDataError: boolean;
@@ -19,7 +19,7 @@ export interface CircuitEditorPageError {
   failedToSaveCircuitError: boolean;
 }
 
-export const circuitEditorPageError: CircuitEditorPageError = {
+export const initialCircuitEditorPageError: CircuitEditorPageErrorModel = {
   failedToGetCircuitDetailError: false,
   failedToParseCircuitDataError: false,
   failedToUpdateCircuitDataError: false,
@@ -27,16 +27,32 @@ export const circuitEditorPageError: CircuitEditorPageError = {
   failedToSaveCircuitError: false,
 };
 
+export interface CircuitEditorPageUiStateModel {
+  toolbarMenu: { open: "none" | "file" | "view" | "help" };
+  diagramUtilityMenu: { open: "none" | "edge" | "node"; at: Coordinate | null };
+  toolBarMenu: { open: "none" | "file" | "view" | "goTo" | "help" };
+  activityBarMenu: { open: "infomation" | "circuitDiagram" | "rowCircuitData" };
+}
+
+export class CircuitEditorPageHandlerError extends Error {
+  constructor(message: string, options?: { cause?: unknown }) {
+    super(message);
+    this.name = "CircuitEditorPageHandlerError";
+    this.cause = options?.cause;
+  }
+}
+
 export interface ICircuitEditorPageHandler {
-  error: CircuitEditorPageError;
+  error: CircuitEditorPageErrorModel;
+  uiState: CircuitEditorPageUiStateModel;
   circuit: Circuit | undefined;
   guiData: CircuitGuiData | undefined;
   viewBox: { x: number; y: number; w: number; h: number } | undefined;
   isPanningRef: React.RefObject<boolean>;
-  handleMouseDown: (ev: React.MouseEvent) => void;
-  handleMouseMove: (ev: React.MouseEvent) => void;
-  handleMouseUp: () => void;
-  handleWheel: (ev: React.WheelEvent) => void;
+  handleViewBoxMouseDown: (ev: React.MouseEvent) => void;
+  handleViewBoxMouseMove: (ev: React.MouseEvent) => void;
+  handleViewBoxMouseUp: () => void;
+  handleViewBoxZoom: (ev: React.WheelEvent) => void;
   preventBrowserZoom: (ref: React.RefObject<SVGSVGElement | null>) => void;
   save: () => void;
   deleteCircuit: () => void;
@@ -91,12 +107,6 @@ export interface ICircuitEditorPageHandler {
   handleWaypointMouseDown: (id: CircuitEdgeId) => (offset: Coordinate, index: number) => (ev: React.MouseEvent) => void;
   handleWaypointMouseMove: (ev: React.MouseEvent) => void;
   handleWaypointMouseUp: () => void;
-  uiState: {
-    toolbarMenu: { open: "none" | "file" | "view" | "help" };
-    diagramUtilityMenu: { open: "none" | "edge" | "node"; at: Coordinate | null };
-    toolBarMenu: { open: "none" | "file" | "view" | "goTo" | "help" };
-    activityBarMenu: { open: "infomation" | "circuitDiagram" | "rowCircuitData" };
-  };
   openUtilityMenu: (kind: "node" | "edge") => (ev: React.MouseEvent) => void;
   closeUtilityMenu: () => void;
   openToolBarMenu: (kind: "file" | "view" | "goTo" | "help") => void;

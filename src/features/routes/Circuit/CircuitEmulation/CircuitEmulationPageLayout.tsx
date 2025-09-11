@@ -13,6 +13,7 @@ import EvalMenu from "./EvalMenu";
 export default function CircuitEmulationPageLayout() {
   const {
     error,
+    uiState,
     overview,
     guiData,
     currentPhase,
@@ -20,7 +21,6 @@ export default function CircuitEmulationPageLayout() {
     outputs,
     updateEntryInputs,
     evalCircuit,
-    uiState,
     openToolBarMenu,
     closeToolBarMenu,
     changeActivityBarMenu,

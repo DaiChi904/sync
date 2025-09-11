@@ -1,4 +1,4 @@
-import { SvgCircle, SvgGroup, SvgPath } from "@/components/atoms/svg";
+import { SvgCircle, SvgGroup, SvgPath, SvgRect } from "@/components/atoms/svg";
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 
@@ -72,9 +72,8 @@ export default function AndNode({
 
       {isInFocus && (
         <>
-          {/* biome-ignore lint/nursery/useUniqueElementIds: No need for unique id. */}
-          {/* biome-ignore lint/a11y/noStaticElementInteractions: // biome-ignore lint/a11y/noStaticElementInteractions: No need for a11y support. */}
-          <rect
+          {/* biome-ignore lint/correctness/useUniqueElementIds: No need for unique id. */}
+          <SvgRect
             id="node-focused-frame"
             x={node.coordinate.x - node.size.x / 2 - 10}
             y={node.coordinate.y - node.size.y / 2 - 10}

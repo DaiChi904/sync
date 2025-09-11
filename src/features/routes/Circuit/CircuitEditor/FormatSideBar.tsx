@@ -18,7 +18,7 @@ interface FormatSideBarProps {
 
 export default function FormatSideBar({ data }: FormatSideBarProps) {
   return (
-    // biome-ignore lint/nursery/useUniqueElementIds: No need for unique id.
+    // biome-ignore lint/correctness/useUniqueElementIds: No need for unique id.
     <Flex id="format-side-bar" direction="column" style={{ height: "100%", padding: 5 }}>
       {!data ? (
         <Flex justifyContent="center" alignItems="center" grow={1}>

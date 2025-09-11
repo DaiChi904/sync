@@ -4,7 +4,13 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Circuit } from "@/domain/model/aggregate/circuit";
 import type { CircuitOverview } from "@/domain/model/entity/circuitOverview";
-import { type HomePageError, homePageError, type IHomePageHandler } from "@/domain/model/handler/IHomePageHandler";
+import {
+  type HomePageErrorModel,
+  HomePageHandlerError,
+  type HomePageUiStateModel,
+  type IHomePageHandler,
+  initialHomePageError,
+} from "@/domain/model/handler/IHomePageHandler";
 import type { ICircuitEditorUsecase } from "@/domain/model/usecase/ICircuitEditorUsecase";
 import type { IGetCircuitOverviewsUsecase } from "@/domain/model/usecase/IGetCircuitOverviewsUsecase";
 import { CircuitData } from "@/domain/model/valueObject/circuitData";
@@ -27,61 +33,58 @@ export const useHomePageHandler = ({
 }: HomePageHandlerDependencies): IHomePageHandler => {
   const router = useRouter();
 
-  const [error, setError] = usePartialState<HomePageError>(homePageError);
-  const [uiState, setUiState] = usePartialState<IHomePageHandler["uiState"]>({
+  const [error, setError] = usePartialState<HomePageErrorModel>(initialHomePageError);
+  const [uiState, setUiState] = usePartialState<HomePageUiStateModel>({
     tab: { open: "home" },
   });
 
   const [circuitOverviews, setCircuitOverviews] = useState<Array<CircuitOverview> | undefined>(undefined);
 
   const fetch = useCallback(async (): Promise<void> => {
-    await Attempt.asyncProceed(
-      async () => {
-        const circuitOverviews = await getCircuitOverviewsUsecase.getOverviews();
-        if (!circuitOverviews.ok) {
-          throw new Attempt.Abort("homePageHandler.fetch", "Failed to get circuit overviews.", {
-            cause: circuitOverviews.error,
-          });
-        }
+    try {
+      const circuitOverviews = await getCircuitOverviewsUsecase.getOverviews();
+      if (!circuitOverviews.ok) {
+        throw new HomePageHandlerError("Failed to get circuit overviews.", {
+          cause: circuitOverviews.error,
+        });
+      }
 
-        setCircuitOverviews(circuitOverviews.value);
-      },
-      () => {
-        setError("failedToGetCircuitOverviewsError", true);
-      },
-    );
+      setCircuitOverviews(circuitOverviews.value);
+    } catch (err: unknown) {
+      console.error(err);
+      setError("failedToGetCircuitOverviewsError", true);
+    }
   }, [getCircuitOverviewsUsecase, setError]);
 
   const addNewCircuit = useCallback(
-    (kind: "empty") => {
-      Attempt.asyncProceed(
-        async () => {
-          switch (kind) {
-            case "empty": {
-              const newCircuitId = CircuitId.generate();
-              const res = await circuitEditorUsecase.add(
-                Circuit.from({
-                  id: newCircuitId,
-                  title: CircuitTitle.from(""),
-                  description: CircuitDescription.from(""),
-                  circuitData: CircuitData.from({ nodes: [], edges: [] }),
-                  createdAt: CreatedDateTime.fromDate(new Date()),
-                  updatedAt: UpdatedDateTime.fromDate(new Date()),
-                }),
-              );
-              if (!res.ok) {
-                throw new Attempt.Abort("homePageHandler.addNewCircuit", "Failed to add new circuit.", {
-                  cause: res.error,
-                });
-              }
-
-              router.push(`/circuit/${newCircuitId}`);
-              break;
+    async (kind: "empty") => {
+      try {
+        switch (kind) {
+          case "empty": {
+            const newCircuitId = CircuitId.generate();
+            const res = await circuitEditorUsecase.add(
+              Circuit.from({
+                id: newCircuitId,
+                title: CircuitTitle.from(""),
+                description: CircuitDescription.from(""),
+                circuitData: CircuitData.from({ nodes: [], edges: [] }),
+                createdAt: CreatedDateTime.fromDate(new Date()),
+                updatedAt: UpdatedDateTime.fromDate(new Date()),
+              }),
+            );
+            if (!res.ok) {
+              throw new Attempt.Abort("homePageHandler.addNewCircuit", "Failed to add new circuit.", {
+                cause: res.error,
+              });
             }
+
+            router.push(`/circuit/${newCircuitId}`);
+            break;
           }
-        },
-        () => {},
-      );
+        }
+      } catch (err: unknown) {
+        console.error(err);
+      }
     },
     [circuitEditorUsecase, router],
   );

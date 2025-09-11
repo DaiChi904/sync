@@ -10,7 +10,7 @@ import CircuitDiagram from "../../../common/CircuitDiagram";
 import BaseCircuitPageLayout from "../common/BaseCircuitPageLayout";
 
 export default function CircuitViewPageLayout() {
-  const { error, overview, guiData, uiState, openToolBarMenu, closeToolBarMenu, changeActivityBarMenu } =
+  const { error, uiState, overview, guiData, openToolBarMenu, closeToolBarMenu, changeActivityBarMenu } =
     useCircuitViewPageHandlerContext();
 
   const isInError = error.failedToGetCircuitDetailError || error.failedToParseCircuitDataError;
@@ -63,63 +63,72 @@ export default function CircuitViewPageLayout() {
             error={isInError}
             onFailure={<Typography>Failed to load circuit data.</Typography>}
           >
-            {uiState.activityBarMenu.open === "infomation" ? (
-              <Flex direction="column" grow={1} style={{ height: "100%", width: "100%", padding: 20 }}>
-                <Typography size="superLarge">Infomation</Typography>
-                <Flex>
-                  <Flex direction="column" basis="60%" style={{ padding: 10 }}>
-                    <Typography size="huge">{overview?.title}</Typography>
-                    <Typography size="medium">{overview?.description}</Typography>
-                  </Flex>
-                  <Flex direction="column" basis="40%" style={{ padding: 10, minWidth: "450px" }}>
-                    <Table>
-                      <TableCaption>
-                        <Typography size="medium" style={{ paddingLeft: 20, textAlign: "start" }}>
-                          Property
-                        </Typography>
-                      </TableCaption>
-                      <TableRow>
-                        <TableCell style={{ padding: "8px 20px" }}>
-                          <Typography size="defaultPlus">ID</Typography>
-                        </TableCell>
-                        <TableCell style={{ padding: "8px 20px" }}>
-                          <Typography size="defaultPlus">{overview?.id}</Typography>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell style={{ padding: "8px 20px" }}>
-                          <Typography size="defaultPlus">Created At</Typography>
-                        </TableCell>
-                        <TableCell style={{ padding: "8px 20px" }}>
-                          <Typography size="defaultPlus">{overview?.createdAt}</Typography>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell style={{ padding: "8px 20px" }}>
-                          <Typography size="defaultPlus">Updated At</Typography>
-                        </TableCell>
-                        <TableCell style={{ padding: "8px 20px" }}>
-                          <Typography size="defaultPlus">{overview?.updatedAt}</Typography>
-                        </TableCell>
-                      </TableRow>
-                    </Table>
-                  </Flex>
-                </Flex>
-              </Flex>
-            ) : (
-              <Flex
-                direction="column"
-                alignItems="center"
-                justifyContent="center"
-                grow={1}
-                style={{ height: "100%", width: "100%", background: "var(--color-circuit-diagram-bg)" }}
-              >
-                <CircuitDiagram
-                  // biome-ignore lint/style/noNonNullAssertion: guiData is guaranteed to be present when isLoading is false
-                  data={guiData!}
-                />
-              </Flex>
-            )}
+            {(() => {
+              switch (uiState.activityBarMenu.open) {
+                case "infomation": {
+                  return (
+                    <Flex direction="column" grow={1} style={{ height: "100%", width: "100%", padding: 20 }}>
+                      <Typography size="superLarge">Infomation</Typography>
+                      <Flex>
+                        <Flex direction="column" basis="60%" style={{ padding: 10 }}>
+                          <Typography size="huge">{overview?.title}</Typography>
+                          <Typography size="medium">{overview?.description}</Typography>
+                        </Flex>
+                        <Flex direction="column" basis="40%" style={{ padding: 10, minWidth: "450px" }}>
+                          <Table>
+                            <TableCaption>
+                              <Typography size="medium" style={{ paddingLeft: 20, textAlign: "start" }}>
+                                Property
+                              </Typography>
+                            </TableCaption>
+                            <TableRow>
+                              <TableCell style={{ padding: "8px 20px" }}>
+                                <Typography size="defaultPlus">ID</Typography>
+                              </TableCell>
+                              <TableCell style={{ padding: "8px 20px" }}>
+                                <Typography size="defaultPlus">{overview?.id}</Typography>
+                              </TableCell>
+                            </TableRow>
+                            <TableRow>
+                              <TableCell style={{ padding: "8px 20px" }}>
+                                <Typography size="defaultPlus">Created At</Typography>
+                              </TableCell>
+                              <TableCell style={{ padding: "8px 20px" }}>
+                                <Typography size="defaultPlus">{overview?.createdAt}</Typography>
+                              </TableCell>
+                            </TableRow>
+                            <TableRow>
+                              <TableCell style={{ padding: "8px 20px" }}>
+                                <Typography size="defaultPlus">Updated At</Typography>
+                              </TableCell>
+                              <TableCell style={{ padding: "8px 20px" }}>
+                                <Typography size="defaultPlus">{overview?.updatedAt}</Typography>
+                              </TableCell>
+                            </TableRow>
+                          </Table>
+                        </Flex>
+                      </Flex>
+                    </Flex>
+                  );
+                }
+                case "circuitDiagram": {
+                  return (
+                    <Flex
+                      direction="column"
+                      alignItems="center"
+                      justifyContent="center"
+                      grow={1}
+                      style={{ height: "100%", width: "100%", background: "var(--color-circuit-diagram-bg)" }}
+                    >
+                      <CircuitDiagram
+                        // biome-ignore lint/style/noNonNullAssertion: guiData is guaranteed to be present when isLoading is false
+                        data={guiData!}
+                      />
+                    </Flex>
+                  );
+                }
+              }
+            })()}
           </Pending>
         </Flex>
       </BaseCircuitPageLayout>

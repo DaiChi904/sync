@@ -27,10 +27,10 @@ interface CircuitDiagramProps {
   svgRef?: React.RefObject<SVGSVGElement | null>;
   viewBox?: { x: number; y: number; w: number; h: number };
   isPanningRef?: React.RefObject<boolean>;
-  handleMouseDown?: (ev: React.MouseEvent) => void;
-  handleMouseMove?: (ev: React.MouseEvent) => void;
-  handleMouseUp?: () => void;
-  handleWheel?: (ev: React.WheelEvent) => void;
+  handleViewBoxMouseDown?: (ev: React.MouseEvent) => void;
+  handleViewBoxMouseMove?: (ev: React.MouseEvent) => void;
+  handleViewBoxMouseUp?: () => void;
+  handleViewBoxZoom?: (ev: React.WheelEvent) => void;
   preventBrowserZoom?: (ref: React.RefObject<SVGSVGElement | null>) => void;
   focusedElement?:
     | { kind: "node"; value: CircuitGuiNode }
@@ -85,10 +85,10 @@ export default function CircuitDiagram({
   svgRef,
   viewBox,
   isPanningRef,
-  handleMouseDown,
-  handleMouseMove,
-  handleMouseUp,
-  handleWheel,
+  handleViewBoxMouseDown,
+  handleViewBoxMouseMove,
+  handleViewBoxMouseUp,
+  handleViewBoxZoom,
   preventBrowserZoom,
   focusedElement,
   focusElement,
@@ -135,15 +135,15 @@ export default function CircuitDiagram({
       }
       style={{ background: "var(--color-circuit-diagram-bg)", cursor: isPanningRef?.current ? "grabbing" : "default" }}
       onContextMenu={disableContextMenu}
-      onWheel={handleWheel}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
+      onWheel={handleViewBoxZoom}
+      onMouseDown={handleViewBoxMouseDown}
+      onMouseMove={handleViewBoxMouseMove}
+      onMouseUp={handleViewBoxMouseUp}
     >
       <SvgTitle>Circuit Diagram</SvgTitle>
 
       {showTouchableArea && (
-        // biome-ignore lint/nursery/useUniqueElementIds: No need for unique id.
+        // biome-ignore lint/correctness/useUniqueElementIds: No need for unique id.
         <SvgRect
           id="circuit-diagram-area"
           x={minX}
@@ -211,7 +211,7 @@ export default function CircuitDiagram({
 
           return (
             <>
-              {/** biome-ignore lint/nursery/useUniqueElementIds: No need for unique id. */}
+              {/** biome-ignore lint/correctness/useUniqueElementIds: No need for unique id. */}
               <DiagramUtilityMenuBackdrop
                 id="edge-utility-menu-backdrop"
                 viewBoxX={viewBox?.x}
@@ -259,7 +259,7 @@ export default function CircuitDiagram({
 
           return (
             <>
-              {/** biome-ignore lint/nursery/useUniqueElementIds: No need for unique id. */}
+              {/** biome-ignore lint/correctness/useUniqueElementIds: No need for unique id. */}
               <DiagramUtilityMenuBackdrop
                 id="node-utility-menu-backdrop"
                 viewBoxX={viewBox?.x}

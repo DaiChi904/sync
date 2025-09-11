@@ -96,7 +96,9 @@ export default function Node({
           openNodeUtilityMenu={isInFocus ? openNodeUtilityMenu : undefined}
         />
       );
-    default:
-      throw new Error(`Unknown node type: ${node.type}`);
+    default: {
+      console.log(`Unknown node type received. Type: ${node.type}`);
+      return null;
+    }
   }
 }

@@ -87,7 +87,7 @@ export default function JunctionNode({
             onMouseDown={(ev) => handleNodePinMouseDown?.(ev, node.outputs[0].id, "from", "ADD")}
           />
 
-          {/** biome-ignore lint/nursery/useUniqueElementIds: No need for unique id. */}
+          {/** biome-ignore lint/correctness/useUniqueElementIds: No need for unique id. */}
           <SvgCircle
             id="node-focused-frame"
             cx={node.coordinate.x}

@@ -2,6 +2,7 @@ import type { Brand } from "@/utils/brand";
 import type { CircuitNodeId } from "../valueObject/circuitNodeId";
 import type { CircuitNodeType } from "../valueObject/circuitNodeType";
 import type { EvalHistory } from "../valueObject/evalHistory";
+import type { EvalResult } from "../valueObject/evalResult";
 import type { ExecutionOrder } from "../valueObject/executionOrder";
 import type { Phase } from "../valueObject/phase";
 import type { Tick } from "../valueObject/tick";
@@ -14,9 +15,7 @@ interface INodeInformation {
   inputs: CircuitNodeId[];
   outputs: CircuitNodeId[];
   executionOrder: ExecutionOrder;
-  phase: Phase;
-  tick: Tick;
-  history: EvalHistory;
+  outputQueue: Array<EvalResult>;
 }
 
 export type NodeInformation = Brand<INodeInformation, typeof brandSymbol>;

@@ -19,7 +19,6 @@ import { CircuitId } from "@/domain/model/valueObject/circuitId";
 import { CircuitTitle } from "@/domain/model/valueObject/circuitTitle";
 import { UpdatedDateTime } from "@/domain/model/valueObject/updatedDateTime";
 import { usePartialState } from "@/hooks/partialState";
-import { Attempt } from "@/utils/attempt";
 import { CreatedDateTime } from "./../domain/model/valueObject/createdDateTime";
 
 interface HomePageHandlerDependencies {
@@ -73,7 +72,7 @@ export const useHomePageHandler = ({
               }),
             );
             if (!res.ok) {
-              throw new Attempt.Abort("homePageHandler.addNewCircuit", "Failed to add new circuit.", {
+              throw new HomePageHandlerError("Failed to add new circuit.", {
                 cause: res.error,
               });
             }

@@ -161,7 +161,8 @@ export class CircuitEmulatorService implements ICircuitEmulatorService {
     try {
       this.nodes.forEach((node) => {
         const info = node.getInformation();
-        const inputIds = info.inputs.map((input) => CircuitNodeId.from(input));
+        // Define self id as inputId if node type is ENTRY.
+        const inputIds = info.type === "ENTRY" ? [info.id] : info.inputs.map((input) => CircuitNodeId.from(input));
         const inputRecord = this.createInputRecord(inputIds, outputMap);
         if (!inputRecord.ok) {
           throw new CircuitEmulatorServiceError(
@@ -218,13 +219,29 @@ export class CircuitEmulatorService implements ICircuitEmulatorService {
     try {
       for (const inputId of inputIds) {
         const value = outputMap.get(inputId);
-        if (value === undefined) {
-          throw new CircuitEmulatorServiceError(
-            `Failed to create input record. No output found for input ID: ${inputId}`,
-          );
-        }
+        switch (true) {
+          // Default case
+          case value !== undefined: {
+            inputRecord[CircuitNodeInputId.from(inputId)] = value;
+            break;
+          }
+          // In case of inout at the end of loop structure
+          case value === undefined: {
+            const nodeInfo = this.getInfomationById(inputId);
+            if (!nodeInfo.ok) {
+              throw new CircuitEmulatorServiceError(
+                `Failed to evaluate circuit. Couldn't acquire output of ${inputId}.`,
+                {
+                  cause: nodeInfo.error,
+                },
+              );
+            }
 
-        inputRecord[CircuitNodeInputId.from(inputId)] = value;
+            const output = nodeInfo.value.lastOutput;
+            inputRecord[CircuitNodeInputId.from(inputId)] = output;
+            break;
+          }
+        }
       }
 
       return { ok: true, value: inputRecord };

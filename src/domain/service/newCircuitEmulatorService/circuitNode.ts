@@ -15,6 +15,7 @@ export abstract class CircuitNode implements ICircuitNode {
   protected readonly inputs: Array<CircuitNodeId>;
   protected readonly outputs: Array<CircuitNodeId>;
   protected readonly executionOrder: ExecutionOrder;
+  protected lastOutput: EvalResult;
   protected outputQueue: Array<EvalResult>;
   protected delay: EvalDelay;
 
@@ -31,6 +32,7 @@ export abstract class CircuitNode implements ICircuitNode {
     this.inputs = inputs;
     this.outputs = outputs;
     this.executionOrder = executionOrder;
+    this.lastOutput = EvalResult.from(false);
     this.outputQueue = [];
     this.delay = delay; // {n} tick
   }
@@ -68,7 +70,9 @@ export abstract class CircuitNode implements ICircuitNode {
   }
 
   init(): void {
-    this.outputQueue = [EvalResult.from(false)];
+    this.outputQueue = Array.from({ length: EvalDelay.unBrand(this.delay) }).fill(
+      EvalResult.from(false),
+    ) as Array<EvalResult>;
   }
 
   abstract eval(inputs: InputRecord): Result<EvalResult, CircuitNodeError>;
@@ -80,6 +84,7 @@ export abstract class CircuitNode implements ICircuitNode {
       inputs: this.inputs,
       outputs: this.outputs,
       executionOrder: this.executionOrder,
+      lastOutput: this.lastOutput,
       outputQueue: this.outputQueue,
     });
   }
@@ -89,8 +94,9 @@ export abstract class CircuitNode implements ICircuitNode {
       CircuitNodeId.from(value[0]),
     );
 
-    const isInputAmountValid = inputIds.length === this.inputs.length;
-    const isSatisfiedInputIds = inputIds.every((inputId) => this.inputs.includes(inputId));
+    const isInputAmountValid = this.type !== "ENTRY" ? inputIds.length === this.inputs.length : inputIds.length === 1;
+    const isSatisfiedInputIds =
+      this.type !== "ENTRY" ? inputIds.every((inputId) => this.inputs.includes(inputId)) : true;
 
     return isInputAmountValid && isSatisfiedInputIds;
   }
@@ -140,13 +146,8 @@ class EntryNode extends CircuitNode {
         );
       }
 
-      const isOutputChanged = result !== nextOutput;
-      isOutputChanged &&
-        this.outputQueue.push(
-          ...[...(Array.from({ length: EvalDelay.unBrand(this.delay) }).fill(nextOutput) as Array<EvalResult>), result],
-        );
-
-      !(this.outputQueue.length > 1) && this.outputQueue.push(nextOutput);
+      this.lastOutput = result;
+      this.outputQueue.push(result);
 
       return { ok: true, value: nextOutput };
     } catch (err: unknown) {
@@ -185,7 +186,7 @@ class ExitNode extends CircuitNode {
       }
 
       const inputMap = this.inputRecordToInputMap(inputs);
-      const result = inputMap.get(this.id);
+      const result = inputMap.get(this.inputs[0]);
       if (result === undefined) {
         throw new CircuitNodeError(`Cannot evaluate EXIT node. Failed to refer input of EXIT node. NodeId: ${this.id}`);
       }
@@ -197,13 +198,8 @@ class ExitNode extends CircuitNode {
         );
       }
 
-      const isOutputChanged = result !== nextOutput;
-      isOutputChanged &&
-        this.outputQueue.push(
-          ...[...(Array.from({ length: EvalDelay.unBrand(this.delay) }).fill(nextOutput) as Array<EvalResult>), result],
-        );
-
-      !(this.outputQueue.length > 1) && this.outputQueue.push(nextOutput);
+      this.lastOutput = result;
+      this.outputQueue.push(result);
 
       return { ok: true, value: nextOutput };
     } catch (err: unknown) {
@@ -256,13 +252,8 @@ class AndNode extends CircuitNode {
         );
       }
 
-      const isOutputChanged = result !== nextOutput;
-      isOutputChanged &&
-        this.outputQueue.push(
-          ...[...(Array.from({ length: EvalDelay.unBrand(this.delay) }).fill(nextOutput) as Array<EvalResult>), result],
-        );
-
-      !(this.outputQueue.length > 1) && this.outputQueue.push(nextOutput);
+      this.lastOutput = result;
+      this.outputQueue.push(result);
 
       return { ok: true, value: nextOutput };
     } catch (err: unknown) {
@@ -314,13 +305,8 @@ class OrNode extends CircuitNode {
         throw new CircuitNodeError(`Cannot evaluate OR node. Failed to get next output of OR node. NodeId: ${this.id}`);
       }
 
-      const isOutputChanged = result !== nextOutput;
-      isOutputChanged &&
-        this.outputQueue.push(
-          ...[...(Array.from({ length: EvalDelay.unBrand(this.delay) }).fill(nextOutput) as Array<EvalResult>), result],
-        );
-
-      !(this.outputQueue.length > 1) && this.outputQueue.push(nextOutput);
+      this.lastOutput = result;
+      this.outputQueue.push(result);
 
       return { ok: true, value: nextOutput };
     } catch (err: unknown) {
@@ -360,7 +346,7 @@ class NotNode extends CircuitNode {
       }
 
       const inputMap = this.inputRecordToInputMap(inputs);
-      const result = inputMap.get(this.id) === false ? EvalResult.from(true) : EvalResult.from(false);
+      const result = inputMap.get(this.inputs[0]) === false ? EvalResult.from(true) : EvalResult.from(false);
       if (result === undefined) {
         throw new CircuitNodeError(`Cannot evaluate EXIT node. Failed to refer input of EXIT node. NodeId: ${this.id}`);
       }
@@ -372,13 +358,8 @@ class NotNode extends CircuitNode {
         );
       }
 
-      const isOutputChanged = result !== nextOutput;
-      isOutputChanged &&
-        this.outputQueue.push(
-          ...[...(Array.from({ length: EvalDelay.unBrand(this.delay) }).fill(nextOutput) as Array<EvalResult>), result],
-        );
-
-      !(this.outputQueue.length > 1) && this.outputQueue.push(nextOutput);
+      this.lastOutput = result;
+      this.outputQueue.push(result);
 
       return { ok: true, value: nextOutput };
     } catch (err: unknown) {
@@ -414,29 +395,28 @@ class JunctionNode extends CircuitNode {
       const isValidInputRecord = this.isValidInputRecord(inputs);
 
       if (!isValidInputRecord) {
-        throw new CircuitNodeError(`Cannot evaluate EXIT node. Invalid input record for EXIT node. NodeId: ${this.id}`);
+        throw new CircuitNodeError(
+          `Cannot evaluate JUNCTION node. Invalid input record for JUNCTION node. NodeId: ${this.id}`,
+        );
       }
 
       const inputMap = this.inputRecordToInputMap(inputs);
-      const result = inputMap.get(this.id);
+      const result = inputMap.get(this.inputs[0]);
       if (result === undefined) {
-        throw new CircuitNodeError(`Cannot evaluate EXIT node. Failed to refer input of EXIT node. NodeId: ${this.id}`);
+        throw new CircuitNodeError(
+          `Cannot evaluate JUNCTION node. Failed to refer input of JUNCTION node. NodeId: ${this.id}`,
+        );
       }
 
       const nextOutput = this.outputQueue.shift();
       if (nextOutput === undefined) {
         throw new CircuitNodeError(
-          `Cannot evaluate EXIT node. Failed to get next output of EXIT node. NodeId: ${this.id}`,
+          `Cannot evaluate JUNCTION node. Failed to get next output of JUNCTION node. NodeId: ${this.id}`,
         );
       }
 
-      const isOutputChanged = result !== nextOutput;
-      isOutputChanged &&
-        this.outputQueue.push(
-          ...[...(Array.from({ length: EvalDelay.unBrand(this.delay) }).fill(nextOutput) as Array<EvalResult>), result],
-        );
-
-      !(this.outputQueue.length > 1) && this.outputQueue.push(nextOutput);
+      this.lastOutput = result;
+      this.outputQueue.push(result);
 
       return { ok: true, value: nextOutput };
     } catch (err: unknown) {
@@ -447,7 +427,7 @@ class JunctionNode extends CircuitNode {
 
       return {
         ok: false,
-        error: new CircuitNodeError(`Unknown error occurred while evaluateing EXIT node. id: ${this.id}`, {
+        error: new CircuitNodeError(`Unknown error occurred while evaluateing JUNCTION node. id: ${this.id}`, {
           cause: err,
         }),
       };

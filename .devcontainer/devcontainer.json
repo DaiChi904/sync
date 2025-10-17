@@ -1,0 +1,42 @@
+{
+	"name": "sync",
+	"build": {
+    	"dockerfile": "Dockerfile"
+  	},
+  	"postCreateCommand": "pnpm install",
+	"forwardPorts": [3000],
+	"portsAttributes": {
+		"3000": {
+			"label": "frontend",
+			"protocol": "http",
+			"onAutoForward": "notify",
+			"elevateIfNeeded": false,
+			"requireLocalPort": true
+		}
+	},
+  	"customizations": {
+    	"vscode": {
+      		"settings": {
+				"[javascript]": {
+          			"editor.defaultFormatter": "biomejs.biome",
+          			"editor.formatOnSave": true
+				},
+        		"[typescript]": {
+          			"editor.defaultFormatter": "biomejs.biome",
+          			"editor.formatOnSave": true
+        		}
+      		},
+      		"extensions": [
+				"ecmel.vscode-html-css",
+				"biomejs.biome"
+      		]
+    	}
+  	},
+	"features": {
+		"ghcr.io/devcontainers/features/common-utils": {
+			"upgradePackages": true,
+			"username": "vscode"
+		}
+	},
+	"remoteUser": "vscode"
+}

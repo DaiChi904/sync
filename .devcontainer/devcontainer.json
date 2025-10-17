@@ -5,6 +5,15 @@
   	},
   	"postCreateCommand": "pnpm install",
 	"forwardPorts": [3000],
+	"portsAttributes": {
+		"3000": {
+			"label": "frontend",
+			"protocol": "http",
+			"onAutoForward": "notify",
+			"elevateIfNeeded": false,
+			"requireLocalPort": true
+		}
+	},
   	"customizations": {
     	"vscode": {
       		"settings": {

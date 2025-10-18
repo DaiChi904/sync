@@ -10,6 +10,7 @@ import type { EvalDelay } from "@/domain/model/valueObject/evalDelay";
 import type { EvalResult } from "@/domain/model/valueObject/evalResult";
 import { ExecutionOrder } from "@/domain/model/valueObject/executionOrder";
 import { InputRecord } from "@/domain/model/valueObject/inputRecord";
+import { OutputRecord } from "@/domain/model/valueObject/outputRecord";
 import type { Result } from "@/utils/result";
 import type { CircuitGraphData } from "../../model/entity/circuitGraphData";
 import { CircuitNode } from "./circuitNode";
@@ -151,7 +152,7 @@ export class CircuitEmulatorService implements ICircuitEmulatorService {
     });
   }
 
-  eval(entryInputs: InputRecord): Result<Map<CircuitNodeId, EvalResult>, CircuitEmulatorServiceError> {
+  eval(entryInputs: InputRecord): Result<OutputRecord, CircuitEmulatorServiceError> {
     const outputMap = new Map<CircuitNodeId, EvalResult>([]);
 
     for (const [inputId, inputValue] of Object.entries(entryInputs)) {
@@ -183,7 +184,9 @@ export class CircuitEmulatorService implements ICircuitEmulatorService {
         outputMap.set(info.id, res.value);
       });
 
-      return { ok: true, value: outputMap };
+      const outputRecord = OutputRecord.from(Object.fromEntries(outputMap));
+
+      return { ok: true, value: outputRecord };
     } catch (err: unknown) {
       console.error(err);
       if (err instanceof CircuitEmulatorServiceError) {
@@ -195,6 +198,10 @@ export class CircuitEmulatorService implements ICircuitEmulatorService {
         error: new CircuitEmulatorServiceError("Unknown error occurred while evaluating circuit.", { cause: err }),
       };
     }
+  }
+
+  getAllNodesInfo(): Array<NodeInformation> {
+    return this.nodes.map((node) => node.getInformation());
   }
 
   getInfomationById(id: CircuitNodeId): Result<NodeInformation, CircuitEmulatorServiceError> {

@@ -1,9 +1,9 @@
 import type { Brand } from "@/utils/brand";
 import type { CircuitNodeId } from "../valueObject/circuitNodeId";
 import type { CircuitNodeType } from "../valueObject/circuitNodeType";
+import type { EvalDelay } from "../valueObject/evalDelay";
 import type { EvalResult } from "../valueObject/evalResult";
 import type { ExecutionOrder } from "../valueObject/executionOrder";
-import type { EvalDelay } from "../valueObject/evalDelay";
 
 const brandSymbol = Symbol("NodeInformation");
 

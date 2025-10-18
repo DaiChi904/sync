@@ -84,6 +84,7 @@ export abstract class CircuitNode implements ICircuitNode {
       inputs: this.inputs,
       outputs: this.outputs,
       executionOrder: this.executionOrder,
+      delay: this.delay,
       lastOutput: this.lastOutput,
       outputQueue: this.outputQueue,
     });

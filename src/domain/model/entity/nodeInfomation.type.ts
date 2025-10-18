@@ -3,6 +3,7 @@ import type { CircuitNodeId } from "../valueObject/circuitNodeId";
 import type { CircuitNodeType } from "../valueObject/circuitNodeType";
 import type { EvalResult } from "../valueObject/evalResult";
 import type { ExecutionOrder } from "../valueObject/executionOrder";
+import type { EvalDelay } from "../valueObject/evalDelay";
 
 const brandSymbol = Symbol("NodeInformation");
 
@@ -12,6 +13,7 @@ interface INodeInformation {
   inputs: CircuitNodeId[];
   outputs: CircuitNodeId[];
   executionOrder: ExecutionOrder;
+  delay: EvalDelay;
   lastOutput: EvalResult;
   outputQueue: Array<EvalResult>;
 }

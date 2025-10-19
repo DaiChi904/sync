@@ -8,7 +8,7 @@ import {
   initialCircuitEmulationPageError,
 } from "@/domain/model/handler/ICircuitEmulationPageHandler";
 import type { ICircuitEmulatorService } from "@/domain/model/service/ICircuitEmulatorService";
-import type { IGenerateCircuitEmulatorServiceClientUsecase } from "@/domain/model/usecase/IGenerateCircuitEmulatorServiceClientUsecase";
+import type { CreateEmulationUsecase } from "@/domain/model/usecase/IEmulationUsecase";
 import type { IGetCircuitDetailUsecase } from "@/domain/model/usecase/IGetCircuitDetailUsecase";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
@@ -23,14 +23,14 @@ import { usePartialState } from "@/hooks/partialState";
 interface CircuitEmulationPageHandlerDependencies {
   query: CircuitId;
   getCircuitDetailUsecase: IGetCircuitDetailUsecase;
-  generateCircuitEmulatorServiceClientUsecase: IGenerateCircuitEmulatorServiceClientUsecase;
+  createEmulationUsecase: CreateEmulationUsecase;
   circuitParserUsecase: CircuitParserService;
 }
 
 export const useCircuitEmulationPageHandler = ({
   query,
   getCircuitDetailUsecase,
-  generateCircuitEmulatorServiceClientUsecase,
+  createEmulationUsecase,
   circuitParserUsecase,
 }: CircuitEmulationPageHandlerDependencies): ICircuitEmulationPageHandler => {
   const [error, setError] = usePartialState<CircuitEmulationPageErrorModel>(initialCircuitEmulationPageError);

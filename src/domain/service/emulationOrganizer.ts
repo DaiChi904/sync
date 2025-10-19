@@ -23,10 +23,14 @@ export class EmulationOrganizer implements IEmulationOrganizer {
   private currentTick: Tick;
   private history: OutputHistory;
 
-  constructor({ circuitEmulatorService }: EmulationOrganizerDependencies) {
+  private constructor({ circuitEmulatorService }: EmulationOrganizerDependencies) {
     this.circuitEmulatorService = circuitEmulatorService;
     this.currentTick = Tick.from(0);
     this.history = OutputHistory.from(new Map());
+  }
+
+  static from(circuitEmulatorService: ICircuitEmulatorService): IEmulationOrganizer {
+    return new EmulationOrganizer({ circuitEmulatorService });
   }
 
   init(): Result<void, EmulationOrganizerError> {

@@ -1,9 +1,7 @@
 import type { Circuit } from "@/domain/model/aggregate/circuit";
 import { DataIntegrityError } from "@/domain/model/infrastructure/dataIntegrityError";
 import { InfraError } from "@/domain/model/infrastructure/infraError";
-import type {
-  ICircuitDetailQueryService,
-} from "@/domain/model/infrastructure/queryService/ICircuitDetailQueryService";
+import type { ICircuitDetailQueryService } from "@/domain/model/infrastructure/queryService/ICircuitDetailQueryService";
 import type { ICircuitRepository } from "@/domain/model/infrastructure/repository/ICircuitRepository";
 import { ModelValidationError } from "@/domain/model/modelValidationError";
 import { UnexpectedError } from "@/domain/model/unexpectedError";

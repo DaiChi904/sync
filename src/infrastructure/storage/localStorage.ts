@@ -1,4 +1,4 @@
-import { UnexpectedError } from "@/domain/model/UnexpectedError";
+import { UnexpectedError } from "@/domain/model/unexpectedError";
 import type { PrimitiveWaypoint } from "@/domain/model/valueObject/waypoint";
 import type { Result } from "@/utils/result";
 

@@ -1,5 +1,5 @@
 import type { Circuit } from "@/domain/model/aggregate/circuit";
-import type { ICircuitRepository } from "@/domain/model/repository/ICircuitRepository";
+import type { ICircuitRepository } from "@/domain/model/infrastructure/repository/ICircuitRepository";
 import type { ICircuitParserService } from "@/domain/model/service/ICircuitParserService";
 import { CircuitEditorUsecaseError, type ICircuitEditorUsecase } from "@/domain/model/usecase/ICircuitEditorUsecase";
 import type { CircuitData } from "@/domain/model/valueObject/circuitData";

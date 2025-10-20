@@ -1,5 +1,5 @@
 import type { CircuitOverview } from "@/domain/model/entity/circuitOverview";
-import type { ICircuitOverviewsQueryService } from "@/domain/model/queryService/ICircuitOverviewsQueryService";
+import type { ICircuitOverviewsQueryService } from "@/domain/model/infrastructure/queryService/ICircuitOverviewsQueryService";
 import {
   GetCircuitOverviewsUsecaseError,
   type IGetCircuitOverviewsUsecase,

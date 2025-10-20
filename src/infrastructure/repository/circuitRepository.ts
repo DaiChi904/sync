@@ -1,12 +1,12 @@
-import { ModelValidationError } from "@/domain/model/modelValidationError";
+import { DataIntegrityError } from "@/domain/model/infrastructure/dataIntegrityError";
+import { InfraError } from "@/domain/model/infrastructure/infraError";
 import {
-  CircuitDataIntegrityError,
-  CircuitInfraError,
   CircuitNotFoundError,
   type ICircuitRepository,
   InvalidSaveMethodError,
-} from "@/domain/model/repository/ICircuitRepository";
-import { UnexpectedError } from "@/domain/model/UnexpectedError";
+} from "@/domain/model/infrastructure/repository/ICircuitRepository";
+import { ModelValidationError } from "@/domain/model/modelValidationError";
+import { UnexpectedError } from "@/domain/model/unexpectedError";
 import { CircuitData } from "@/domain/model/valueObject/circuitData";
 import { CircuitDescription } from "@/domain/model/valueObject/circuitDescription";
 import { CircuitEdgeId } from "@/domain/model/valueObject/circuitEdgeId";
@@ -35,7 +35,7 @@ export class CircuitRepository implements ICircuitRepository {
     this.localStorage = localStorage;
   }
 
-  async getAll(): Promise<Result<Array<Circuit>, CircuitInfraError | CircuitDataIntegrityError | UnexpectedError>> {
+  async getAll(): Promise<Result<Array<Circuit>, InfraError | DataIntegrityError | UnexpectedError>> {
     try {
       const res = await this.localStorage.get();
       if (!res.ok) {
@@ -75,15 +75,15 @@ export class CircuitRepository implements ICircuitRepository {
       switch (true) {
         case err instanceof ModelValidationError:
         case err instanceof DataCorruptedError: {
-          const circuitDataIntegrityErrorCause = err;
+          const dataIntegrityErrorCause = err;
           return {
             ok: false,
-            error: new CircuitDataIntegrityError("Circuit data corrupted.", { cause: circuitDataIntegrityErrorCause }),
+            error: new DataIntegrityError("Circuit data corrupted.", { cause: dataIntegrityErrorCause }),
           };
         }
         case err instanceof SecurityError: {
-          const circuitInfraError = new CircuitInfraError("Acquisition of circuits failed.", { cause: err });
-          return { ok: false, error: circuitInfraError };
+          const infraError = new InfraError("Acquisition of circuits failed.", { cause: err });
+          return { ok: false, error: infraError };
         }
         default: {
           const unexpectedError = new UnexpectedError({ cause: err }, "Acquisition of circuits failed.");
@@ -95,7 +95,7 @@ export class CircuitRepository implements ICircuitRepository {
 
   async getById(
     id: CircuitId,
-  ): Promise<Result<Circuit, CircuitNotFoundError | CircuitInfraError | CircuitDataIntegrityError | UnexpectedError>> {
+  ): Promise<Result<Circuit, CircuitNotFoundError | InfraError | DataIntegrityError | UnexpectedError>> {
     try {
       const res = await this.localStorage.get();
       if (!res.ok) {
@@ -138,10 +138,10 @@ export class CircuitRepository implements ICircuitRepository {
       switch (true) {
         case err instanceof ModelValidationError:
         case err instanceof DataCorruptedError: {
-          const circuitDataIntegrityErrorCause = err;
+          const dataIntegrityErrorCause = err;
           return {
             ok: false,
-            error: new CircuitDataIntegrityError("Circuit data corrupted.", { cause: circuitDataIntegrityErrorCause }),
+            error: new DataIntegrityError("Circuit data corrupted.", { cause: dataIntegrityErrorCause }),
           };
         }
         case err instanceof CircuitNotFoundError: {
@@ -149,8 +149,8 @@ export class CircuitRepository implements ICircuitRepository {
           return { ok: false, error: circuitNotFoundError };
         }
         case err instanceof SecurityError: {
-          const circuitInfraError = new CircuitInfraError("Acquisition of circuit failed.", { cause: err });
-          return { ok: false, error: circuitInfraError };
+          const infraError = new InfraError("Acquisition of circuit failed.", { cause: err });
+          return { ok: false, error: infraError };
         }
         default: {
           const unexpectedError = new UnexpectedError({ cause: err }, "Acquisition of circuit failed.");
@@ -164,10 +164,7 @@ export class CircuitRepository implements ICircuitRepository {
     method: "ADD" | "UPDATE",
     circuit: Circuit,
   ): Promise<
-    Result<
-      void,
-      CircuitNotFoundError | CircuitInfraError | CircuitDataIntegrityError | InvalidSaveMethodError | UnexpectedError
-    >
+    Result<void, CircuitNotFoundError | InfraError | DataIntegrityError | InvalidSaveMethodError | UnexpectedError>
   > {
     try {
       const get = await this.localStorage.get();
@@ -208,11 +205,11 @@ export class CircuitRepository implements ICircuitRepository {
       switch (true) {
         case err instanceof ModelValidationError:
         case err instanceof DataCorruptedError: {
-          const circuitDataIntegrityErrorCause = err;
+          const dataIntegrityErrorCause = err;
           return {
             ok: false,
-            error: new CircuitDataIntegrityError("Stored circuit data corrupted.", {
-              cause: circuitDataIntegrityErrorCause,
+            error: new DataIntegrityError("Stored circuit data corrupted.", {
+              cause: dataIntegrityErrorCause,
             }),
           };
         }
@@ -224,12 +221,12 @@ export class CircuitRepository implements ICircuitRepository {
           const quotaExceededError = err;
           return {
             ok: false,
-            error: new CircuitInfraError("Faild to save.", { cause: quotaExceededError }),
+            error: new InfraError("Faild to save.", { cause: quotaExceededError }),
           };
         }
         case err instanceof SecurityError: {
-          const circuitInfraError = new CircuitInfraError("Acquisition of circuit failed.", { cause: err });
-          return { ok: false, error: circuitInfraError };
+          const infraError = new InfraError("Acquisition of circuit failed.", { cause: err });
+          return { ok: false, error: infraError };
         }
         case err instanceof InvalidSaveMethodError: {
           const invalidSaveMethodError = err;
@@ -245,7 +242,7 @@ export class CircuitRepository implements ICircuitRepository {
 
   async delete(
     id: CircuitId,
-  ): Promise<Result<void, CircuitNotFoundError | CircuitInfraError | CircuitDataIntegrityError | UnexpectedError>> {
+  ): Promise<Result<void, CircuitNotFoundError | InfraError | DataIntegrityError | UnexpectedError>> {
     try {
       const get = await this.localStorage.get();
       if (!get.ok) {
@@ -270,11 +267,11 @@ export class CircuitRepository implements ICircuitRepository {
       switch (true) {
         case err instanceof ModelValidationError:
         case err instanceof DataCorruptedError: {
-          const circuitDataIntegrityErrorCause = err;
+          const dataIntegrityErrorCause = err;
           return {
             ok: false,
-            error: new CircuitDataIntegrityError("Stored circuit data corrupted.", {
-              cause: circuitDataIntegrityErrorCause,
+            error: new DataIntegrityError("Stored circuit data corrupted.", {
+              cause: dataIntegrityErrorCause,
             }),
           };
         }
@@ -286,12 +283,12 @@ export class CircuitRepository implements ICircuitRepository {
           const quotaExceededError = err;
           return {
             ok: false,
-            error: new CircuitInfraError("Faild to delete.", { cause: quotaExceededError }),
+            error: new InfraError("Faild to delete.", { cause: quotaExceededError }),
           };
         }
         case err instanceof SecurityError: {
-          const circuitInfraError = new CircuitInfraError("Acquisition of circuit failed.", { cause: err });
-          return { ok: false, error: circuitInfraError };
+          const infraError = new InfraError("Acquisition of circuit failed.", { cause: err });
+          return { ok: false, error: infraError };
         }
         default: {
           const unexpectedError = new UnexpectedError({ cause: err }, "Failed to delete.");

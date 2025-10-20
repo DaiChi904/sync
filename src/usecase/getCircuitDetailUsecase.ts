@@ -1,5 +1,5 @@
 import type { Circuit } from "@/domain/model/aggregate/circuit";
-import type { ICircuitDetailQueryService } from "@/domain/model/queryService/ICircuitDetailQueryService";
+import type { ICircuitDetailQueryService } from "@/domain/model/infrastructure/queryService/ICircuitDetailQueryService";
 import {
   GetCircuitDetailUsecaseError,
   type IGetCircuitDetailUsecase,

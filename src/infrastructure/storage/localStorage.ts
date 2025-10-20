@@ -53,7 +53,10 @@ export class SecurityError extends Error {
 }
 
 export class DataCorruptedError extends Error {
-  constructor(readonly key: string, options?: { cause?: unknown }) {
+  constructor(
+    readonly key: string,
+    options?: { cause?: unknown },
+  ) {
     super("Failed to parse stored data. It may be corrupted.");
     this.name = "DataCorruptedError";
     this.key = key;
@@ -83,11 +86,11 @@ export class LocalStorage<T extends NameSpace> implements ILocalStorage<T> {
       switch (true) {
         case err instanceof DOMException && err.name === "QuotaExceededError": {
           const quotaExceededError = new QuotaExceededError(this.KEY);
-          return { ok: false, error: quotaExceededError }
+          return { ok: false, error: quotaExceededError };
         }
         default: {
           const unexpectedError = new UnexpectedError({ cause: err });
-          return { ok: false, error: unexpectedError }
+          return { ok: false, error: unexpectedError };
         }
       }
     }
@@ -103,15 +106,15 @@ export class LocalStorage<T extends NameSpace> implements ILocalStorage<T> {
       switch (true) {
         case err instanceof DOMException && err.name === "SecurityError": {
           const securityError = new SecurityError(this.KEY);
-          return { ok: false, error: securityError }
+          return { ok: false, error: securityError };
         }
         case err instanceof DataCorruptedError: {
           const dataCorruptedError = new DataCorruptedError(this.KEY, { cause: err });
-          return { ok: false, error: dataCorruptedError }
+          return { ok: false, error: dataCorruptedError };
         }
         default: {
           const unexpectedError = new UnexpectedError({ cause: err });
-          return { ok: false, error: unexpectedError }
+          return { ok: false, error: unexpectedError };
         }
       }
     }

@@ -22,7 +22,7 @@ import { UpdatedDateTime } from "@/domain/model/valueObject/updatedDateTime";
 import { Waypoint } from "@/domain/model/valueObject/waypoint";
 import type { Result } from "@/utils/result";
 import { Circuit } from "../../domain/model/aggregate/circuit";
-import { DataCorruptedError, type ILocalStorage, QuotaExceededError, SecurityError } from "../storage/localStorage";
+import { DataCorruptedError, type ILocalStorage, QuotaExceededError } from "../storage/localStorage";
 
 interface CircuitRepositoryDependencies {
   localStorage: ILocalStorage<"circuit">;
@@ -81,12 +81,8 @@ export class CircuitRepository implements ICircuitRepository {
             error: new DataIntegrityError("Circuit data corrupted.", { cause: dataIntegrityErrorCause }),
           };
         }
-        case err instanceof SecurityError: {
-          const infraError = new InfraError("Acquisition of circuits failed.", { cause: err });
-          return { ok: false, error: infraError };
-        }
         default: {
-          const unexpectedError = new UnexpectedError({ cause: err }, "Acquisition of circuits failed.");
+          const unexpectedError = err instanceof UnexpectedError ? err : new UnexpectedError({ cause: err });
           return { ok: false, error: unexpectedError };
         }
       }
@@ -148,12 +144,8 @@ export class CircuitRepository implements ICircuitRepository {
           const circuitNotFoundError = err;
           return { ok: false, error: circuitNotFoundError };
         }
-        case err instanceof SecurityError: {
-          const infraError = new InfraError("Acquisition of circuit failed.", { cause: err });
-          return { ok: false, error: infraError };
-        }
         default: {
-          const unexpectedError = new UnexpectedError({ cause: err }, "Acquisition of circuit failed.");
+          const unexpectedError = err instanceof UnexpectedError ? err : new UnexpectedError({ cause: err });
           return { ok: false, error: unexpectedError };
         }
       }
@@ -213,27 +205,20 @@ export class CircuitRepository implements ICircuitRepository {
             }),
           };
         }
+        case err instanceof QuotaExceededError: {
+          const infraError = new InfraError("Failed to save.", { cause: err });
+          return { ok: false, error: infraError };
+        }
         case err instanceof CircuitNotFoundError: {
           const circuitNotFoundError = err;
           return { ok: false, error: circuitNotFoundError };
-        }
-        case err instanceof QuotaExceededError: {
-          const quotaExceededError = err;
-          return {
-            ok: false,
-            error: new InfraError("Faild to save.", { cause: quotaExceededError }),
-          };
-        }
-        case err instanceof SecurityError: {
-          const infraError = new InfraError("Acquisition of circuit failed.", { cause: err });
-          return { ok: false, error: infraError };
         }
         case err instanceof InvalidSaveMethodError: {
           const invalidSaveMethodError = err;
           return { ok: false, error: invalidSaveMethodError };
         }
         default: {
-          const unexpectedError = new UnexpectedError({ cause: err }, "Failed to save.");
+          const unexpectedError = err instanceof UnexpectedError ? err : new UnexpectedError({ cause: err });
           return { ok: false, error: unexpectedError };
         }
       }
@@ -279,19 +264,8 @@ export class CircuitRepository implements ICircuitRepository {
           const circuitNotFoundError = err;
           return { ok: false, error: circuitNotFoundError };
         }
-        case err instanceof QuotaExceededError: {
-          const quotaExceededError = err;
-          return {
-            ok: false,
-            error: new InfraError("Faild to delete.", { cause: quotaExceededError }),
-          };
-        }
-        case err instanceof SecurityError: {
-          const infraError = new InfraError("Acquisition of circuit failed.", { cause: err });
-          return { ok: false, error: infraError };
-        }
         default: {
-          const unexpectedError = new UnexpectedError({ cause: err }, "Failed to delete.");
+          const unexpectedError = err instanceof UnexpectedError ? err : new UnexpectedError({ cause: err });
           return { ok: false, error: unexpectedError };
         }
       }

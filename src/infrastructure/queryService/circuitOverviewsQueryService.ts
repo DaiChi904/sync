@@ -41,23 +41,21 @@ export class CircuitOverviewsQueryService implements ICircuitOverviewsQueryServi
     } catch (err: unknown) {
       console.error(err);
       switch (true) {
-        case err instanceof ModelValidationError:
-        case err instanceof DataIntegrityError: {
-          const dataIntegrityErrorCause = err;
+        case err instanceof ModelValidationError: {
+          const dataIntegrityError = new DataIntegrityError("Circuit data corrupted.", { cause: err });
           return {
             ok: false,
-            error: new DataIntegrityError("Circuit data corrupted.", { cause: dataIntegrityErrorCause }),
+            error: dataIntegrityError,
           };
+        }
+        case err instanceof DataIntegrityError: {
+          return { ok: false, error: err };
         }
         case err instanceof InfraError: {
-          const infraErrorCause = err;
-          return {
-            ok: false,
-            error: new InfraError("Acquisition of circuit overviews failed.", { cause: infraErrorCause }),
-          };
+          return { ok: false, error: err };
         }
         default: {
-          const unexpectedError = new UnexpectedError({ cause: err }, "Acquisition of circuit overviews failed.");
+          const unexpectedError = err instanceof UnexpectedError ? err : new UnexpectedError({ cause: err });
           return { ok: false, error: unexpectedError };
         }
       }

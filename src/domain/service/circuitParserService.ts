@@ -85,7 +85,9 @@ export class CircuitParserService implements ICircuitParserService {
           const modelValidationError = err;
           return {
             ok: false,
-            error: new CircuitDataParseError("Invalid data provided.", { cause: modelValidationError }),
+            error: new CircuitDataParseError("Failed to parse circuit data to GUI data. Invalid model provided.", {
+              cause: modelValidationError,
+            }),
           };
         }
         default: {

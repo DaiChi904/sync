@@ -539,7 +539,7 @@ export const useCircuitEditorPageHandler = ({
       pt.y = ev.clientY;
       const cursorPt = pt.matrixTransform(svg.getScreenCTM()?.inverse());
 
-      return { ok: true, value: Coordinate.from({ x: cursorPt.x, y: cursorPt.y }) } as const;
+      return { ok: true, value: Coordinate.from({ x: cursorPt.x, y: cursorPt.y }) };
     } catch (err: unknown) {
       console.error(err);
       if (err instanceof CircuitEditorPageHandlerError) {

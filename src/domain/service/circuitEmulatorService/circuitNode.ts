@@ -209,7 +209,7 @@ class ExitNode extends CircuitNode {
 
       this.saveOutput(phase, tick, result.output);
 
-      return { ok: true, value: result.output } as const;
+      return { ok: true, value: result.output };
     } catch (err: unknown) {
       console.error(err);
       switch (true) {
@@ -267,7 +267,7 @@ class AndNode extends CircuitNode {
 
       this.saveOutput(phase, tick, result.output);
 
-      return { ok: true, value: result.output } as const;
+      return { ok: true, value: result.output };
     } catch (err: unknown) {
       console.error(err);
       switch (true) {
@@ -324,7 +324,7 @@ class OrNode extends CircuitNode {
       }
       this.saveOutput(phase, tick, result.output);
 
-      return { ok: true, value: result.output } as const;
+      return { ok: true, value: result.output };
     } catch (err: unknown) {
       console.error(err);
       switch (true) {
@@ -381,7 +381,7 @@ class NotNode extends CircuitNode {
 
       this.saveOutput(phase, tick, result.output);
 
-      return { ok: true, value: result.output } as const;
+      return { ok: true, value: result.output };
     } catch (err: unknown) {
       console.error(err);
       switch (true) {
@@ -444,7 +444,7 @@ class JunctionNode extends CircuitNode {
       });
 
       // As all JUNCTION outputs are identical, it is allowed to return one of the multiple outputs.
-      return { ok: true, value: result[0].output } as const;
+      return { ok: true, value: result[0].output };
     } catch (err: unknown) {
       console.error(err);
       switch (true) {

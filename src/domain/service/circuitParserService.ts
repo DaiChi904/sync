@@ -159,7 +159,7 @@ export class CircuitParserService implements ICircuitParserService {
         });
       });
 
-      return { ok: true, value: CircuitGraphData.from(graphData) } as const;
+      return { ok: true, value: CircuitGraphData.from(graphData) };
     } catch (err: unknown) {
       console.error(err);
       switch (true) {

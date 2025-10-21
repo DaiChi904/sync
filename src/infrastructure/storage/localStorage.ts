@@ -80,7 +80,7 @@ export class LocalStorage<T extends NameSpace> implements ILocalStorage<T> {
   async save(value: NameSpaceValueMap[T]): Promise<Result<void, QuotaExceededError | UnexpectedError>> {
     try {
       localStorage.setItem(this.KEY, JSON.stringify(value));
-      return { ok: true, value: undefined } as const;
+      return { ok: true, value: undefined };
     } catch (err: unknown) {
       console.log(err);
       switch (true) {
@@ -100,7 +100,7 @@ export class LocalStorage<T extends NameSpace> implements ILocalStorage<T> {
     try {
       const rawItem = localStorage.getItem(this.KEY);
       const item = rawItem !== null ? JSON.parse(rawItem) : null;
-      return { ok: true, value: item as NameSpaceValueMap[T] | null } as const;
+      return { ok: true, value: item as NameSpaceValueMap[T] | null };
     } catch (err: unknown) {
       console.error(err);
       switch (true) {

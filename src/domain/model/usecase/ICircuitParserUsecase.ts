@@ -1,17 +1,11 @@
 import type { Result } from "@/utils/result";
 import type { CircuitGraphData } from "../entity/circuitGraphData";
 import type { CircuitGuiData } from "../entity/circuitGuiData";
+import type { CircuitDataParseError } from "../service/ICircuitParserService";
+import type { UnexpectedError } from "../unexpectedError";
 import type { CircuitData } from "../valueObject/circuitData";
 
-export class CircuitParserUsecaseError extends Error {
-  constructor(message: string, options?: { cause?: unknown }) {
-    super(message);
-    this.name = "CircuitParserUsecaseError";
-    this.cause = options?.cause;
-  }
-}
-
 export interface ICircuitParserUsecase {
-  parseToGuiData(textData: CircuitData): Result<CircuitGuiData, CircuitParserUsecaseError>;
-  parseToGraphData(textData: CircuitData): Result<CircuitGraphData, CircuitParserUsecaseError>;
+  parseToGuiData(textData: CircuitData): Result<CircuitGuiData, CircuitDataParseError | UnexpectedError>;
+  parseToGraphData(textData: CircuitData): Result<CircuitGraphData, CircuitDataParseError | UnexpectedError>;
 }

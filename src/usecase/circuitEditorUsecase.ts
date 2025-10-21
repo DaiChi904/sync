@@ -1,7 +1,14 @@
 import type { Circuit } from "@/domain/model/aggregate/circuit";
-import type { ICircuitRepository } from "@/domain/model/infrastructure/repository/ICircuitRepository";
+import { DataIntegrityError } from "@/domain/model/infrastructure/dataIntegrityError";
+import { InfraError } from "@/domain/model/infrastructure/infraError";
+import {
+  CircuitNotFoundError,
+  type ICircuitRepository,
+  InvalidSaveMethodError,
+} from "@/domain/model/infrastructure/repository/ICircuitRepository";
 import type { ICircuitParserService } from "@/domain/model/service/ICircuitParserService";
-import { CircuitEditorUsecaseError, type ICircuitEditorUsecase } from "@/domain/model/usecase/ICircuitEditorUsecase";
+import { UnexpectedError } from "@/domain/model/unexpectedError";
+import { CircuitDataValidationError, type ICircuitEditorUsecase } from "@/domain/model/usecase/ICircuitEditorUsecase";
 import type { CircuitData } from "@/domain/model/valueObject/circuitData";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
@@ -20,76 +27,118 @@ export class CircuitEditorUsecase implements ICircuitEditorUsecase {
     this.circuitRepository = circuitRepository;
   }
 
-  async add(newCircuit: Circuit): Promise<Result<void, CircuitEditorUsecaseError>> {
+  async add(
+    newCircuit: Circuit,
+  ): Promise<
+    Result<void, DataIntegrityError | InfraError | InvalidSaveMethodError | CircuitNotFoundError | UnexpectedError>
+  > {
     try {
       const res = await this.circuitRepository.save("ADD", newCircuit);
       if (!res.ok) {
-        throw new CircuitEditorUsecaseError("Failed to add circuit.", { cause: res.error });
+        throw res.error;
       }
 
       return { ok: true, value: undefined };
     } catch (err: unknown) {
       console.error(err);
-      if (err instanceof CircuitEditorUsecaseError) {
-        return { ok: false, error: err };
+      switch (true) {
+        case err instanceof DataIntegrityError: {
+          const dataIntegrityError = err;
+          return { ok: false, error: dataIntegrityError };
+        }
+        case err instanceof InfraError: {
+          const infraError = err;
+          return { ok: false, error: infraError };
+        }
+        case err instanceof InvalidSaveMethodError: {
+          const invalidSaveMethodError = err;
+          return { ok: false, error: invalidSaveMethodError };
+        }
+        case err instanceof CircuitNotFoundError: {
+          const circuitNotFoundError = err;
+          return { ok: false, error: circuitNotFoundError };
+        }
+        default: {
+          const unexpectedError = new UnexpectedError({ cause: err });
+          return { ok: false, error: unexpectedError };
+        }
       }
-
-      return {
-        ok: false,
-        error: new CircuitEditorUsecaseError("Unknown error occurred while adding circuit.", {
-          cause: err,
-        }),
-      };
     }
   }
 
-  async save(newCircuit: Circuit): Promise<Result<void, CircuitEditorUsecaseError>> {
+  async save(
+    newCircuit: Circuit,
+  ): Promise<
+    Result<void, DataIntegrityError | InfraError | InvalidSaveMethodError | CircuitNotFoundError | UnexpectedError>
+  > {
     try {
       const res = await this.circuitRepository.save("UPDATE", newCircuit);
       if (!res.ok) {
-        throw new CircuitEditorUsecaseError("Failed to save circuit.", { cause: res.error });
+        throw res.error;
       }
 
       return { ok: true, value: undefined };
     } catch (err: unknown) {
       console.error(err);
-      if (err instanceof CircuitEditorUsecaseError) {
-        return { ok: false, error: err };
+      switch (true) {
+        case err instanceof DataIntegrityError: {
+          const dataIntegrityError = err;
+          return { ok: false, error: dataIntegrityError };
+        }
+        case err instanceof InfraError: {
+          const infraError = err;
+          return { ok: false, error: infraError };
+        }
+        case err instanceof InvalidSaveMethodError: {
+          const invalidSaveMethodError = err;
+          return { ok: false, error: invalidSaveMethodError };
+        }
+        case err instanceof CircuitNotFoundError: {
+          const circuitNotFoundError = err;
+          return { ok: false, error: circuitNotFoundError };
+        }
+        default: {
+          const unexpectedError = new UnexpectedError({ cause: err });
+          return { ok: false, error: unexpectedError };
+        }
       }
-
-      return {
-        ok: false,
-        error: new CircuitEditorUsecaseError("Unknown error occurred while saving circuit.", {
-          cause: err,
-        }),
-      };
     }
   }
 
-  async delete(id: CircuitId): Promise<Result<void, CircuitEditorUsecaseError>> {
+  async delete(
+    id: CircuitId,
+  ): Promise<Result<void, DataIntegrityError | InfraError | CircuitNotFoundError | UnexpectedError>> {
     try {
       const res = await this.circuitRepository.delete(id);
       if (!res.ok) {
-        throw new CircuitEditorUsecaseError("Failed to delete circuit.", { cause: res.error });
+        throw res.error;
       }
 
       return { ok: true, value: undefined };
     } catch (err: unknown) {
       console.error(err);
-      if (err instanceof CircuitEditorUsecaseError) {
-        return { ok: false, error: err };
+      switch (true) {
+        case err instanceof DataIntegrityError: {
+          const dataIntegrityError = err;
+          return { ok: false, error: dataIntegrityError };
+        }
+        case err instanceof InfraError: {
+          const infraError = err;
+          return { ok: false, error: infraError };
+        }
+        case err instanceof CircuitNotFoundError: {
+          const circuitNotFoundError = err;
+          return { ok: false, error: circuitNotFoundError };
+        }
+        default: {
+          const unexpectedError = new UnexpectedError({ cause: err });
+          return { ok: false, error: unexpectedError };
+        }
       }
-
-      return {
-        ok: false,
-        error: new CircuitEditorUsecaseError("Unknown error occurred while deleting circuit.", {
-          cause: err,
-        }),
-      };
     }
   }
 
-  isValidData(circuit: CircuitData): Result<void, CircuitEditorUsecaseError> {
+  isValidData(circuit: CircuitData): Result<void, CircuitDataValidationError | UnexpectedError> {
     const flags = {
       foundDuplicatedNodeId: false,
       foundDuplicatedEdgeId: false,
@@ -157,27 +206,28 @@ export class CircuitEditorUsecase implements ICircuitEditorUsecase {
       }
 
       if (Object.entries(flags).some(([_, value]) => value)) {
-        throw new CircuitEditorUsecaseError("Detected invalid data.");
+        throw new CircuitDataValidationError("Detected invalid data.");
       }
 
       return { ok: true, value: undefined };
     } catch (err: unknown) {
       console.error(err);
-      if (err instanceof CircuitEditorUsecaseError) {
-        const messages = Object.entries(flags)
-          .filter(([_, value]) => value)
-          .map(([key]) => key);
+      switch (true) {
+        case err instanceof CircuitDataValidationError: {
+          const messages = Object.entries(flags)
+            .filter(([_, value]) => value)
+            .map(([key]) => key);
 
-        return {
-          ok: false,
-          error: new CircuitEditorUsecaseError(`${messages.join(", ")}.`, { cause: err }),
-        };
+          return {
+            ok: false,
+            error: new CircuitDataValidationError(`${messages.join(",\n")}.`, { cause: err }),
+          };
+        }
+        default: {
+          const unexpectedError = new UnexpectedError({ cause: err });
+          return { ok: false, error: unexpectedError };
+        }
       }
-
-      return {
-        ok: false,
-        error: new CircuitEditorUsecaseError("Unknown error occurred while validating circuit data."),
-      };
     }
   }
 }

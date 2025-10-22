@@ -57,7 +57,7 @@ export class DataCorruptedError extends Error {
     readonly key: string,
     options?: { cause?: unknown },
   ) {
-    super("Failed to parse stored data. It may be corrupted.");
+    super("Failed to parse data. It may be corrupted.");
     this.name = "DataCorruptedError";
     this.key = key;
     this.cause = options?.cause;
@@ -96,7 +96,7 @@ export class LocalStorage<T extends NameSpace> implements ILocalStorage<T> {
     }
   }
 
-  async get(): Promise<Result<NameSpaceValueMap[T] | null, SecurityError | UnexpectedError>> {
+  async get(): Promise<Result<NameSpaceValueMap[T] | null, SecurityError | SyntaxError | UnexpectedError>> {
     try {
       const rawItem = localStorage.getItem(this.KEY);
       const item = rawItem !== null ? JSON.parse(rawItem) : null;
@@ -108,7 +108,7 @@ export class LocalStorage<T extends NameSpace> implements ILocalStorage<T> {
           const securityError = new SecurityError(this.KEY);
           return { ok: false, error: securityError };
         }
-        case err instanceof DataCorruptedError: {
+        case err instanceof SyntaxError: {
           const dataCorruptedError = new DataCorruptedError(this.KEY, { cause: err });
           return { ok: false, error: dataCorruptedError };
         }

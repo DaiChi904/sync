@@ -1,8 +1,13 @@
 import type { NodeInformation } from "@/domain/model/entity/nodeInfomation.type";
 import {
-  CircuitEmulatorServiceError,
+  CircuitEmulatorServiceCreationError,
+  CircuitEmulatorServiceEvalError,
+  CircuitEmulatorServiceInternalError,
+  CircuitEmulatorServiceSetupError,
   type ICircuitEmulatorService,
+  NodeInfomationNotFoundError,
 } from "@/domain/model/service/ICircuitEmulatorService";
+import { UnexpectedError } from "@/domain/model/unexpectedError";
 import { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import { CircuitNodeInputId } from "@/domain/model/valueObject/circuitNodeInputId";
 import type { CircuitNodeType } from "@/domain/model/valueObject/circuitNodeType";
@@ -22,7 +27,9 @@ export class CircuitEmulatorService implements ICircuitEmulatorService {
     this.nodes = nodes;
   }
 
-  static from(circuitGraphData: CircuitGraphData): Result<CircuitEmulatorService, CircuitEmulatorServiceError> {
+  static from(
+    circuitGraphData: CircuitGraphData,
+  ): Result<CircuitEmulatorService, CircuitEmulatorServiceCreationError | UnexpectedError> {
     const circuitNodes: CircuitNode[] = [];
 
     const graphNodes: Set<{ nodeID: CircuitNodeId; type: CircuitNodeType }> = new Set();
@@ -63,8 +70,8 @@ export class CircuitEmulatorService implements ICircuitEmulatorService {
 
         const res = CircuitNode.from(nodeID, type, inputsToNode, outputFromNode);
         if (!res.ok) {
-          throw new CircuitEmulatorServiceError(
-            `Failed to generate emulator service client. Couldn't generate circuit nodes. NodeId: ${nodeID}, Type: ${type}`,
+          throw new CircuitEmulatorServiceCreationError(
+            `Couldn't generate circuit nodes. NodeId: ${nodeID}, Type: ${type}`,
             {
               cause: res.error,
             },
@@ -115,25 +122,23 @@ export class CircuitEmulatorService implements ICircuitEmulatorService {
       removedNodeIds.forEach((nodeID, idx) => {
         const target = circuitNodes.find((node) => node.getInformation().id === nodeID);
         if (!target) {
-          throw new CircuitEmulatorServiceError(
-            `Failed to generate emulator service client. Couldn't assign execution orders. Node not found: ${nodeID}`,
-          );
+          throw new CircuitEmulatorServiceCreationError(`Couldn't assign execution orders. Node not found: ${nodeID}`);
         }
 
         target.setup(ExecutionOrder.from(idx + 1));
       });
     } catch (err: unknown) {
       console.error(err);
-      if (err instanceof CircuitEmulatorServiceError) {
-        return { ok: false, error: err };
+      switch (true) {
+        case err instanceof CircuitEmulatorServiceCreationError: {
+          const circuitEmulatorServiceCreationError = err;
+          return { ok: false, error: circuitEmulatorServiceCreationError };
+        }
+        default: {
+          const unexpectedError = new UnexpectedError({ cause: err });
+          return { ok: false, error: unexpectedError };
+        }
       }
-
-      return {
-        ok: false,
-        error: new CircuitEmulatorServiceError("Unknown error occurred while generating circuit emulator service.", {
-          cause: err,
-        }),
-      };
     }
 
     // Ascending order sorting by execution-order for ease of handling in other methods.
@@ -145,7 +150,7 @@ export class CircuitEmulatorService implements ICircuitEmulatorService {
     };
   }
 
-  setup(): Result<void, CircuitEmulatorServiceError> {
+  setup(): Result<void, CircuitEmulatorServiceSetupError | UnexpectedError> {
     // Initialize the output in phase 0 until all EvalResults are stabilized to make it executable.
     const previousOutputs = new Map<CircuitNodeId, EvalResult>();
     let tick = 0;
@@ -168,7 +173,7 @@ export class CircuitEmulatorService implements ICircuitEmulatorService {
 
               const currentOutput = node.eval(entryInputRecord, Phase.from(0), Tick.from(tick));
               if (!currentOutput.ok) {
-                throw new CircuitEmulatorServiceError("Failed to setup emulator service client.", {
+                throw new CircuitEmulatorServiceSetupError("Setup emulator service failed.", {
                   cause: currentOutput.error,
                 });
               }
@@ -186,7 +191,7 @@ export class CircuitEmulatorService implements ICircuitEmulatorService {
 
               const currentOutput = node.eval(inputRecord, Phase.from(0), Tick.from(tick));
               if (!currentOutput.ok) {
-                throw new CircuitEmulatorServiceError("Failed to setup emulator service client.", {
+                throw new CircuitEmulatorServiceSetupError("Setup emulator service failed.", {
                   cause: currentOutput.error,
                 });
               }
@@ -197,14 +202,14 @@ export class CircuitEmulatorService implements ICircuitEmulatorService {
             default: {
               const incomingInputRecord = this.referIncomingInputs(id, Phase.from(0), Tick.from(tick));
               if (!incomingInputRecord.ok) {
-                throw new CircuitEmulatorServiceError("Failed to setup emulator service client.", {
+                throw new CircuitEmulatorServiceSetupError("Setup emulator service failed.", {
                   cause: incomingInputRecord.error,
                 });
               }
 
               const currentOutput = node.eval(incomingInputRecord.value, Phase.from(0), Tick.from(tick));
               if (!currentOutput.ok) {
-                throw new CircuitEmulatorServiceError("Failed to setup emulator service client.", {
+                throw new CircuitEmulatorServiceSetupError("Setup emulator service failed.", {
                   cause: currentOutput.error,
                 });
               }
@@ -224,22 +229,22 @@ export class CircuitEmulatorService implements ICircuitEmulatorService {
       }
     } catch (err: unknown) {
       console.error(err);
-      if (err instanceof CircuitEmulatorServiceError) {
-        return { ok: false, error: err };
+      switch (true) {
+        case err instanceof CircuitEmulatorServiceSetupError: {
+          const circuitEmulatorServiceSetupError = err;
+          return { ok: false, error: circuitEmulatorServiceSetupError };
+        }
+        default: {
+          const unexpectedError = new UnexpectedError({ cause: err });
+          return { ok: false, error: unexpectedError };
+        }
       }
-
-      return {
-        ok: false,
-        error: new CircuitEmulatorServiceError("Unknown error occurred while setting up emulator service client.", {
-          cause: err,
-        }),
-      };
     }
 
     return { ok: true, value: undefined };
   }
 
-  eval(entryInputs: InputRecord, phase: number): Result<void, CircuitEmulatorServiceError> {
+  eval(entryInputs: InputRecord, phase: number): Result<void, CircuitEmulatorServiceEvalError | UnexpectedError> {
     const previousOutputs = new Map<CircuitNodeId, EvalResult>();
     let tick = 0;
     const tickLimit = this.nodes.length * 2;
@@ -254,7 +259,7 @@ export class CircuitEmulatorService implements ICircuitEmulatorService {
             case "ENTRY": {
               const currentOutput = node.eval(entryInputs, Phase.from(phase), Tick.from(tick));
               if (!currentOutput.ok) {
-                throw new CircuitEmulatorServiceError(`Failed to evaluate circuit. Couldn't acquire output of ${id}.`, {
+                throw new CircuitEmulatorServiceEvalError(`Couldn't acquire output of ${id}.`, {
                   cause: currentOutput.error,
                 });
               }
@@ -265,17 +270,14 @@ export class CircuitEmulatorService implements ICircuitEmulatorService {
             default: {
               const incomingInputRecord = this.referIncomingInputs(id, Phase.from(phase), Tick.from(tick));
               if (!incomingInputRecord.ok) {
-                throw new CircuitEmulatorServiceError(
-                  `Failed to evaluate circuit. Couldn't refer incoming inputs of ${id}.`,
-                  {
-                    cause: incomingInputRecord.error,
-                  },
-                );
+                throw new CircuitEmulatorServiceEvalError(`Couldn't refer incoming inputs of ${id}.`, {
+                  cause: incomingInputRecord.error,
+                });
               }
 
               const currentOutput = node.eval(incomingInputRecord.value, Phase.from(phase), Tick.from(tick));
               if (!currentOutput.ok) {
-                throw new CircuitEmulatorServiceError(`Failed to evaluate circuit. Couldn't acquire output of ${id}.`, {
+                throw new CircuitEmulatorServiceEvalError(`Couldn't acquire output of ${id}.`, {
                   cause: currentOutput.error,
                 });
               }
@@ -295,23 +297,25 @@ export class CircuitEmulatorService implements ICircuitEmulatorService {
       }
     } catch (err: unknown) {
       console.error(err);
-      if (err instanceof CircuitEmulatorServiceError) {
-        return { ok: false, error: err };
+      switch (true) {
+        case err instanceof CircuitEmulatorServiceEvalError: {
+          const circuitEmulatorServiceEvalError = err;
+          return { ok: false, error: circuitEmulatorServiceEvalError };
+        }
+        default: {
+          const unexpectedError = new UnexpectedError({ cause: err });
+          return { ok: false, error: unexpectedError };
+        }
       }
-
-      return {
-        ok: false,
-        error: new CircuitEmulatorServiceError("Unknown error occurred while evaluating circuit.", { cause: err }),
-      };
     }
 
     return { ok: true, value: undefined };
   }
 
-  getInfomationById(id: CircuitNodeId): Result<NodeInformation, CircuitEmulatorServiceError> {
+  getInfomationById(id: CircuitNodeId): Result<NodeInformation, NodeInfomationNotFoundError> {
     const node = this.nodes.find((node) => node.getInformation().id === id)?.getInformation();
     if (!node) {
-      const err = new CircuitEmulatorServiceError(`Failed to get node information. Node not found: ${id}`);
+      const err = new NodeInfomationNotFoundError(id);
       console.error(err);
       return {
         ok: false,
@@ -326,7 +330,7 @@ export class CircuitEmulatorService implements ICircuitEmulatorService {
     nodeID: CircuitNodeId,
     currentPhase: Phase,
     currentTick: Tick,
-  ): Result<InputRecord, CircuitEmulatorServiceError> {
+  ): Result<InputRecord, CircuitEmulatorServiceInternalError | UnexpectedError> {
     const inputRecord = InputRecord.from({});
 
     const isFirstTick = currentTick === 0;
@@ -334,13 +338,13 @@ export class CircuitEmulatorService implements ICircuitEmulatorService {
     try {
       const node = this.nodes.find((node) => node.getInformation().id === nodeID);
       if (!node) {
-        throw new CircuitEmulatorServiceError(`Failed to refer incoming inputs. Node not found: ${nodeID}`);
+        throw new CircuitEmulatorServiceInternalError(`Refering incoming inputs failed. Node not found: ${nodeID}`);
       }
 
       const { type, inputs } = node.getInformation();
       if (type === "ENTRY") {
-        throw new CircuitEmulatorServiceError(
-          "Failed to refer incoming inputs because of invalid usage This method is not intended to be used for ENTRY nodes.",
+        throw new CircuitEmulatorServiceInternalError(
+          "Refering incoming inputs failed because of invalid usage This method is not intended to be used for ENTRY nodes.",
         );
       }
 
@@ -348,8 +352,8 @@ export class CircuitEmulatorService implements ICircuitEmulatorService {
         const target = this.nodes.find((node) => node.getInformation().id === input);
         const targetInfo = target?.getInformation();
         if (!targetInfo) {
-          throw new CircuitEmulatorServiceError(
-            `Failed to refer incoming inputs. Target node not found. NodeId: ${input}`,
+          throw new CircuitEmulatorServiceInternalError(
+            `Refering incoming inputs failed. Target node not found. NodeId: ${input}`,
           );
         }
 
@@ -357,15 +361,15 @@ export class CircuitEmulatorService implements ICircuitEmulatorService {
           case targetInfo.history.get(currentPhase)?.get(currentTick) === undefined && isFirstTick === true: {
             const source = targetInfo.history.get(Phase.from(currentPhase - 1))?.entries();
             if (!source) {
-              throw new CircuitEmulatorServiceError(
-                `Failed to refer incoming inputs. No history found for node: ${nodeID}, phase: ${currentPhase - 1}, tick: ${currentTick}`,
+              throw new CircuitEmulatorServiceInternalError(
+                `Refering incoming inputs failed. No history found for node: ${nodeID}, phase: ${currentPhase - 1}, tick: ${currentTick}`,
               );
             }
 
             const output = Array.from(source).at(-1);
             if (output === undefined) {
-              throw new CircuitEmulatorServiceError(
-                `Failed to refer incoming inputs. No output found for node: ${nodeID}, phase: ${currentPhase - 1}, tick: ${currentTick}`,
+              throw new CircuitEmulatorServiceInternalError(
+                `Refering incoming inputs failed. No output found for node: ${nodeID}, phase: ${currentPhase - 1}, tick: ${currentTick}`,
               );
             }
 
@@ -375,8 +379,8 @@ export class CircuitEmulatorService implements ICircuitEmulatorService {
           case targetInfo.history.get(currentPhase)?.get(currentTick) === undefined && isFirstTick === false: {
             const output = targetInfo.history.get(currentPhase)?.get(Tick.from(currentTick - 1));
             if (output === undefined) {
-              throw new CircuitEmulatorServiceError(
-                `Failed to refer incoming inputs. No output found for node: ${nodeID}, phase: ${currentPhase - 1}, tick: ${currentTick}`,
+              throw new CircuitEmulatorServiceInternalError(
+                `Refering incoming inputs failed. No output found for node: ${nodeID}, phase: ${currentPhase - 1}, tick: ${currentTick}`,
               );
             }
 
@@ -387,8 +391,8 @@ export class CircuitEmulatorService implements ICircuitEmulatorService {
           default: {
             const output = targetInfo.history.get(currentPhase)?.get(currentTick);
             if (output === undefined) {
-              throw new CircuitEmulatorServiceError(
-                `Failed to refer incoming inputs. No output found for node: ${nodeID}, phase: ${currentPhase - 1}, tick: ${currentTick}`,
+              throw new CircuitEmulatorServiceInternalError(
+                `Refering incoming inputs failed. No output found for node: ${nodeID}, phase: ${currentPhase - 1}, tick: ${currentTick}`,
               );
             }
 
@@ -399,16 +403,16 @@ export class CircuitEmulatorService implements ICircuitEmulatorService {
       }
     } catch (err: unknown) {
       console.error(err);
-      if (err instanceof CircuitEmulatorServiceError) {
-        return { ok: false, error: err };
+      switch (true) {
+        case err instanceof CircuitEmulatorServiceInternalError: {
+          const CircuitEmulatorServiceInternalError = err;
+          return { ok: false, error: CircuitEmulatorServiceInternalError };
+        }
+        default: {
+          const unexpectedError = new UnexpectedError({ cause: err });
+          return { ok: false, error: unexpectedError };
+        }
       }
-
-      return {
-        ok: false,
-        error: new CircuitEmulatorServiceError("Unknown error occurred while refering incoming inputs.", {
-          cause: err,
-        }),
-      };
     }
 
     return { ok: true, value: inputRecord };

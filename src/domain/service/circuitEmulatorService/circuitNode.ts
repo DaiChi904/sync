@@ -1,5 +1,11 @@
 import { NodeInformation } from "@/domain/model/entity/nodeInfomation.type";
-import { CircuitNodeError, type ICircuitNode } from "@/domain/model/service/ICircuitNode";
+import {
+  CircuitNodeCreationError,
+  CircuitNodeEvalError,
+  CircuitNodeInitializeError,
+  type ICircuitNode,
+} from "@/domain/model/service/ICircuitNode";
+import { UnexpectedError } from "@/domain/model/unexpectedError";
 import { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import { CircuitNodeInputId } from "@/domain/model/valueObject/circuitNodeInputId";
 import { CircuitNodeType } from "@/domain/model/valueObject/circuitNodeType";
@@ -37,7 +43,7 @@ export abstract class CircuitNode implements ICircuitNode {
     type: CircuitNodeType,
     inputs: Array<CircuitNodeId>,
     outputs: Array<CircuitNodeId>,
-  ): Result<EntryNode | ExitNode | AndNode | OrNode | NotNode | JunctionNode, CircuitNodeError> {
+  ): Result<EntryNode | ExitNode | AndNode | OrNode | NotNode | JunctionNode, CircuitNodeCreationError> {
     switch (type) {
       case "ENTRY":
         return { ok: true, value: new EntryNode(id, inputs, outputs) };
@@ -52,7 +58,7 @@ export abstract class CircuitNode implements ICircuitNode {
       case "JUNCTION":
         return { ok: true, value: new JunctionNode(id, inputs, outputs) };
       default: {
-        const err = new CircuitNodeError(`Failed to generate circuit node. Received invalid node type: ${type}`);
+        const err = new CircuitNodeCreationError(id, type);
         console.error(err);
         return {
           ok: false,
@@ -70,7 +76,7 @@ export abstract class CircuitNode implements ICircuitNode {
     return { ok: true, value: undefined };
   }
 
-  init(): Result<void, CircuitNodeError> {
+  init(): Result<void, CircuitNodeInitializeError | UnexpectedError> {
     this.phase = Phase.from(1);
     this.tick = Tick.from(0);
 
@@ -78,28 +84,32 @@ export abstract class CircuitNode implements ICircuitNode {
       // biome-ignore lint/style/noNonNullAssertion: This is cared by the next if statement.
       const initialHistory = this.history!.get(Phase.from(0));
       if (!initialHistory) {
-        throw new CircuitNodeError(
-          "Failed to initialize node because of missing initial history in phase 0. This node might not be setup yet.",
-        );
+        throw new CircuitNodeInitializeError(this.id, this.type);
       }
 
       this.history = EvalHistory.from(new Map([[Phase.from(0), initialHistory]]));
+
+      return { ok: true, value: undefined };
     } catch (err: unknown) {
       console.error(err);
-      if (err instanceof CircuitNodeError) {
-        return { ok: false, error: err };
+      switch (true) {
+        case err instanceof CircuitNodeInitializeError: {
+          const circuitNodeInitializeError = err;
+          return { ok: false, error: circuitNodeInitializeError };
+        }
+        default: {
+          const unexpectedError = new UnexpectedError({ cause: err });
+          return { ok: false, error: unexpectedError };
+        }
       }
-
-      return {
-        ok: false,
-        error: new CircuitNodeError("Unknown error occurred while initializing node.", { cause: err }),
-      };
     }
-
-    return { ok: true, value: undefined };
   }
 
-  abstract eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult, CircuitNodeError>;
+  abstract eval(
+    inputs: InputRecord,
+    phase: Phase,
+    tick: Tick,
+  ): Result<EvalResult, CircuitNodeEvalError | UnexpectedError>;
   abstract getInformation(): NodeInformation;
 
   protected saveOutput(phase: Phase, tick: Tick, output: EvalResult): void {
@@ -117,11 +127,12 @@ class EntryNode extends CircuitNode {
     super(id, CircuitNodeType.from("ENTRY"), inputs, outputs);
   }
 
-  eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult, CircuitNodeError> {
+  eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult, CircuitNodeEvalError | UnexpectedError> {
     try {
       if (this.outputs.length !== 1) {
-        throw new CircuitNodeError(
+        throw new CircuitNodeEvalError(
           `Failed to evaluate ENTRY node. ENTRY node ${this.id} must have exactly one output.`,
+          this.getInformation(),
         );
       }
 
@@ -142,16 +153,16 @@ class EntryNode extends CircuitNode {
       return { ok: true, value: result.output };
     } catch (err: unknown) {
       console.error(err);
-      if (err instanceof CircuitNodeError) {
-        return { ok: false, error: err };
+      switch (true) {
+        case err instanceof CircuitNodeEvalError: {
+          const circuitNodeEvalError = err;
+          return { ok: false, error: circuitNodeEvalError };
+        }
+        default: {
+          const unexpectedError = new UnexpectedError({ cause: err });
+          return { ok: false, error: unexpectedError };
+        }
       }
-
-      return {
-        ok: false,
-        error: new CircuitNodeError(`Unknown error occurred while evaluateing Entry node. id: ${this.id}`, {
-          cause: err,
-        }),
-      };
     }
   }
 
@@ -175,10 +186,13 @@ class ExitNode extends CircuitNode {
     super(id, CircuitNodeType.from("EXIT"), inputs, outputs);
   }
 
-  eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult, CircuitNodeError> {
+  eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult, CircuitNodeEvalError | UnexpectedError> {
     try {
       if (this.inputs.length !== 1 || this.outputs.length !== 0) {
-        throw new CircuitNodeError(`Failed to evaluate EXIT node. EXIT node "${this.id}" must have exactly one input.`);
+        throw new CircuitNodeEvalError(
+          `Failed to evaluate EXIT node. EXIT node "${this.id}" must have exactly one input.`,
+          this.getInformation(),
+        );
       }
 
       this.phase = phase;
@@ -195,19 +209,19 @@ class ExitNode extends CircuitNode {
 
       this.saveOutput(phase, tick, result.output);
 
-      return { ok: true, value: result.output } as const;
+      return { ok: true, value: result.output };
     } catch (err: unknown) {
       console.error(err);
-      if (err instanceof CircuitNodeError) {
-        return { ok: false, error: err };
+      switch (true) {
+        case err instanceof CircuitNodeEvalError: {
+          const circuitNodeEvalError = err;
+          return { ok: false, error: circuitNodeEvalError };
+        }
+        default: {
+          const unexpectedError = new UnexpectedError({ cause: err });
+          return { ok: false, error: unexpectedError };
+        }
       }
-
-      return {
-        ok: false,
-        error: new CircuitNodeError(`Unknown error occurred while evaluateing EXIT node. id: ${this.id}`, {
-          cause: err,
-        }),
-      };
     }
   }
 
@@ -231,11 +245,12 @@ class AndNode extends CircuitNode {
     super(id, CircuitNodeType.from("AND"), inputs, outputs);
   }
 
-  eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult, CircuitNodeError> {
+  eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult, CircuitNodeEvalError | UnexpectedError> {
     try {
       if (this.inputs.length !== 2 || this.outputs.length !== 1) {
-        throw new CircuitNodeError(
+        throw new CircuitNodeEvalError(
           `Failed to evaluate AND node. AND node "${this.id}" must have exactly two inputs and one output.`,
+          this.getInformation(),
         );
       }
 
@@ -252,19 +267,19 @@ class AndNode extends CircuitNode {
 
       this.saveOutput(phase, tick, result.output);
 
-      return { ok: true, value: result.output } as const;
+      return { ok: true, value: result.output };
     } catch (err: unknown) {
       console.error(err);
-      if (err instanceof CircuitNodeError) {
-        return { ok: false, error: err };
+      switch (true) {
+        case err instanceof CircuitNodeEvalError: {
+          const circuitNodeEvalError = err;
+          return { ok: false, error: circuitNodeEvalError };
+        }
+        default: {
+          const unexpectedError = new UnexpectedError({ cause: err });
+          return { ok: false, error: unexpectedError };
+        }
       }
-
-      return {
-        ok: false,
-        error: new CircuitNodeError(`Unknown error occurred while evaluateing AND node. id: ${this.id}`, {
-          cause: err,
-        }),
-      };
     }
   }
 
@@ -288,11 +303,12 @@ class OrNode extends CircuitNode {
     super(id, CircuitNodeType.from("OR"), inputs, outputs);
   }
 
-  eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult, CircuitNodeError> {
+  eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult, CircuitNodeEvalError | UnexpectedError> {
     try {
       if (this.inputs.length !== 2 || this.outputs.length !== 1) {
-        throw new CircuitNodeError(
+        throw new CircuitNodeEvalError(
           `Failed to evaluate OR node. OR node "${this.id}" must have exactly two inputs and one output.`,
+          this.getInformation(),
         );
       }
 
@@ -308,19 +324,19 @@ class OrNode extends CircuitNode {
       }
       this.saveOutput(phase, tick, result.output);
 
-      return { ok: true, value: result.output } as const;
+      return { ok: true, value: result.output };
     } catch (err: unknown) {
       console.error(err);
-      if (err instanceof CircuitNodeError) {
-        return { ok: false, error: err };
+      switch (true) {
+        case err instanceof CircuitNodeEvalError: {
+          const circuitNodeEvalError = err;
+          return { ok: false, error: circuitNodeEvalError };
+        }
+        default: {
+          const unexpectedError = new UnexpectedError({ cause: err });
+          return { ok: false, error: unexpectedError };
+        }
       }
-
-      return {
-        ok: false,
-        error: new CircuitNodeError(`Unknown error occurred while evaluateing OR node. id: ${this.id}`, {
-          cause: err,
-        }),
-      };
     }
   }
 
@@ -344,11 +360,12 @@ class NotNode extends CircuitNode {
     super(id, CircuitNodeType.from("NOT"), inputs, outputs);
   }
 
-  eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult, CircuitNodeError> {
+  eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult, CircuitNodeEvalError | UnexpectedError> {
     try {
       if (this.inputs.length !== 1 || this.outputs.length !== 1) {
-        throw new CircuitNodeError(
+        throw new CircuitNodeEvalError(
           `Failed to evaluate NOT node. NOT node "${this.id}" must have exactly one input and one output.`,
+          this.getInformation(),
         );
       }
 
@@ -364,19 +381,19 @@ class NotNode extends CircuitNode {
 
       this.saveOutput(phase, tick, result.output);
 
-      return { ok: true, value: result.output } as const;
+      return { ok: true, value: result.output };
     } catch (err: unknown) {
       console.error(err);
-      if (err instanceof CircuitNodeError) {
-        return { ok: false, error: err };
+      switch (true) {
+        case err instanceof CircuitNodeEvalError: {
+          const circuitNodeEvalError = err;
+          return { ok: false, error: circuitNodeEvalError };
+        }
+        default: {
+          const unexpectedError = new UnexpectedError({ cause: err });
+          return { ok: false, error: unexpectedError };
+        }
       }
-
-      return {
-        ok: false,
-        error: new CircuitNodeError(`Unknown error occurred while evaluateing NOT node. id: ${this.id}`, {
-          cause: err,
-        }),
-      };
     }
   }
 
@@ -400,11 +417,12 @@ class JunctionNode extends CircuitNode {
     super(id, CircuitNodeType.from("JUNCTION"), inputs, outputs);
   }
 
-  eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult, CircuitNodeError> {
+  eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult, CircuitNodeEvalError | UnexpectedError> {
     try {
       if (this.inputs.length !== 1 || this.outputs.length < 1) {
-        throw new CircuitNodeError(
+        throw new CircuitNodeEvalError(
           `Failed to evaluate Junction node. JUNCTION node "${this.id}" must have one input and at least one output.`,
+          this.getInformation(),
         );
       }
 
@@ -426,19 +444,19 @@ class JunctionNode extends CircuitNode {
       });
 
       // As all JUNCTION outputs are identical, it is allowed to return one of the multiple outputs.
-      return { ok: true, value: result[0].output } as const;
+      return { ok: true, value: result[0].output };
     } catch (err: unknown) {
       console.error(err);
-      if (err instanceof CircuitNodeError) {
-        return { ok: false, error: err };
+      switch (true) {
+        case err instanceof CircuitNodeEvalError: {
+          const circuitNodeEvalError = err;
+          return { ok: false, error: circuitNodeEvalError };
+        }
+        default: {
+          const unexpectedError = new UnexpectedError({ cause: err });
+          return { ok: false, error: unexpectedError };
+        }
       }
-
-      return {
-        ok: false,
-        error: new CircuitNodeError(`Unknown error occurred while evaluateing JUNCTION node. id: ${this.id}`, {
-          cause: err,
-        }),
-      };
     }
   }
 

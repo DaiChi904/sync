@@ -1,9 +1,9 @@
 import type { Circuit } from "@/domain/model/aggregate/circuit";
-import type { ICircuitDetailQueryService } from "@/domain/model/queryService/ICircuitDetailQueryService";
-import {
-  GetCircuitDetailUsecaseError,
-  type IGetCircuitDetailUsecase,
-} from "@/domain/model/usecase/IGetCircuitDetailUsecase";
+import type { DataIntegrityError } from "@/domain/model/infrastructure/dataIntegrityError";
+import type { InfraError } from "@/domain/model/infrastructure/infraError";
+import type { ICircuitDetailQueryService } from "@/domain/model/infrastructure/queryService/ICircuitDetailQueryService";
+import type { UnexpectedError } from "@/domain/model/unexpectedError";
+import type { IGetCircuitDetailUsecase } from "@/domain/model/usecase/IGetCircuitDetailUsecase";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 import type { Result } from "@/utils/result";
 
@@ -18,26 +18,7 @@ export class GetCircuitDetailUsecase implements IGetCircuitDetailUsecase {
     this.circuitDetailQueryService = circuitDetailQueryService;
   }
 
-  async getById(id: CircuitId): Promise<Result<Circuit, GetCircuitDetailUsecaseError>> {
-    try {
-      const res = await this.circuitDetailQueryService.getById(id);
-      if (!res.ok) {
-        throw new GetCircuitDetailUsecaseError(`Failed to get circuit. Id: ${id}`, {
-          cause: res.error,
-        });
-      }
-
-      return { ok: true, value: res.value } as const;
-    } catch (err: unknown) {
-      console.error(err);
-      if (err instanceof GetCircuitDetailUsecaseError) {
-        return { ok: false, error: err };
-      }
-
-      return {
-        ok: false,
-        error: new GetCircuitDetailUsecaseError("Unknown error occurred while getting circuit detail.", { cause: err }),
-      };
-    }
+  async getById(id: CircuitId): Promise<Result<Circuit, DataIntegrityError | InfraError | UnexpectedError>> {
+    return this.circuitDetailQueryService.getById(id);
   }
 }

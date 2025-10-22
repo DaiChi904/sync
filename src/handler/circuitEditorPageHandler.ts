@@ -13,7 +13,7 @@ import {
   type ICircuitEditorPageHandler,
   initialCircuitEditorPageError,
 } from "@/domain/model/handler/ICircuitEditorPageHandler";
-import type { ICircuitRepository } from "@/domain/model/repository/ICircuitRepository";
+import type { ICircuitRepository } from "@/domain/model/infrastructure/repository/ICircuitRepository";
 import type { ICircuitParserService } from "@/domain/model/service/ICircuitParserService";
 import type { ICircuitEditorUsecase } from "@/domain/model/usecase/ICircuitEditorUsecase";
 import type { IGetCircuitDetailUsecase } from "@/domain/model/usecase/IGetCircuitDetailUsecase";
@@ -539,7 +539,7 @@ export const useCircuitEditorPageHandler = ({
       pt.y = ev.clientY;
       const cursorPt = pt.matrixTransform(svg.getScreenCTM()?.inverse());
 
-      return { ok: true, value: Coordinate.from({ x: cursorPt.x, y: cursorPt.y }) } as const;
+      return { ok: true, value: Coordinate.from({ x: cursorPt.x, y: cursorPt.y }) };
     } catch (err: unknown) {
       console.error(err);
       if (err instanceof CircuitEditorPageHandlerError) {

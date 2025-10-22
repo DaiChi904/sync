@@ -5,7 +5,8 @@ import { CircuitGuiData } from "../model/entity/circuitGuiData";
 import { CircuitGuiEdge } from "../model/entity/circuitGuiEdge";
 import { CircuitGuiNode } from "../model/entity/circuitGuiNode";
 import { ModelValidationError } from "../model/modelValidationError";
-import { CircuitParserServiceError, type ICircuitParserService } from "../model/service/ICircuitParserService";
+import { CircuitDataParseError, type ICircuitParserService } from "../model/service/ICircuitParserService";
+import { UnexpectedError } from "../model/unexpectedError";
 import type { CircuitData } from "../model/valueObject/circuitData";
 import type { CircuitEdgeId } from "../model/valueObject/circuitEdgeId";
 import { CircuitNodeId } from "../model/valueObject/circuitNodeId";
@@ -15,7 +16,7 @@ import { Coordinate } from "../model/valueObject/coordinate";
 import { Waypoint } from "../model/valueObject/waypoint";
 
 export class CircuitParserService implements ICircuitParserService {
-  parseToGuiData(circuitData: CircuitData): Result<CircuitGuiData, CircuitParserServiceError> {
+  parseToGuiData(circuitData: CircuitData): Result<CircuitGuiData, CircuitDataParseError | UnexpectedError> {
     try {
       const { nodes, edges } = circuitData;
 
@@ -76,28 +77,28 @@ export class CircuitParserService implements ICircuitParserService {
         });
       });
 
-      return { ok: true, value: CircuitGuiData.from({ nodes: guiNodes, edges: guiEdge }) } as const;
+      return { ok: true, value: CircuitGuiData.from({ nodes: guiNodes, edges: guiEdge }) };
     } catch (err: unknown) {
       console.error(err);
-      if (err instanceof ModelValidationError) {
-        return {
-          ok: false,
-          error: new CircuitParserServiceError("Failed to parse circuit data to gui data. Invalid model provided.", {
-            cause: err,
-          }),
-        };
+      switch (true) {
+        case err instanceof ModelValidationError: {
+          const modelValidationError = err;
+          return {
+            ok: false,
+            error: new CircuitDataParseError("Failed to parse circuit data to GUI data. Invalid model provided.", {
+              cause: modelValidationError,
+            }),
+          };
+        }
+        default: {
+          const unexpectedError = new UnexpectedError({ cause: err });
+          return { ok: false, error: unexpectedError };
+        }
       }
-
-      return {
-        ok: false,
-        error: new CircuitParserServiceError("Unknown error occurred while parsing circuit data to gui data.", {
-          cause: err,
-        }),
-      };
     }
   }
 
-  parseToGraphData(circuitData: CircuitData): Result<CircuitGraphData, CircuitParserServiceError> {
+  parseToGraphData(circuitData: CircuitData): Result<CircuitGraphData, CircuitDataParseError | UnexpectedError> {
     try {
       const nodes = new Map<
         CircuitNodeId,
@@ -125,16 +126,12 @@ export class CircuitParserService implements ICircuitParserService {
         const inputs = connectedInEdge.map((edgeId) => {
           const targetEdge = edges.get(edgeId);
           if (!targetEdge) {
-            throw new CircuitParserServiceError(
-              `Failed to parse circuit data to graph data. No target edge for input found: ${edgeId}`,
-            );
+            throw new CircuitDataParseError(`No target edge for input found: ${edgeId}`);
           }
 
           const targetNode = Array.from(nodes.entries()).find((node) => node[1].outputs.includes(targetEdge.from));
           if (!targetNode) {
-            throw new CircuitParserServiceError(
-              `Failed to parse circuit data to graph data. No target node for input found: ${targetEdge.from}`,
-            );
+            throw new CircuitDataParseError(`No target node for input found: ${targetEdge.from}`);
           }
 
           return CircuitNodeId.from(targetNode[0]);
@@ -143,16 +140,12 @@ export class CircuitParserService implements ICircuitParserService {
         const outputs = connectedOutEdge.map((edgeId) => {
           const targetEdge = edges.get(edgeId);
           if (!targetEdge) {
-            throw new CircuitParserServiceError(
-              `Failed to parse circuit data to graph data. No target edge for output found: ${edgeId}`,
-            );
+            throw new CircuitDataParseError(`No target edge for output found: ${edgeId}`);
           }
 
           const targetNode = Array.from(nodes.entries()).find((node) => node[1].inputs.includes(targetEdge.to));
           if (!targetNode) {
-            throw new CircuitParserServiceError(
-              `Failed to parse circuit data to graph data. No target node for output found: ${targetEdge.to}`,
-            );
+            throw new CircuitDataParseError(`No target node for output found: ${targetEdge.to}`);
           }
 
           return CircuitNodeId.from(targetNode[0]);
@@ -166,28 +159,26 @@ export class CircuitParserService implements ICircuitParserService {
         });
       });
 
-      return { ok: true, value: CircuitGraphData.from(graphData) } as const;
+      return { ok: true, value: CircuitGraphData.from(graphData) };
     } catch (err: unknown) {
       console.error(err);
-      if (err instanceof ModelValidationError) {
-        return {
-          ok: false,
-          error: new CircuitParserServiceError("Failed to parse circuit data to graph data. Invalid model provided.", {
-            cause: err,
-          }),
-        };
+      switch (true) {
+        case err instanceof ModelValidationError: {
+          const modelValidationError = err;
+          return {
+            ok: false,
+            error: new CircuitDataParseError("Invalid data provided.", { cause: modelValidationError }),
+          };
+        }
+        case err instanceof CircuitDataParseError: {
+          const circuitDataParseError = err;
+          return { ok: false, error: circuitDataParseError };
+        }
+        default: {
+          const unexpectedError = new UnexpectedError({ cause: err });
+          return { ok: false, error: unexpectedError };
+        }
       }
-
-      if (err instanceof CircuitParserServiceError) {
-        return { ok: false, error: err };
-      }
-
-      return {
-        ok: false,
-        error: new CircuitParserServiceError("Unknown error occurred while parsing circuit data to graph data.", {
-          cause: err,
-        }),
-      };
     }
   }
 }

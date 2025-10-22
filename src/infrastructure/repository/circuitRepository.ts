@@ -1,4 +1,12 @@
+import { DataIntegrityError } from "@/domain/model/infrastructure/dataIntegrityError";
+import { InfraError } from "@/domain/model/infrastructure/infraError";
+import {
+  CircuitNotFoundError,
+  type ICircuitRepository,
+  InvalidSaveMethodError,
+} from "@/domain/model/infrastructure/repository/ICircuitRepository";
 import { ModelValidationError } from "@/domain/model/modelValidationError";
+import { UnexpectedError } from "@/domain/model/unexpectedError";
 import { CircuitData } from "@/domain/model/valueObject/circuitData";
 import { CircuitDescription } from "@/domain/model/valueObject/circuitDescription";
 import { CircuitEdgeId } from "@/domain/model/valueObject/circuitEdgeId";
@@ -14,8 +22,7 @@ import { UpdatedDateTime } from "@/domain/model/valueObject/updatedDateTime";
 import { Waypoint } from "@/domain/model/valueObject/waypoint";
 import type { Result } from "@/utils/result";
 import { Circuit } from "../../domain/model/aggregate/circuit";
-import { CircuitRepositoryError, type ICircuitRepository } from "../../domain/model/repository/ICircuitRepository";
-import type { ILocalStorage } from "../storage/localStorage";
+import { DataCorruptedError, type ILocalStorage, QuotaExceededError } from "../storage/localStorage";
 
 interface CircuitRepositoryDependencies {
   localStorage: ILocalStorage<"circuit">;
@@ -28,11 +35,11 @@ export class CircuitRepository implements ICircuitRepository {
     this.localStorage = localStorage;
   }
 
-  async getAll(): Promise<Result<Array<Circuit>, CircuitRepositoryError>> {
+  async getAll(): Promise<Result<Array<Circuit>, InfraError | DataIntegrityError | UnexpectedError>> {
     try {
       const res = await this.localStorage.get();
       if (!res.ok) {
-        throw new CircuitRepositoryError("Failed to get circuits.", { cause: res.error });
+        throw res.error;
       }
 
       const rawCircuits = res.value;
@@ -65,41 +72,36 @@ export class CircuitRepository implements ICircuitRepository {
       return { ok: true, value: circuits };
     } catch (err: unknown) {
       console.error(err);
-      if (err instanceof ModelValidationError) {
-        return {
-          ok: false,
-          error: new CircuitRepositoryError("Failed to get circuits. Invalid model provided.", {
-            cause: err,
-          }),
-        };
+      switch (true) {
+        case err instanceof ModelValidationError:
+        case err instanceof DataCorruptedError: {
+          const dataIntegrityErrorCause = err;
+          return {
+            ok: false,
+            error: new DataIntegrityError("Circuit data corrupted.", { cause: dataIntegrityErrorCause }),
+          };
+        }
+        default: {
+          const unexpectedError = err instanceof UnexpectedError ? err : new UnexpectedError({ cause: err });
+          return { ok: false, error: unexpectedError };
+        }
       }
-
-      if (err instanceof CircuitRepositoryError) {
-        return { ok: false, error: err };
-      }
-
-      return {
-        ok: false,
-        error: new CircuitRepositoryError("Unknown error occurred while getting circuits.", {
-          cause: err,
-        }),
-      };
     }
   }
 
-  async getById(id: CircuitId): Promise<Result<Circuit, CircuitRepositoryError>> {
+  async getById(
+    id: CircuitId,
+  ): Promise<Result<Circuit, CircuitNotFoundError | InfraError | DataIntegrityError | UnexpectedError>> {
     try {
       const res = await this.localStorage.get();
       if (!res.ok) {
-        throw new CircuitRepositoryError("Failed to get circuit.", { cause: res.error });
+        throw res.error;
       }
 
       const rawCircuits = res.value;
       const rawCircuit = rawCircuits?.find((c) => c.id === id);
       if (rawCircuit === undefined) {
-        throw new CircuitRepositoryError(
-          `Failed to get circuit. Subject not found. You might specify a invalid Id. Id: ${id}`,
-        );
+        throw new CircuitNotFoundError(id);
       }
 
       const circuit = Circuit.from({
@@ -129,33 +131,37 @@ export class CircuitRepository implements ICircuitRepository {
       return { ok: true, value: circuit };
     } catch (err: unknown) {
       console.error(err);
-      if (err instanceof ModelValidationError) {
-        return {
-          ok: false,
-          error: new CircuitRepositoryError("Failed to get circuit. Invalid model provided.", {
-            cause: err,
-          }),
-        };
+      switch (true) {
+        case err instanceof ModelValidationError:
+        case err instanceof DataCorruptedError: {
+          const dataIntegrityErrorCause = err;
+          return {
+            ok: false,
+            error: new DataIntegrityError("Circuit data corrupted.", { cause: dataIntegrityErrorCause }),
+          };
+        }
+        case err instanceof CircuitNotFoundError: {
+          const circuitNotFoundError = err;
+          return { ok: false, error: circuitNotFoundError };
+        }
+        default: {
+          const unexpectedError = err instanceof UnexpectedError ? err : new UnexpectedError({ cause: err });
+          return { ok: false, error: unexpectedError };
+        }
       }
-
-      if (err instanceof CircuitRepositoryError) {
-        return { ok: false, error: err };
-      }
-
-      return {
-        ok: false,
-        error: new CircuitRepositoryError("Unknown error occurred while getting circuit.", {
-          cause: err,
-        }),
-      };
     }
   }
 
-  async save(method: "ADD" | "UPDATE", circuit: Circuit): Promise<Result<void, CircuitRepositoryError>> {
+  async save(
+    method: "ADD" | "UPDATE",
+    circuit: Circuit,
+  ): Promise<
+    Result<void, CircuitNotFoundError | InfraError | DataIntegrityError | InvalidSaveMethodError | UnexpectedError>
+  > {
     try {
       const get = await this.localStorage.get();
       if (!get.ok) {
-        throw new CircuitRepositoryError("Failed to save circuit. Couldn't get circuits.", { cause: get.error });
+        throw get.error;
       }
 
       const current = get.value ?? [];
@@ -163,92 +169,106 @@ export class CircuitRepository implements ICircuitRepository {
         case "ADD": {
           const save = await this.localStorage.save([...current, circuit]);
           if (!save.ok) {
-            throw new CircuitRepositoryError("Failed to add circuits.", {
-              cause: save.error,
-            });
+            throw save.error;
           }
 
-          return { ok: true, value: undefined } as const;
+          return { ok: true, value: undefined };
         }
         case "UPDATE": {
-          if (current.length === 0) {
-            throw new CircuitRepositoryError("Failed to update circuit. No circuits saved.");
-          }
-
           const isExist = current.some((c) => c.id === circuit.id);
           if (!isExist) {
-            throw new CircuitRepositoryError(
-              `Failed to update circuit. Subject not found. You might specify a invalid Id. Id: ${circuit.id}`,
-            );
+            throw new CircuitNotFoundError(circuit.id);
           }
 
           const updated = current.map((c) => (c.id === circuit.id ? circuit : c));
           const save = await this.localStorage.save(updated);
           if (!save.ok) {
-            throw new CircuitRepositoryError("Failed to update circuit.", {
-              cause: save.error,
-            });
+            throw save.error;
           }
 
-          return { ok: true, value: undefined } as const;
+          return { ok: true, value: undefined };
         }
         default: {
-          throw new CircuitRepositoryError("Invalid method was specified.");
+          throw new InvalidSaveMethodError(`Invalid save method. Received: '${method}', Required: "ADD" or "UPDATE"`);
         }
       }
     } catch (err: unknown) {
       console.error(err);
-      if (err instanceof CircuitRepositoryError) {
-        return { ok: false, error: err };
+      switch (true) {
+        case err instanceof ModelValidationError:
+        case err instanceof DataCorruptedError: {
+          const dataIntegrityErrorCause = err;
+          return {
+            ok: false,
+            error: new DataIntegrityError("Stored circuit data corrupted.", {
+              cause: dataIntegrityErrorCause,
+            }),
+          };
+        }
+        case err instanceof QuotaExceededError: {
+          const infraError = new InfraError("Failed to save.", { cause: err });
+          return { ok: false, error: infraError };
+        }
+        case err instanceof CircuitNotFoundError: {
+          const circuitNotFoundError = err;
+          return { ok: false, error: circuitNotFoundError };
+        }
+        case err instanceof InvalidSaveMethodError: {
+          const invalidSaveMethodError = err;
+          return { ok: false, error: invalidSaveMethodError };
+        }
+        default: {
+          const unexpectedError = err instanceof UnexpectedError ? err : new UnexpectedError({ cause: err });
+          return { ok: false, error: unexpectedError };
+        }
       }
-
-      return {
-        ok: false,
-        error: new CircuitRepositoryError(`Unknown error occurred while ${method}ing circuit.`, {
-          cause: err,
-        }),
-      };
     }
   }
 
-  async delete(id: CircuitId): Promise<Result<void, CircuitRepositoryError>> {
+  async delete(
+    id: CircuitId,
+  ): Promise<Result<void, CircuitNotFoundError | InfraError | DataIntegrityError | UnexpectedError>> {
     try {
       const get = await this.localStorage.get();
       if (!get.ok) {
-        throw new CircuitRepositoryError("Failed to delete circuit. Couldn't get circuits.", { cause: get.error });
+        throw get.error;
       }
 
       const current = get.value ?? [];
-      if (current.length === 0) {
-        throw new CircuitRepositoryError("Failed to delete circuit. No circuits saved.");
-      }
-
       const isExist = current.some((c) => c.id === id);
       if (!isExist) {
-        throw new CircuitRepositoryError(
-          `Failed to delete circuit. Subject not found. You might specify a invalid Id. Id: ${id}`,
-        );
+        throw new CircuitNotFoundError(id);
       }
 
       const updated = current.filter((c) => c.id !== id);
       const save = await this.localStorage.save(updated);
       if (!save.ok) {
-        throw new CircuitRepositoryError("Failed to save circuits.", { cause: save.error });
+        throw save.error;
       }
 
       return { ok: true, value: undefined };
     } catch (err: unknown) {
       console.error(err);
-      if (err instanceof CircuitRepositoryError) {
-        return { ok: false, error: err };
+      switch (true) {
+        case err instanceof ModelValidationError:
+        case err instanceof DataCorruptedError: {
+          const dataIntegrityErrorCause = err;
+          return {
+            ok: false,
+            error: new DataIntegrityError("Stored circuit data corrupted.", {
+              cause: dataIntegrityErrorCause,
+            }),
+          };
+        }
+        case err instanceof CircuitNotFoundError: {
+          const circuitNotFoundError = err;
+          return { ok: false, error: circuitNotFoundError };
+        }
+        default: {
+          const unexpectedError = err instanceof UnexpectedError ? err : new UnexpectedError({ cause: err });
+          return { ok: false, error: unexpectedError };
+        }
       }
-
-      return {
-        ok: false,
-        error: new CircuitRepositoryError("Unknown error occurred while deleting circuit.", {
-          cause: err,
-        }),
-      };
     }
   }
 }

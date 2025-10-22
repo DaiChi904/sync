@@ -1,10 +1,10 @@
 import { CircuitOverview } from "@/domain/model/entity/circuitOverview";
+import { DataIntegrityError } from "@/domain/model/infrastructure/dataIntegrityError";
+import { InfraError } from "@/domain/model/infrastructure/infraError";
+import type { ICircuitOverviewsQueryService } from "@/domain/model/infrastructure/queryService/ICircuitOverviewsQueryService";
+import type { ICircuitRepository } from "@/domain/model/infrastructure/repository/ICircuitRepository";
 import { ModelValidationError } from "@/domain/model/modelValidationError";
-import {
-  CircuitOverviewsQueryServiceError,
-  type ICircuitOverviewsQueryService,
-} from "@/domain/model/queryService/ICircuitOverviewsQueryService";
-import type { ICircuitRepository } from "@/domain/model/repository/ICircuitRepository";
+import { UnexpectedError } from "@/domain/model/unexpectedError";
 import type { Result } from "@/utils/result";
 
 interface CircuitOverviewsQueryServiceDependencies {
@@ -18,13 +18,11 @@ export class CircuitOverviewsQueryService implements ICircuitOverviewsQueryServi
     this.circuitRepository = circuitRepository;
   }
 
-  async getAll(): Promise<Result<Array<CircuitOverview>, CircuitOverviewsQueryServiceError>> {
+  async getAll(): Promise<Result<Array<CircuitOverview>, InfraError | DataIntegrityError | UnexpectedError>> {
     try {
       const res = await this.circuitRepository.getAll();
       if (!res.ok) {
-        throw new CircuitOverviewsQueryServiceError("Failed to get circuit overviews.", {
-          cause: res.error,
-        });
+        throw res.error;
       }
 
       const rawCircuits = res.value;
@@ -39,31 +37,28 @@ export class CircuitOverviewsQueryService implements ICircuitOverviewsQueryServi
           }),
         ) ?? [];
 
-      return { ok: true, value: circuitOverviews } as const;
+      return { ok: true, value: circuitOverviews };
     } catch (err: unknown) {
       console.error(err);
-      if (err instanceof ModelValidationError) {
-        return {
-          ok: false,
-          error: new CircuitOverviewsQueryServiceError(
-            "Failed to parse circuit data to gui data. Invalid model provided.",
-            {
-              cause: err,
-            },
-          ),
-        };
+      switch (true) {
+        case err instanceof ModelValidationError: {
+          const dataIntegrityError = new DataIntegrityError("Circuit data corrupted.", { cause: err });
+          return {
+            ok: false,
+            error: dataIntegrityError,
+          };
+        }
+        case err instanceof DataIntegrityError: {
+          return { ok: false, error: err };
+        }
+        case err instanceof InfraError: {
+          return { ok: false, error: err };
+        }
+        default: {
+          const unexpectedError = err instanceof UnexpectedError ? err : new UnexpectedError({ cause: err });
+          return { ok: false, error: unexpectedError };
+        }
       }
-
-      if (err instanceof CircuitOverviewsQueryServiceError) {
-        return { ok: false, error: err };
-      }
-
-      return {
-        ok: false,
-        error: new CircuitOverviewsQueryServiceError("Unknown error occurred while getting circuit overviews.", {
-          cause: err,
-        }),
-      };
     }
   }
 }

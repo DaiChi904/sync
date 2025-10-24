@@ -1,20 +1,14 @@
-import { NodeInformation } from "@/domain/model/entity/nodeInfomation.type";
-import {
-  CircuitNodeCreationError,
-  CircuitNodeEvalError,
-  CircuitNodeInitializeError,
-  type ICircuitNode,
-} from "@/domain/model/service/ICircuitNode";
+import { NodeInformation } from "@/domain/model/entity/nodeInfomation";
+import { ModelValidationError } from "@/domain/model/modelValidationError";
+import { CircuitNodeCreationError, CircuitNodeEvalError, type ICircuitNode } from "@/domain/model/service/ICircuitNode";
 import { UnexpectedError } from "@/domain/model/unexpectedError";
 import { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
-import { CircuitNodeInputId } from "@/domain/model/valueObject/circuitNodeInputId";
+import type { CircuitNodeInputId } from "@/domain/model/valueObject/circuitNodeInputId";
 import { CircuitNodeType } from "@/domain/model/valueObject/circuitNodeType";
-import { EvalHistory } from "@/domain/model/valueObject/evalHistory";
+import { EvalDelay } from "@/domain/model/valueObject/evalDelay";
 import { EvalResult } from "@/domain/model/valueObject/evalResult";
-import { ExecutionOrder } from "@/domain/model/valueObject/executionOrder";
+import type { ExecutionOrder } from "@/domain/model/valueObject/executionOrder";
 import type { InputRecord } from "@/domain/model/valueObject/inputRecord";
-import { Phase } from "@/domain/model/valueObject/phase";
-import { Tick } from "@/domain/model/valueObject/tick";
 import type { Result } from "@/utils/result";
 
 export abstract class CircuitNode implements ICircuitNode {
@@ -22,20 +16,27 @@ export abstract class CircuitNode implements ICircuitNode {
   protected readonly type: CircuitNodeType;
   protected readonly inputs: Array<CircuitNodeId>;
   protected readonly outputs: Array<CircuitNodeId>;
-  protected executionOrder: ExecutionOrder;
-  protected phase: Phase;
-  protected tick: Tick;
-  protected history: EvalHistory;
+  protected readonly executionOrder: ExecutionOrder;
+  protected lastOutput: EvalResult;
+  protected outputQueue: Array<EvalResult>;
+  protected delay: EvalDelay;
 
-  constructor(id: CircuitNodeId, type: CircuitNodeType, inputs: Array<CircuitNodeId>, outputs: Array<CircuitNodeId>) {
-    this.id = CircuitNodeId.from(id);
-    this.type = CircuitNodeType.from(type);
-    this.inputs = inputs.map(CircuitNodeId.from);
-    this.outputs = outputs.map(CircuitNodeId.from);
-    this.executionOrder = ExecutionOrder.from(NaN);
-    this.phase = Phase.from(NaN);
-    this.tick = Tick.from(NaN);
-    this.history = EvalHistory.from(new Map());
+  constructor(
+    id: CircuitNodeId,
+    type: CircuitNodeType,
+    inputs: Array<CircuitNodeId>,
+    outputs: Array<CircuitNodeId>,
+    executionOrder: ExecutionOrder,
+    delay: EvalDelay,
+  ) {
+    this.id = id;
+    this.type = type;
+    this.inputs = inputs;
+    this.outputs = outputs;
+    this.executionOrder = executionOrder;
+    this.lastOutput = EvalResult.from(false);
+    this.outputQueue = [];
+    this.delay = delay; // {n} tick
   }
 
   static from(
@@ -43,20 +44,22 @@ export abstract class CircuitNode implements ICircuitNode {
     type: CircuitNodeType,
     inputs: Array<CircuitNodeId>,
     outputs: Array<CircuitNodeId>,
+    executionOrder: ExecutionOrder,
+    delay: EvalDelay,
   ): Result<EntryNode | ExitNode | AndNode | OrNode | NotNode | JunctionNode, CircuitNodeCreationError> {
     switch (type) {
       case "ENTRY":
-        return { ok: true, value: new EntryNode(id, inputs, outputs) };
+        return { ok: true, value: new EntryNode(id, inputs, outputs, executionOrder, delay) };
       case "EXIT":
-        return { ok: true, value: new ExitNode(id, inputs, outputs) };
+        return { ok: true, value: new ExitNode(id, inputs, outputs, executionOrder, delay) };
       case "AND":
-        return { ok: true, value: new AndNode(id, inputs, outputs) };
+        return { ok: true, value: new AndNode(id, inputs, outputs, executionOrder, delay) };
       case "OR":
-        return { ok: true, value: new OrNode(id, inputs, outputs) };
+        return { ok: true, value: new OrNode(id, inputs, outputs, executionOrder, delay) };
       case "NOT":
-        return { ok: true, value: new NotNode(id, inputs, outputs) };
+        return { ok: true, value: new NotNode(id, inputs, outputs, executionOrder, delay) };
       case "JUNCTION":
-        return { ok: true, value: new JunctionNode(id, inputs, outputs) };
+        return { ok: true, value: new JunctionNode(id, inputs, outputs, executionOrder, delay) };
       default: {
         const err = new CircuitNodeCreationError(id, type);
         console.error(err);
@@ -68,95 +71,87 @@ export abstract class CircuitNode implements ICircuitNode {
     }
   }
 
-  setup(order: ExecutionOrder): Result<void, undefined> {
-    this.executionOrder = order;
-    this.phase = Phase.from(0);
-    this.tick = Tick.from(0);
-    this.history = EvalHistory.from(new Map([[this.phase, new Map()]]));
-    return { ok: true, value: undefined };
+  init(): void {
+    this.outputQueue = Array.from({ length: EvalDelay.unBrand(this.delay) }).fill(
+      EvalResult.from(false),
+    ) as Array<EvalResult>;
   }
 
-  init(): Result<void, CircuitNodeInitializeError | UnexpectedError> {
-    this.phase = Phase.from(1);
-    this.tick = Tick.from(0);
+  abstract eval(inputs: InputRecord): Result<EvalResult, CircuitNodeEvalError | UnexpectedError>;
 
-    try {
-      // biome-ignore lint/style/noNonNullAssertion: This is cared by the next if statement.
-      const initialHistory = this.history!.get(Phase.from(0));
-      if (!initialHistory) {
-        throw new CircuitNodeInitializeError(this.id, this.type);
-      }
-
-      this.history = EvalHistory.from(new Map([[Phase.from(0), initialHistory]]));
-
-      return { ok: true, value: undefined };
-    } catch (err: unknown) {
-      console.error(err);
-      switch (true) {
-        case err instanceof CircuitNodeInitializeError: {
-          const circuitNodeInitializeError = err;
-          return { ok: false, error: circuitNodeInitializeError };
-        }
-        default: {
-          const unexpectedError = new UnexpectedError({ cause: err });
-          return { ok: false, error: unexpectedError };
-        }
-      }
-    }
+  getInformation(): NodeInformation {
+    return NodeInformation.from({
+      id: this.id,
+      type: this.type,
+      inputs: this.inputs,
+      outputs: this.outputs,
+      executionOrder: this.executionOrder,
+      delay: this.delay,
+      lastOutput: this.lastOutput,
+      outputQueue: this.outputQueue,
+    });
   }
 
-  abstract eval(
-    inputs: InputRecord,
-    phase: Phase,
-    tick: Tick,
-  ): Result<EvalResult, CircuitNodeEvalError | UnexpectedError>;
-  abstract getInformation(): NodeInformation;
+  protected isValidInputRecord(inputRecord: InputRecord): boolean {
+    const inputIds = (Object.entries(inputRecord) as Array<[CircuitNodeInputId, EvalResult]>).map((value) =>
+      CircuitNodeId.from(value[0]),
+    );
 
-  protected saveOutput(phase: Phase, tick: Tick, output: EvalResult): void {
-    if (!this.history.has(phase)) {
-      this.history.set(phase, new Map());
+    const isInputAmountValid = this.type !== "ENTRY" ? inputIds.length === this.inputs.length : inputIds.length === 1;
+    const isSatisfiedInputIds =
+      this.type !== "ENTRY" ? inputIds.every((inputId) => this.inputs.includes(inputId)) : true;
+
+    return isInputAmountValid && isSatisfiedInputIds;
+  }
+
+  protected inputRecordToInputMap(inputRecord: InputRecord): Map<CircuitNodeId, EvalResult> {
+    const inputMap = new Map<CircuitNodeId, EvalResult>();
+    for (const [inputId, inputValue] of Object.entries(inputRecord)) {
+      inputMap.set(CircuitNodeId.from(inputId), inputValue);
     }
-    // biome-ignore lint/style/noNonNullAssertion: This is cared by the previous if statement.
-    this.history.get(phase)!.set(tick, output);
+    return inputMap;
   }
 }
 
-// --- EntryNode ---
 class EntryNode extends CircuitNode {
-  constructor(id: CircuitNodeId, inputs: Array<CircuitNodeId>, outputs: Array<CircuitNodeId>) {
-    super(id, CircuitNodeType.from("ENTRY"), inputs, outputs);
+  constructor(
+    id: CircuitNodeId,
+    inputs: Array<CircuitNodeId>,
+    outputs: Array<CircuitNodeId>,
+    executionOrder: ExecutionOrder,
+    delay: EvalDelay,
+  ) {
+    super(id, CircuitNodeType.from("ENTRY"), inputs, outputs, executionOrder, delay);
   }
 
-  eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult, CircuitNodeEvalError | UnexpectedError> {
+  eval(inputs: InputRecord): Result<EvalResult, CircuitNodeEvalError | UnexpectedError> {
     try {
-      if (this.outputs.length !== 1) {
-        throw new CircuitNodeEvalError(
-          `Failed to evaluate ENTRY node. ENTRY node ${this.id} must have exactly one output.`,
-          this.getInformation(),
-        );
+      const isValidInputRecord = this.isValidInputRecord(inputs);
+
+      if (!isValidInputRecord) {
+        throw new CircuitNodeEvalError("Invalid input record.", this.getInformation());
       }
 
-      this.phase = phase;
-      this.tick = tick;
-
-      const result = {
-        CircuitNodeOutputId: this.outputs[0],
-        output: inputs[CircuitNodeInputId.from(this.id)] ?? false,
-      };
-
-      if (!this.history.has(phase)) {
-        this.history.set(phase, new Map());
+      const inputMap = this.inputRecordToInputMap(inputs);
+      const result = inputMap.get(this.id);
+      if (result === undefined) {
+        throw new CircuitNodeEvalError("Failed to refer input.", this.getInformation());
       }
 
-      this.saveOutput(phase, tick, result.output);
+      const nextOutput = this.outputQueue.shift();
+      if (nextOutput === undefined) {
+        throw new CircuitNodeEvalError("Failed to get next output.", this.getInformation());
+      }
 
-      return { ok: true, value: result.output };
+      this.lastOutput = result;
+      this.outputQueue.push(result);
+
+      return { ok: true, value: nextOutput };
     } catch (err: unknown) {
       console.error(err);
       switch (true) {
         case err instanceof CircuitNodeEvalError: {
-          const circuitNodeEvalError = err;
-          return { ok: false, error: circuitNodeEvalError };
+          return { ok: false, error: err };
         }
         default: {
           const unexpectedError = new UnexpectedError({ cause: err });
@@ -165,57 +160,47 @@ class EntryNode extends CircuitNode {
       }
     }
   }
-
-  getInformation(): NodeInformation {
-    return NodeInformation.from({
-      id: this.id,
-      type: this.type,
-      inputs: this.inputs,
-      outputs: this.outputs,
-      executionOrder: this.executionOrder,
-      phase: this.phase,
-      tick: this.tick,
-      history: this.history,
-    });
-  }
 }
 
-// --- ExitNode ---
 class ExitNode extends CircuitNode {
-  constructor(id: CircuitNodeId, inputs: Array<CircuitNodeId>, outputs: Array<CircuitNodeId>) {
-    super(id, CircuitNodeType.from("EXIT"), inputs, outputs);
+  constructor(
+    id: CircuitNodeId,
+    inputs: Array<CircuitNodeId>,
+    outputs: Array<CircuitNodeId>,
+    executionOrder: ExecutionOrder,
+    delay: EvalDelay,
+  ) {
+    super(id, CircuitNodeType.from("EXIT"), inputs, outputs, executionOrder, delay);
   }
 
-  eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult, CircuitNodeEvalError | UnexpectedError> {
+  eval(inputs: InputRecord): Result<EvalResult, CircuitNodeEvalError | UnexpectedError> {
     try {
-      if (this.inputs.length !== 1 || this.outputs.length !== 0) {
-        throw new CircuitNodeEvalError(
-          `Failed to evaluate EXIT node. EXIT node "${this.id}" must have exactly one input.`,
-          this.getInformation(),
-        );
+      const isValidInputRecord = this.isValidInputRecord(inputs);
+
+      if (!isValidInputRecord) {
+        throw new CircuitNodeEvalError("Invalid input record.", this.getInformation());
       }
 
-      this.phase = phase;
-      this.tick = tick;
-
-      const result = {
-        CircuitNodeOutputId: this.id,
-        output: inputs[CircuitNodeInputId.from(this.inputs[0])] ?? false,
-      };
-
-      if (!this.history.has(phase)) {
-        this.history.set(phase, new Map());
+      const inputMap = this.inputRecordToInputMap(inputs);
+      const result = inputMap.get(this.inputs[0]);
+      if (result === undefined) {
+        throw new CircuitNodeEvalError("Failed to refer input.", this.getInformation());
       }
 
-      this.saveOutput(phase, tick, result.output);
+      const nextOutput = this.outputQueue.shift();
+      if (nextOutput === undefined) {
+        throw new CircuitNodeEvalError("Failed to get next output.", this.getInformation());
+      }
 
-      return { ok: true, value: result.output };
+      this.lastOutput = result;
+      this.outputQueue.push(result);
+
+      return { ok: true, value: nextOutput };
     } catch (err: unknown) {
       console.error(err);
       switch (true) {
         case err instanceof CircuitNodeEvalError: {
-          const circuitNodeEvalError = err;
-          return { ok: false, error: circuitNodeEvalError };
+          return { ok: false, error: err };
         }
         default: {
           const unexpectedError = new UnexpectedError({ cause: err });
@@ -223,57 +208,56 @@ class ExitNode extends CircuitNode {
         }
       }
     }
-  }
-
-  getInformation(): NodeInformation {
-    return NodeInformation.from({
-      id: this.id,
-      type: this.type,
-      inputs: this.inputs,
-      outputs: this.outputs,
-      executionOrder: this.executionOrder,
-      phase: this.phase,
-      tick: this.tick,
-      history: this.history,
-    });
   }
 }
 
-// --- AndNode ---
 class AndNode extends CircuitNode {
-  constructor(id: CircuitNodeId, inputs: Array<CircuitNodeId>, outputs: Array<CircuitNodeId>) {
-    super(id, CircuitNodeType.from("AND"), inputs, outputs);
+  constructor(
+    id: CircuitNodeId,
+    inputs: Array<CircuitNodeId>,
+    outputs: Array<CircuitNodeId>,
+    executionOrder: ExecutionOrder,
+    delay: EvalDelay,
+  ) {
+    super(id, CircuitNodeType.from("AND"), inputs, outputs, executionOrder, delay);
   }
 
-  eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult, CircuitNodeEvalError | UnexpectedError> {
+  eval(inputs: InputRecord): Result<EvalResult, CircuitNodeEvalError | UnexpectedError> {
     try {
-      if (this.inputs.length !== 2 || this.outputs.length !== 1) {
-        throw new CircuitNodeEvalError(
-          `Failed to evaluate AND node. AND node "${this.id}" must have exactly two inputs and one output.`,
-          this.getInformation(),
-        );
+      const isValidInputRecord = this.isValidInputRecord(inputs);
+
+      if (!isValidInputRecord) {
+        throw new CircuitNodeEvalError("Invalid input record.", this.getInformation());
       }
 
-      this.phase = phase;
-      this.tick = tick;
-
-      const a = inputs[CircuitNodeInputId.from(this.inputs[0])] ?? false;
-      const b = inputs[CircuitNodeInputId.from(this.inputs[1])] ?? false;
-      const result = { CircuitNodeOutputId: this.outputs[0], output: a && b };
-
-      if (!this.history.has(phase)) {
-        this.history.set(phase, new Map());
+      const inputMap = this.inputRecordToInputMap(inputs);
+      const result = EvalResult.from(
+        this.inputs.map((inputId) => inputMap.get(inputId)).every((input) => input === true),
+      );
+      if (result === undefined) {
+        throw new CircuitNodeEvalError("Failed to refer input.", this.getInformation());
       }
 
-      this.saveOutput(phase, tick, result.output);
+      const nextOutput = this.outputQueue.shift();
+      if (nextOutput === undefined) {
+        throw new CircuitNodeEvalError("Failed to get next output.", this.getInformation());
+      }
 
-      return { ok: true, value: result.output };
+      this.lastOutput = result;
+      this.outputQueue.push(result);
+
+      return { ok: true, value: nextOutput };
     } catch (err: unknown) {
       console.error(err);
       switch (true) {
-        case err instanceof CircuitNodeEvalError: {
-          const circuitNodeEvalError = err;
+        case err instanceof ModelValidationError: {
+          const circuitNodeEvalError = new CircuitNodeEvalError("Invalid model provided.", this.getInformation(), {
+            cause: err,
+          });
           return { ok: false, error: circuitNodeEvalError };
+        }
+        case err instanceof CircuitNodeEvalError: {
+          return { ok: false, error: err };
         }
         default: {
           const unexpectedError = new UnexpectedError({ cause: err });
@@ -281,56 +265,57 @@ class AndNode extends CircuitNode {
         }
       }
     }
-  }
-
-  getInformation(): NodeInformation {
-    return NodeInformation.from({
-      id: this.id,
-      type: this.type,
-      inputs: this.inputs,
-      outputs: this.outputs,
-      executionOrder: this.executionOrder,
-      phase: this.phase,
-      tick: this.tick,
-      history: this.history,
-    });
   }
 }
 
 // --- OrNode ---
 class OrNode extends CircuitNode {
-  constructor(id: CircuitNodeId, inputs: Array<CircuitNodeId>, outputs: Array<CircuitNodeId>) {
-    super(id, CircuitNodeType.from("OR"), inputs, outputs);
+  constructor(
+    id: CircuitNodeId,
+    inputs: Array<CircuitNodeId>,
+    outputs: Array<CircuitNodeId>,
+    executionOrder: ExecutionOrder,
+    delay: EvalDelay,
+  ) {
+    super(id, CircuitNodeType.from("OR"), inputs, outputs, executionOrder, delay);
   }
 
-  eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult, CircuitNodeEvalError | UnexpectedError> {
+  eval(inputs: InputRecord): Result<EvalResult, CircuitNodeEvalError | UnexpectedError> {
     try {
-      if (this.inputs.length !== 2 || this.outputs.length !== 1) {
-        throw new CircuitNodeEvalError(
-          `Failed to evaluate OR node. OR node "${this.id}" must have exactly two inputs and one output.`,
-          this.getInformation(),
-        );
+      const isValidInputRecord = this.isValidInputRecord(inputs);
+
+      if (!isValidInputRecord) {
+        throw new CircuitNodeEvalError("Invalid input record.", this.getInformation());
       }
 
-      this.phase = phase;
-      this.tick = tick;
-
-      const a = inputs[CircuitNodeInputId.from(this.inputs[0])] ?? false;
-      const b = inputs[CircuitNodeInputId.from(this.inputs[1])] ?? false;
-      const result = { CircuitNodeOutputId: this.outputs[0], output: a || b };
-
-      if (!this.history.has(phase)) {
-        this.history.set(phase, new Map());
+      const inputMap = this.inputRecordToInputMap(inputs);
+      const result = EvalResult.from(
+        this.inputs.map((inputId) => inputMap.get(inputId)).some((input) => input === true),
+      );
+      if (result === undefined) {
+        throw new CircuitNodeEvalError("Failed to refer input.", this.getInformation());
       }
-      this.saveOutput(phase, tick, result.output);
 
-      return { ok: true, value: result.output };
+      const nextOutput = this.outputQueue.shift();
+      if (nextOutput === undefined) {
+        throw new CircuitNodeEvalError("Failed to get next output.", this.getInformation());
+      }
+
+      this.lastOutput = result;
+      this.outputQueue.push(result);
+
+      return { ok: true, value: nextOutput };
     } catch (err: unknown) {
       console.error(err);
       switch (true) {
-        case err instanceof CircuitNodeEvalError: {
-          const circuitNodeEvalError = err;
+        case err instanceof ModelValidationError: {
+          const circuitNodeEvalError = new CircuitNodeEvalError("Invalid model provided.", this.getInformation(), {
+            cause: err,
+          });
           return { ok: false, error: circuitNodeEvalError };
+        }
+        case err instanceof CircuitNodeEvalError: {
+          return { ok: false, error: err };
         }
         default: {
           const unexpectedError = new UnexpectedError({ cause: err });
@@ -338,56 +323,55 @@ class OrNode extends CircuitNode {
         }
       }
     }
-  }
-
-  getInformation(): NodeInformation {
-    return NodeInformation.from({
-      id: this.id,
-      type: this.type,
-      inputs: this.inputs,
-      outputs: this.outputs,
-      executionOrder: this.executionOrder,
-      phase: this.phase,
-      tick: this.tick,
-      history: this.history,
-    });
   }
 }
 
 // --- NotNode ---
 class NotNode extends CircuitNode {
-  constructor(id: CircuitNodeId, inputs: Array<CircuitNodeId>, outputs: Array<CircuitNodeId>) {
-    super(id, CircuitNodeType.from("NOT"), inputs, outputs);
+  constructor(
+    id: CircuitNodeId,
+    inputs: Array<CircuitNodeId>,
+    outputs: Array<CircuitNodeId>,
+    executionOrder: ExecutionOrder,
+    delay: EvalDelay,
+  ) {
+    super(id, CircuitNodeType.from("NOT"), inputs, outputs, executionOrder, delay);
   }
 
-  eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult, CircuitNodeEvalError | UnexpectedError> {
+  eval(inputs: InputRecord): Result<EvalResult, CircuitNodeEvalError | UnexpectedError> {
     try {
-      if (this.inputs.length !== 1 || this.outputs.length !== 1) {
-        throw new CircuitNodeEvalError(
-          `Failed to evaluate NOT node. NOT node "${this.id}" must have exactly one input and one output.`,
-          this.getInformation(),
-        );
+      const isValidInputRecord = this.isValidInputRecord(inputs);
+
+      if (!isValidInputRecord) {
+        throw new CircuitNodeEvalError("Invalid input record.", this.getInformation());
       }
 
-      this.phase = phase;
-      this.tick = tick;
-
-      const input = inputs[CircuitNodeInputId.from(this.inputs[0])] ?? false;
-      const result = { CircuitNodeOutputId: this.outputs[0], output: EvalResult.from(!input) };
-
-      if (!this.history.has(phase)) {
-        this.history.set(phase, new Map());
+      const inputMap = this.inputRecordToInputMap(inputs);
+      const result = inputMap.get(this.inputs[0]) === false ? EvalResult.from(true) : EvalResult.from(false);
+      if (result === undefined) {
+        throw new CircuitNodeEvalError("Failed to refer input.", this.getInformation());
       }
 
-      this.saveOutput(phase, tick, result.output);
+      const nextOutput = this.outputQueue.shift();
+      if (nextOutput === undefined) {
+        throw new CircuitNodeEvalError("Failed to get next output", this.getInformation());
+      }
 
-      return { ok: true, value: result.output };
+      this.lastOutput = result;
+      this.outputQueue.push(result);
+
+      return { ok: true, value: nextOutput };
     } catch (err: unknown) {
       console.error(err);
       switch (true) {
-        case err instanceof CircuitNodeEvalError: {
-          const circuitNodeEvalError = err;
+        case err instanceof ModelValidationError: {
+          const circuitNodeEvalError = new CircuitNodeEvalError("Invalid model provided.", this.getInformation(), {
+            cause: err,
+          });
           return { ok: false, error: circuitNodeEvalError };
+        }
+        case err instanceof CircuitNodeEvalError: {
+          return { ok: false, error: err };
         }
         default: {
           const unexpectedError = new UnexpectedError({ cause: err });
@@ -395,62 +379,49 @@ class NotNode extends CircuitNode {
         }
       }
     }
-  }
-
-  getInformation(): NodeInformation {
-    return NodeInformation.from({
-      id: this.id,
-      type: this.type,
-      inputs: this.inputs,
-      outputs: this.outputs,
-      executionOrder: this.executionOrder,
-      phase: this.phase,
-      tick: this.tick,
-      history: this.history,
-    });
   }
 }
 
 // --- JunctionNode ---
 class JunctionNode extends CircuitNode {
-  constructor(id: CircuitNodeId, inputs: Array<CircuitNodeId>, outputs: Array<CircuitNodeId>) {
-    super(id, CircuitNodeType.from("JUNCTION"), inputs, outputs);
+  constructor(
+    id: CircuitNodeId,
+    inputs: Array<CircuitNodeId>,
+    outputs: Array<CircuitNodeId>,
+    executionOrder: ExecutionOrder,
+    delay: EvalDelay,
+  ) {
+    super(id, CircuitNodeType.from("JUNCTION"), inputs, outputs, executionOrder, delay);
   }
 
-  eval(inputs: InputRecord, phase: Phase, tick: Tick): Result<EvalResult, CircuitNodeEvalError | UnexpectedError> {
+  eval(inputs: InputRecord): Result<EvalResult, CircuitNodeEvalError | UnexpectedError> {
     try {
-      if (this.inputs.length !== 1 || this.outputs.length < 1) {
-        throw new CircuitNodeEvalError(
-          `Failed to evaluate Junction node. JUNCTION node "${this.id}" must have one input and at least one output.`,
-          this.getInformation(),
-        );
+      const isValidInputRecord = this.isValidInputRecord(inputs);
+
+      if (!isValidInputRecord) {
+        throw new CircuitNodeEvalError("Invalid input record.", this.getInformation());
       }
 
-      this.phase = phase;
-      this.tick = tick;
-
-      const output = inputs[CircuitNodeInputId.from(this.inputs[0])] ?? false;
-      const result = this.outputs.map((CircuitNodeOutputId) => ({
-        CircuitNodeOutputId: CircuitNodeOutputId,
-        output: output,
-      }));
-
-      if (!this.history.has(phase)) {
-        this.history.set(phase, new Map());
+      const inputMap = this.inputRecordToInputMap(inputs);
+      const result = inputMap.get(this.inputs[0]);
+      if (result === undefined) {
+        throw new CircuitNodeEvalError("Failed to refer input.", this.getInformation());
       }
 
-      result.forEach((result) => {
-        this.saveOutput(phase, tick, result.output);
-      });
+      const nextOutput = this.outputQueue.shift();
+      if (nextOutput === undefined) {
+        throw new CircuitNodeEvalError("Failed to get next output.", this.getInformation());
+      }
 
-      // As all JUNCTION outputs are identical, it is allowed to return one of the multiple outputs.
-      return { ok: true, value: result[0].output };
+      this.lastOutput = result;
+      this.outputQueue.push(result);
+
+      return { ok: true, value: nextOutput };
     } catch (err: unknown) {
       console.error(err);
       switch (true) {
         case err instanceof CircuitNodeEvalError: {
-          const circuitNodeEvalError = err;
-          return { ok: false, error: circuitNodeEvalError };
+          return { ok: false, error: err };
         }
         default: {
           const unexpectedError = new UnexpectedError({ cause: err });
@@ -458,18 +429,5 @@ class JunctionNode extends CircuitNode {
         }
       }
     }
-  }
-
-  getInformation(): NodeInformation {
-    return NodeInformation.from({
-      id: this.id,
-      type: this.type,
-      inputs: this.inputs,
-      outputs: this.outputs,
-      executionOrder: this.executionOrder,
-      phase: this.phase,
-      tick: this.tick,
-      history: this.history,
-    });
   }
 }

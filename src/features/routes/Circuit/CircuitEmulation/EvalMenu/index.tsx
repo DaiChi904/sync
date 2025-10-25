@@ -2,32 +2,36 @@ import Box from "@/components/atoms/Box";
 import Button from "@/components/atoms/buttons/Button";
 import SecondaryButton from "@/components/atoms/buttons/SecondaryButton";
 import Flex from "@/components/atoms/Flex";
+import SecondaryInput from "@/components/atoms/input/SecondaryInput";
 import Typography from "@/components/atoms/Typography";
 import { Table, TableCaption, TableCell, TableRow } from "@/components/atoms/table";
+import type { ICircuitEmulationPageHandler } from "@/domain/model/handler/ICircuitEmulationPageHandler";
 import { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
+import { EvalDuration } from "@/domain/model/valueObject/evalDuration";
 import { EvalResult } from "@/domain/model/valueObject/evalResult";
 import type { InputRecord } from "@/domain/model/valueObject/inputRecord";
-import type { Phase } from "@/domain/model/valueObject/phase";
+import type { Tick } from "@/domain/model/valueObject/tick";
 
 interface EvalMenuProps {
-  error: {
-    failedToSetupEmulatorServiceError: boolean;
-    failedToEvalCircuitError: boolean;
-  };
-  currentPhase: Phase;
+  error: ICircuitEmulationPageHandler["error"];
+  currentTick: Tick;
+  evalDuration: EvalDuration;
   entryInputs: InputRecord;
   outputs: Record<CircuitNodeId, EvalResult>;
   updateEntryInputs: (nodeId: CircuitNodeId, value: EvalResult) => void;
   evalCircuit: () => void;
+  changeEvalDuration: (duration: EvalDuration) => void;
 }
 
 export default function EvalMenu({
   error,
-  currentPhase,
+  currentTick,
+  evalDuration,
   entryInputs,
   outputs,
   updateEntryInputs,
   evalCircuit,
+  changeEvalDuration,
 }: EvalMenuProps) {
   return (
     <Flex direction="column" grow={1} style={{ padding: 50 }}>
@@ -40,9 +44,9 @@ export default function EvalMenu({
       >
         <Typography size="mediumPlus">{`Eval >>>`}</Typography>
       </SecondaryButton>
-      {error.failedToSetupEmulatorServiceError && (
+      {error.emulationEnvironmentCreationError && (
         <Typography size="medium" style={{ color: "red", marginTop: 10 }}>
-          Failed to setup the circuit emulator service.
+          Creation emulation environment failed.
         </Typography>
       )}
       {error.failedToEvalCircuitError && (
@@ -51,7 +55,17 @@ export default function EvalMenu({
         </Typography>
       )}
 
-      <Typography size="mediumPlus">Current Phase: {currentPhase}</Typography>
+      <Typography size="mediumPlus">Current Tick: {currentTick}</Typography>
+
+      <SecondaryInput
+        variant="outlined"
+        type="number"
+        value={evalDuration}
+        onChange={(ev) => {
+          const value = Math.max(1, Math.min(1000, Number(ev.target.value)));
+          changeEvalDuration(EvalDuration.from(value));
+        }}
+      />
 
       <Table style={{ width: "400px" }}>
         <TableCaption>

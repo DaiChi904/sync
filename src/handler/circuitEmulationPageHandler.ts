@@ -1,36 +1,38 @@
 import { useCallback, useEffect, useState } from "react";
+import type { Circuit } from "@/domain/model/aggregate/circuit";
 import type { CircuitGuiData } from "@/domain/model/entity/circuitGuiData";
-import { CircuitOverview } from "@/domain/model/entity/circuitOverview";
 import {
   type CircuitEmulationPageErrorModel,
-  CircuitEmulationPageHandlerError,
   type ICircuitEmulationPageHandler,
   initialCircuitEmulationPageError,
 } from "@/domain/model/handler/ICircuitEmulationPageHandler";
-import type { ICircuitEmulatorService } from "@/domain/model/service/ICircuitEmulatorService";
-import type { IGenerateCircuitEmulatorServiceClientUsecase } from "@/domain/model/usecase/IGenerateCircuitEmulatorServiceClientUsecase";
+import type {
+  ICreateEmulationSessionUsecase,
+  IEmulationSession,
+} from "@/domain/model/usecase/ICreateEmulationSessionUsecase";
 import type { IGetCircuitDetailUsecase } from "@/domain/model/usecase/IGetCircuitDetailUsecase";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
-import { CircuitNodeInputId } from "@/domain/model/valueObject/circuitNodeInputId";
-import { CircuitNodeType } from "@/domain/model/valueObject/circuitNodeType";
+import { EvalDelay } from "@/domain/model/valueObject/evalDelay";
+import { EvalDuration } from "@/domain/model/valueObject/evalDuration";
 import { EvalResult } from "@/domain/model/valueObject/evalResult";
 import { InputRecord } from "@/domain/model/valueObject/inputRecord";
-import { Phase } from "@/domain/model/valueObject/phase";
+import { OutputRecord } from "@/domain/model/valueObject/outputRecord";
+import { Tick } from "@/domain/model/valueObject/tick";
 import type { CircuitParserService } from "@/domain/service/circuitParserService";
 import { usePartialState } from "@/hooks/partialState";
 
 interface CircuitEmulationPageHandlerDependencies {
   query: CircuitId;
   getCircuitDetailUsecase: IGetCircuitDetailUsecase;
-  generateCircuitEmulatorServiceClientUsecase: IGenerateCircuitEmulatorServiceClientUsecase;
+  createEmulationSessionUsecase: ICreateEmulationSessionUsecase;
   circuitParserUsecase: CircuitParserService;
 }
 
 export const useCircuitEmulationPageHandler = ({
   query,
   getCircuitDetailUsecase,
-  generateCircuitEmulatorServiceClientUsecase,
+  createEmulationSessionUsecase,
   circuitParserUsecase,
 }: CircuitEmulationPageHandlerDependencies): ICircuitEmulationPageHandler => {
   const [error, setError] = usePartialState<CircuitEmulationPageErrorModel>(initialCircuitEmulationPageError);
@@ -39,163 +41,81 @@ export const useCircuitEmulationPageHandler = ({
     activityBarMenu: { open: "evalMenu" },
   });
 
-  const [overview, setOverview] = useState<CircuitOverview | undefined>(undefined);
+  const [circuit, setCircuit] = useState<Circuit | undefined>(undefined);
   const [guiData, setGuiData] = useState<CircuitGuiData | undefined>(undefined);
-  const [availableNodeIds, setAvailableNodeIds] = useState<Array<CircuitNodeId> | undefined>(undefined);
-  const [client, setClient] = useState<ICircuitEmulatorService | undefined>(undefined);
+  const [session, setSession] = useState<IEmulationSession | undefined>(undefined);
 
-  const [currentPhase, setCurrentPhase] = useState<Phase>(Phase.from(0));
+  const [currentTick, setCurrentTick] = useState<Tick>(Tick.from(0));
+  const [evalDuration, setEvalDuration] = useState<EvalDuration>(EvalDuration.from(10));
   const [entryInputs, setEntryInputs] = useState<InputRecord>(InputRecord.from({}));
-  const [outputs, setOutputs] = useState<Record<CircuitNodeId, EvalResult>>({});
+  const [outputs, setOutputs] = useState<OutputRecord>(OutputRecord.from({}));
 
   const fetch = useCallback(async (): Promise<void> => {
-    const circuitDetail = await getCircuitDetailUsecase.getById(query);
-    if (!circuitDetail.ok) {
-      const err = new CircuitEmulationPageHandlerError("Failed to get circuit detail.", {
-        cause: circuitDetail.error,
-      });
-      console.error(err);
-
-      setError("failedToGetCircuitDetailError", true);
-      setError("failedToGenGuiCircuitDataError", true);
-      setError("failedToSetupEmulatorServiceError", true);
-      return;
-    }
-
-    setOverview(
-      CircuitOverview.from({
-        id: circuitDetail.value.id,
-        title: circuitDetail.value.title,
-        description: circuitDetail.value.description,
-        createdAt: circuitDetail.value.createdAt,
-        updatedAt: circuitDetail.value.updatedAt,
-      }),
-    );
-
-    const circuitGuiData = circuitParserUsecase.parseToGuiData(circuitDetail.value.circuitData);
-    if (!circuitGuiData.ok) {
-      const err = new CircuitEmulationPageHandlerError("Failed to parse circuit data to gui data.", {
-        cause: circuitGuiData.error,
-      });
-      console.error(err);
-
-      setError("failedToGenGuiCircuitDataError", true);
-      setError("failedToSetupEmulatorServiceError", true);
-      return;
-    }
-
-    setGuiData(circuitGuiData.value);
-
-    const circuitGraphData = circuitParserUsecase.parseToGraphData(circuitDetail.value.circuitData);
-    if (!circuitGraphData.ok) {
-      const err = new CircuitEmulationPageHandlerError("Failed to parse circuit data to graph data.", {
-        cause: circuitGraphData.error,
-      });
-      console.error(err);
-
-      setError("failedToSetupEmulatorServiceError", true);
-      return;
-    }
-
-    const circuitEmulatorService = generateCircuitEmulatorServiceClientUsecase.generate(circuitGraphData.value);
-    if (!circuitEmulatorService.ok) {
-      const err = new CircuitEmulationPageHandlerError("Failed to generate circuit emulator service.", {
-        cause: circuitEmulatorService.error,
-      });
-      console.error(err);
-
-      setError("failedToSetupEmulatorServiceError", true);
-      return;
-    }
-
-    setAvailableNodeIds(circuitGraphData.value.map((node) => node.id));
-    setClient(circuitEmulatorService.value);
-  }, [query, getCircuitDetailUsecase, circuitParserUsecase, generateCircuitEmulatorServiceClientUsecase, setError]);
-
-  const setupCircuitEmulatorServiceClient = useCallback((): void => {
-    if (!client) {
-      const err = new CircuitEmulationPageHandlerError(
-        "Failed to setup emulator service. EmulatorService is not defined.",
-      );
-      console.error(err);
-
-      setError("failedToSetupEmulatorServiceError", true);
-      return;
-    }
-
-    const res = client.setup();
+    const res = await getCircuitDetailUsecase.getById(query);
     if (!res.ok) {
-      const err = new CircuitEmulationPageHandlerError("Failed to setup emulator service.", {
-        cause: res.error,
-      });
-      console.error(err);
-
-      setError("failedToSetupEmulatorServiceError", true);
+      console.error(res.error);
+      setError("emulationEnvironmentCreationError", true);
       return;
     }
-  }, [client, setError]);
+
+    setCircuit(res.value);
+  }, [query, getCircuitDetailUsecase, setError]);
+
+  const createGuiData = useCallback((): void => {
+    if (!circuit) {
+      console.error("No circuit found.");
+      return;
+    }
+
+    const gui = circuitParserUsecase.parseToGuiData(circuit.circuitData);
+    if (!gui.ok) {
+      console.error(gui.error);
+      setError("emulationEnvironmentCreationError", true);
+      return;
+    }
+    setGuiData(gui.value);
+  }, [circuit, circuitParserUsecase, setError]);
+
+  const createNewSession = useCallback(
+    (config: { evalDelay: EvalDelay }) => {
+      if (!circuit) {
+        console.error("No circuit found.");
+        return;
+      }
+
+      const graph = circuitParserUsecase.parseToGraphData(circuit.circuitData);
+      if (!graph.ok) {
+        console.error(graph.error);
+        setError("emulationEnvironmentCreationError", true);
+        return;
+      }
+
+      const session = createEmulationSessionUsecase.createSession(graph.value, config);
+      if (!session.ok) {
+        console.error(session.error);
+        setError("emulationEnvironmentCreationError", true);
+        return;
+      }
+
+      setSession(session.value);
+    },
+    [circuit, createEmulationSessionUsecase, circuitParserUsecase, setError],
+  );
 
   const registInputNodes = useCallback((): void => {
-    // In available states, using guiData is suitable for efficient.
-    if (!guiData) {
-      const err = new CircuitEmulationPageHandlerError("Failed to regist input nodes. GuiData is not defined.");
-      console.error(err);
-
-      setError("failedToSetupEmulatorServiceError", true);
+    if (!session) {
+      console.error("No session found.");
       return;
     }
 
-    const entryNodes = guiData.nodes.filter((node) => node.type === CircuitNodeType.from("ENTRY"));
+    const entryNodes = session.getEntryInputs();
     const inputRecord = InputRecord.from({});
-
     entryNodes.forEach((node) => {
-      inputRecord[CircuitNodeInputId.from(node.id)] = EvalResult.from(false);
+      inputRecord[node] = EvalResult.from(false);
     });
 
     setEntryInputs(inputRecord);
-  }, [guiData, setError]);
-
-  const registOutputs = useCallback((): void => {
-    try {
-      if (!client) {
-        throw new CircuitEmulationPageHandlerError("Failed to regist outputs. EmulatorService is not defined.");
-      }
-      if (!availableNodeIds) {
-        throw new CircuitEmulationPageHandlerError("Failed to regist outputs. AvailableNodeIds is not defined.");
-      }
-
-      const outputRecord: Record<CircuitNodeId, EvalResult> = {};
-      availableNodeIds.forEach((nodeId) => {
-        const res = client.getInfomationById(nodeId);
-        if (!res.ok) {
-          throw new CircuitEmulationPageHandlerError(
-            `Failed to regist outputs. Couldn't to get information. id: ${nodeId}`,
-            {
-              cause: res.error,
-            },
-          );
-        }
-
-        const source = res.value.history.get(currentPhase)?.entries();
-        if (!source) {
-          throw new CircuitEmulationPageHandlerError(
-            "Failed to regist outputs. No history found for the current phase",
-          );
-        }
-        const output = Array.from(source).at(-1);
-        if (!output) {
-          throw new CircuitEmulationPageHandlerError("Failed to regist outputs. No output found for the current phase");
-        }
-
-        outputRecord[nodeId] = EvalResult.from(output[1]);
-      });
-
-      setOutputs(outputRecord);
-    } catch (err: unknown) {
-      console.error(err);
-      setError("failedToEvalCircuitError", true);
-    }
-  }, [client, availableNodeIds, currentPhase, setError]);
+  }, [session]);
 
   const updateEntryInputs = useCallback((nodeId: CircuitNodeId, value: EvalResult): void => {
     setEntryInputs((prev) => ({
@@ -204,30 +124,41 @@ export const useCircuitEmulationPageHandler = ({
     }));
   }, []);
 
+  const initOutputs = useCallback((): void => {
+    if (!session) {
+      console.error("No session found.");
+      return;
+    }
+
+    const initialOutputs = session.getOutputsByTick(Tick.from(0));
+    if (!initialOutputs) {
+      console.error("No initial outputs found.");
+      return;
+    }
+
+    setOutputs(initialOutputs);
+  }, [session]);
+
   const evalCircuit = useCallback((): void => {
-    if (!client) {
-      const err = new CircuitEmulationPageHandlerError("Failed to eval circuit. EmulatorService is not defined.");
-      console.error(err);
-
-      setError("failedToEvalCircuitError", true);
+    if (!session) {
+      console.error("No session found.");
       return;
     }
 
-    setCurrentPhase((prev) => Phase.from(prev + 1));
-
-    const res = client.eval(entryInputs, currentPhase);
+    const res = session.eval(entryInputs, evalDuration);
     if (!res.ok) {
-      const err = new CircuitEmulationPageHandlerError("Failed to eval circuit. EmulatorService is not defined.", {
-        cause: res.error,
-      });
-      console.error(err);
-
+      console.log(res.error);
       setError("failedToEvalCircuitError", true);
       return;
     }
 
-    registOutputs();
-  }, [client, registOutputs, setError, entryInputs, currentPhase]);
+    setOutputs(res.value.output);
+    setCurrentTick(res.value.tick.to);
+  }, [entryInputs, evalDuration, session, setError]);
+
+  const changeEvalDuration = useCallback((duration: EvalDuration): void => {
+    setEvalDuration(duration);
+  }, []);
 
   const openToolBarMenu = useCallback(
     (kind: "file" | "view" | "goTo" | "help") => {
@@ -251,25 +182,33 @@ export const useCircuitEmulationPageHandler = ({
     fetch();
   }, [fetch]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: With all dependencies, it causes unnecessary executions and induce cretical issue.
   useEffect(() => {
-    if (client) {
-      setupCircuitEmulatorServiceClient();
-      registInputNodes();
-      registOutputs();
+    if (circuit) {
+      createGuiData();
+      createNewSession({ evalDelay: EvalDelay.from(10) });
     }
-  }, [client]);
+  }, [circuit, createGuiData, createNewSession]);
+
+  useEffect(() => {
+    if (session) {
+      session.init();
+      registInputNodes();
+      initOutputs();
+    }
+  }, [session, registInputNodes, initOutputs]);
 
   return {
     error,
     uiState,
-    overview,
+    circuit,
     guiData,
-    currentPhase,
+    currentTick,
+    evalDuration,
     entryInputs,
     outputs,
     updateEntryInputs,
     evalCircuit,
+    changeEvalDuration,
     openToolBarMenu,
     closeToolBarMenu,
     changeActivityBarMenu,

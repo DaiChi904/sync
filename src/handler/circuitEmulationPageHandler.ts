@@ -185,7 +185,7 @@ export const useCircuitEmulationPageHandler = ({
   useEffect(() => {
     if (circuit) {
       createGuiData();
-      createNewSession({ evalDelay: EvalDelay.from(10) });
+      createNewSession({ evalDelay: EvalDelay.from(1) });
     }
   }, [circuit, createGuiData, createNewSession]);
 

@@ -55,7 +55,7 @@ export class EmulationOrganizer implements IEmulationOrganizer {
     let previousOutputRecord: OutputRecord | null = null;
     let consecutiveStableTicks = 0;
     const stabilityThreshold = maxDelay + 1;
-    for (let i = 0; i < iterationLimit; i++) {
+    for (let iter = 0; iter < iterationLimit; iter++) {
       const res = this.circuitEmulatorService.eval(inputRecord);
       if (!res.ok) {
         console.error(res.error);
@@ -69,12 +69,21 @@ export class EmulationOrganizer implements IEmulationOrganizer {
 
       const currentOutputRecord: OutputRecord = res.value;
 
-      if (previousOutputRecord && JSON.stringify(previousOutputRecord) === JSON.stringify(currentOutputRecord)) {
-        consecutiveStableTicks++;
-      } else {
+      // In case of first iteration or all previous output record and all current output record is not identical.
+      if (!previousOutputRecord || JSON.stringify(previousOutputRecord) === JSON.stringify(currentOutputRecord)) {
         consecutiveStableTicks = 0;
       }
+      // In case of all previous output record and all current output record is identical.
+      if (previousOutputRecord && JSON.stringify(previousOutputRecord) === JSON.stringify(currentOutputRecord)) {
+        consecutiveStableTicks++;
+      }
+      // In case of the output remains stable for a specified stabilityThreshold of ticks (It is considered the circuit to be in a steady state).
       if (consecutiveStableTicks >= stabilityThreshold) {
+        this.history.set(this.currentTick, currentOutputRecord);
+        break;
+      }
+      // In case of the count of iteration is exceeded iteration limit.
+      if (iter === iterationLimit - 1) {
         this.history.set(this.currentTick, currentOutputRecord);
         break;
       }

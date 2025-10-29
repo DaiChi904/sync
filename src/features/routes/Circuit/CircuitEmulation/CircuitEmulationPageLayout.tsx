@@ -14,24 +14,26 @@ export default function CircuitEmulationPageLayout() {
   const {
     error,
     uiState,
-    overview,
+    circuit,
     guiData,
-    currentPhase,
+    currentTick,
+    evalDuration,
     entryInputs,
     outputs,
     updateEntryInputs,
     evalCircuit,
+    changeEvalDuration,
     openToolBarMenu,
     closeToolBarMenu,
     changeActivityBarMenu,
   } = useCircuitEmulationPageHandlerContext();
 
-  const isInCriticalError = error.failedToGetCircuitDetailError || error.failedToGenGuiCircuitDataError;
+  const isInCriticalError = error.emulationEnvironmentCreationError;
 
   const toolBarOptions: ComponentProps<typeof BaseCircuitPageLayout>["toolBarOptions"] = [
     {
       label: "File",
-      menuOptions: [{ label: "Close Emulation Page", kind: "link", href: `/circuit/${overview?.id}` }],
+      menuOptions: [{ label: "Close Emulation Page", kind: "link", href: `/circuit/${circuit?.id}` }],
       isExpanded: uiState.toolBarMenu.open === "file",
       onClickExpand: () => openToolBarMenu("file"),
       onClickClose: () => closeToolBarMenu(),
@@ -46,8 +48,8 @@ export default function CircuitEmulationPageLayout() {
     {
       label: "Go to",
       menuOptions: [
-        { label: "View", kind: "link", href: `/circuit/${overview?.id}` },
-        { label: "Edit", kind: "link", href: `/circuit/${overview?.id}/edit` },
+        { label: "View", kind: "link", href: `/circuit/${circuit?.id}` },
+        { label: "Edit", kind: "link", href: `/circuit/${circuit?.id}/edit` },
       ],
       isExpanded: uiState.toolBarMenu.open === "goTo",
       onClickExpand: () => openToolBarMenu("goTo"),
@@ -69,26 +71,31 @@ export default function CircuitEmulationPageLayout() {
     <LayoutContainer>
       <BaseCircuitPageLayout toolBarOptions={toolBarOptions} activityBarOptions={activityBarOptions}>
         <Pending
-          isLoading={!overview || (!guiData && isInCriticalError)}
+          isLoading={!circuit || (!guiData && !isInCriticalError)}
           fallback={<LoadingPuls />}
           error={isInCriticalError}
           onFailure={<Typography>Failed to load circuit data.</Typography>}
         >
           <Grid xfs={5} container grow={1}>
             <Grid xs={2} xfs={5}>
-              {uiState.activityBarMenu.open === "evalMenu" && (
-                <EvalMenu
-                  error={{
-                    failedToSetupEmulatorServiceError: error.failedToSetupEmulatorServiceError,
-                    failedToEvalCircuitError: error.failedToEvalCircuitError,
-                  }}
-                  currentPhase={currentPhase}
-                  entryInputs={entryInputs}
-                  outputs={outputs}
-                  updateEntryInputs={updateEntryInputs}
-                  evalCircuit={evalCircuit}
-                />
-              )}
+              {(() => {
+                switch (uiState.activityBarMenu.open) {
+                  case "evalMenu": {
+                    return (
+                      <EvalMenu
+                        error={error}
+                        currentTick={currentTick}
+                        evalDuration={evalDuration}
+                        entryInputs={entryInputs}
+                        outputs={outputs}
+                        updateEntryInputs={updateEntryInputs}
+                        evalCircuit={evalCircuit}
+                        changeEvalDuration={changeEvalDuration}
+                      />
+                    );
+                  }
+                }
+              })()}
             </Grid>
             <Grid xs={3} xfs={5} grow={1}>
               <Flex

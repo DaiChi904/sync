@@ -1,21 +1,18 @@
+import type { Circuit } from "../aggregate/circuit";
 import type { CircuitGuiData } from "../entity/circuitGuiData";
-import type { CircuitOverview } from "../entity/circuitOverview";
 import type { CircuitNodeId } from "../valueObject/circuitNodeId";
+import type { EvalDuration } from "../valueObject/evalDuration";
 import type { EvalResult } from "../valueObject/evalResult";
 import type { InputRecord } from "../valueObject/inputRecord";
-import type { Phase } from "../valueObject/phase";
+import type { Tick } from "../valueObject/tick";
 
 export interface CircuitEmulationPageErrorModel {
-  failedToGetCircuitDetailError: boolean;
-  failedToGenGuiCircuitDataError: boolean;
-  failedToSetupEmulatorServiceError: boolean;
+  emulationEnvironmentCreationError: boolean;
   failedToEvalCircuitError: boolean;
 }
 
 export const initialCircuitEmulationPageError: CircuitEmulationPageErrorModel = {
-  failedToGetCircuitDetailError: false,
-  failedToGenGuiCircuitDataError: false,
-  failedToSetupEmulatorServiceError: false,
+  emulationEnvironmentCreationError: false,
   failedToEvalCircuitError: false,
 };
 
@@ -39,13 +36,15 @@ export class CircuitEmulationPageHandlerError extends Error {
 export interface ICircuitEmulationPageHandler {
   error: CircuitEmulationPageErrorModel;
   uiState: CircuitEmulationPageUiStateModel;
-  overview: CircuitOverview | undefined;
+  circuit: Circuit | undefined;
   guiData: CircuitGuiData | undefined;
-  currentPhase: Phase;
+  currentTick: Tick;
+  evalDuration: EvalDuration;
   entryInputs: InputRecord;
   outputs: Record<CircuitNodeId, EvalResult>;
   updateEntryInputs: (nodeID: CircuitNodeId, value: EvalResult) => void;
   evalCircuit: () => void;
+  changeEvalDuration: (duration: EvalDuration) => void;
   openToolBarMenu: (kind: "file" | "view" | "goTo" | "help") => void;
   closeToolBarMenu: () => void;
   changeActivityBarMenu: (kind: "evalMenu") => void;

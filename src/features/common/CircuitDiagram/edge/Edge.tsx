@@ -46,91 +46,88 @@ export default function Edge({
     if (idx === edges.length - 1) return null;
     const to = edges[idx + 1];
     return (
-      <>
+      <SvgGroup key={`${edge.id}-${idx}`}>
         <SvgDefs>
           {/** biome-ignore lint/correctness/useUniqueElementIds: No need for unique id. */}
           <SvgMarker id="arrow" markerWidth="5" markerHeight="5" refX="5" refY="2.5" orient="auto">
             <SvgPath d="M 0 0 L 5 2.5 L 0 5 z" fill="var(--color-circuit-state-high)" />
           </SvgMarker>
         </SvgDefs>
+        <SvgLine
+          x1={from.x}
+          y1={from.y}
+          x2={to.x}
+          y2={to.y}
+          stroke={
+            outputMap?.get(edge.from) === true ? "var(--color-circuit-state-high)" : "var(--color-circuit-state-low)"
+          }
+          strokeWidth={2}
+          markerEnd={isInFocus ? "url(#arrow)" : "none"}
+        />
+        <SvgLine
+          x1={from.x}
+          y1={from.y}
+          x2={to.x}
+          y2={to.y}
+          stroke="transparent"
+          strokeWidth={30}
+          onClick={() => focusElement?.({ ...edge, waypointIdx: idx })}
+          onContextMenu={(ev) => {
+            focusElement?.({ ...edge, waypointIdx: idx });
+            openEdgeUtilityMenu?.(ev);
+          }}
+        />
+        <SvgCircle
+          cx={from.x}
+          cy={from.y}
+          r={0.5}
+          pointerEvents="all"
+          fill={
+            outputMap?.get(edge.from) === true ? "var(--color-circuit-state-high)" : "var(--color-circuit-state-low)"
+          }
+          stroke={
+            outputMap?.get(edge.from) === true ? "var(--color-circuit-state-high)" : "var(--color-circuit-state-low)"
+          }
+        />
 
-        <SvgGroup key={`${edge.id}-${idx}`}>
-          <SvgLine
-            x1={from.x}
-            y1={from.y}
-            x2={to.x}
-            y2={to.y}
-            stroke={
-              outputMap?.get(edge.from) === true ? "var(--color-circuit-state-high)" : "var(--color-circuit-state-low)"
-            }
-            strokeWidth={2}
-            markerEnd={isInFocus ? "url(#arrow)" : "none"}
-          />
-          <SvgLine
-            x1={from.x}
-            y1={from.y}
-            x2={to.x}
-            y2={to.y}
-            stroke="transparent"
-            strokeWidth={30}
-            onClick={() => focusElement?.({ ...edge, waypointIdx: idx })}
-            onContextMenu={(ev) => {
-              focusElement?.({ ...edge, waypointIdx: idx });
-              openEdgeUtilityMenu?.(ev);
-            }}
-          />
-          <SvgCircle
-            cx={from.x}
-            cy={from.y}
-            r={0.5}
-            pointerEvents="all"
-            fill={
-              outputMap?.get(edge.from) === true ? "var(--color-circuit-state-high)" : "var(--color-circuit-state-low)"
-            }
-            stroke={
-              outputMap?.get(edge.from) === true ? "var(--color-circuit-state-high)" : "var(--color-circuit-state-low)"
-            }
-          />
-
-          {isInFocus && (
-            <>
-              {/** When manipulating edges that are connected on both sides, it is more intuitive to reverse the kind, so we will reverse it. */}
-              <SvgCircle
-                cx={from.x}
-                cy={from.y}
-                r={15}
-                fill="transparent"
-                pointerEvents="all"
-                stroke="var(--color-white)"
-                strokeWidth={1}
-                onContextMenu={openEdgeUtilityMenu}
-                onMouseDown={
-                  idx === 0 || edges.length < 2
-                    ? (ev) => {
-                        handleNodePinMouseDown?.(ev, edge.to, "to", "UPDATE");
-                      }
-                    : handleWaypointMouseDown?.(from, idx - 1)
-                }
-              />
-              <SvgCircle
-                cx={to.x}
-                cy={to.y}
-                r={15}
-                fill="transparent"
-                pointerEvents="all"
-                stroke="var(--color-white)"
-                strokeWidth={1}
-                onContextMenu={openEdgeUtilityMenu}
-                onMouseDown={
-                  idx + 1 === edges.length - 1 || edges.length < 2
-                    ? (ev) => handleNodePinMouseDown?.(ev, edge.from, "from", "UPDATE")
-                    : undefined
-                }
-              />
-            </>
-          )}
-        </SvgGroup>
-      </>
+        {isInFocus && (
+          <>
+            {/** When manipulating edges that are connected on both sides, it is more intuitive to reverse the kind, so we will reverse it. */}
+            <SvgCircle
+              cx={from.x}
+              cy={from.y}
+              r={15}
+              fill="transparent"
+              pointerEvents="all"
+              stroke="var(--color-white)"
+              strokeWidth={1}
+              onContextMenu={openEdgeUtilityMenu}
+              onMouseDown={
+                idx === 0 || edges.length < 2
+                  ? (ev) => {
+                      handleNodePinMouseDown?.(ev, edge.to, "to", "UPDATE");
+                    }
+                  : handleWaypointMouseDown?.(from, idx - 1)
+              }
+            />
+            <SvgCircle
+              cx={to.x}
+              cy={to.y}
+              r={15}
+              fill="transparent"
+              pointerEvents="all"
+              stroke="var(--color-white)"
+              strokeWidth={1}
+              onContextMenu={openEdgeUtilityMenu}
+              onMouseDown={
+                idx + 1 === edges.length - 1 || edges.length < 2
+                  ? (ev) => handleNodePinMouseDown?.(ev, edge.from, "from", "UPDATE")
+                  : undefined
+              }
+            />
+          </>
+        )}
+      </SvgGroup>
     );
   });
 }

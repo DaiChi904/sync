@@ -72,6 +72,7 @@ export abstract class CircuitNode implements ICircuitNode {
   }
 
   init(): void {
+    this.lastOutput = EvalResult.from(false);
     this.outputQueue = Array.from({ length: EvalDelay.unBrand(this.delay) }).fill(
       EvalResult.from(false),
     ) as Array<EvalResult>;

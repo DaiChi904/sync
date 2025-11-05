@@ -3,7 +3,7 @@ import Flex from "@/components/atoms/Flex";
 import LoadingPuls from "@/components/atoms/LoadingPuls";
 import Pending from "@/components/atoms/Pending";
 import Typography from "@/components/atoms/Typography";
-import { Table, TableCaption, TableCell, TableRow } from "@/components/atoms/table";
+import { Table, TableBody, TableCaption, TableCell, TableRow } from "@/components/atoms/table";
 import LayoutContainer from "@/components/layouts/LayoutContainer";
 import { useCircuitViewPageHandlerContext } from "@/contexts/CircuitViewPageHandlerContext";
 import CircuitDiagram from "../../../common/CircuitDiagram";
@@ -81,30 +81,32 @@ export default function CircuitViewPageLayout() {
                                 Property
                               </Typography>
                             </TableCaption>
-                            <TableRow>
-                              <TableCell style={{ padding: "8px 20px" }}>
-                                <Typography size="defaultPlus">ID</Typography>
-                              </TableCell>
-                              <TableCell style={{ padding: "8px 20px" }}>
-                                <Typography size="defaultPlus">{overview?.id}</Typography>
-                              </TableCell>
-                            </TableRow>
-                            <TableRow>
-                              <TableCell style={{ padding: "8px 20px" }}>
-                                <Typography size="defaultPlus">Created At</Typography>
-                              </TableCell>
-                              <TableCell style={{ padding: "8px 20px" }}>
-                                <Typography size="defaultPlus">{overview?.createdAt}</Typography>
-                              </TableCell>
-                            </TableRow>
-                            <TableRow>
-                              <TableCell style={{ padding: "8px 20px" }}>
-                                <Typography size="defaultPlus">Updated At</Typography>
-                              </TableCell>
-                              <TableCell style={{ padding: "8px 20px" }}>
-                                <Typography size="defaultPlus">{overview?.updatedAt}</Typography>
-                              </TableCell>
-                            </TableRow>
+                            <TableBody>
+                              <TableRow>
+                                <TableCell style={{ padding: "8px 20px" }}>
+                                  <Typography size="defaultPlus">ID</Typography>
+                                </TableCell>
+                                <TableCell style={{ padding: "8px 20px" }}>
+                                  <Typography size="defaultPlus">{overview?.id}</Typography>
+                                </TableCell>
+                              </TableRow>
+                              <TableRow>
+                                <TableCell style={{ padding: "8px 20px" }}>
+                                  <Typography size="defaultPlus">Created At</Typography>
+                                </TableCell>
+                                <TableCell style={{ padding: "8px 20px" }}>
+                                  <Typography size="defaultPlus">{overview?.createdAt}</Typography>
+                                </TableCell>
+                              </TableRow>
+                              <TableRow>
+                                <TableCell style={{ padding: "8px 20px" }}>
+                                  <Typography size="defaultPlus">Updated At</Typography>
+                                </TableCell>
+                                <TableCell style={{ padding: "8px 20px" }}>
+                                  <Typography size="defaultPlus">{overview?.updatedAt}</Typography>
+                                </TableCell>
+                              </TableRow>
+                            </TableBody>
                           </Table>
                         </Flex>
                       </Flex>

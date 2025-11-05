@@ -170,13 +170,13 @@ export default function CircuitEditorPageLayout() {
                 );
               case "circuitDiagram":
                 return (
-                  <Grid xfs={6} container grow={1}>
+                  <Grid xfs={8} container grow={1}>
                     <Grid xs={1} grow={1}>
                       <ElementSideBar viewBox={viewBox} addCircuitNode={addCircuitNode} />
                     </Grid>
                     <Grid
                       ref={circuitDiagramContainer}
-                      xs={4}
+                      xs={5}
                       style={{
                         display: "flex",
                         alignItems: "center",
@@ -230,7 +230,7 @@ export default function CircuitEditorPageLayout() {
                         </Pending>
                       </Flex>
                     </Grid>
-                    <Grid xs={1} grow={1}>
+                    <Grid xs={2} grow={1}>
                       <FormatSideBar data={focusedElement} />
                     </Grid>
                   </Grid>

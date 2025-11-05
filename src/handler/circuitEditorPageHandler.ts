@@ -592,6 +592,8 @@ export const useCircuitEditorPageHandler = ({
 
   const handleNodeMouseDown = useCallback(
     (ev: React.MouseEvent, node: CircuitGuiNode) => {
+      if (ev.button !== 0) return;
+
       const svgCoordinate = getSvgCoords(ev);
       if (!svgCoordinate.ok) return;
 
@@ -656,6 +658,8 @@ export const useCircuitEditorPageHandler = ({
     kind: "from" | "to",
     method: "ADD" | "UPDATE",
   ) => {
+    if (ev.button !== 0) return;
+
     const svgCoordinate = getSvgCoords(ev);
     if (!svgCoordinate.ok) return;
 
@@ -788,6 +792,8 @@ export const useCircuitEditorPageHandler = ({
 
   const handleWaypointMouseDown =
     (id: CircuitEdgeId) => (offset: Coordinate, index: number) => (ev: React.MouseEvent) => {
+      if (ev.button !== 0) return;
+
       const svgCoordinate = getSvgCoords(ev);
       if (!svgCoordinate.ok) return;
 

@@ -26,7 +26,7 @@ export namespace CircuitData {
     return value as unknown as ICircuitData;
   };
 
-  export const isValidData = (circuit: CircuitData): Result<void, ModelValidationError | UnexpectedError> => {
+  export const validate = (circuit: CircuitData): Result<void, ModelValidationError | UnexpectedError> => {
     const flags = {
       foundDuplicatedNodeId: false,
       foundDuplicatedEdgeId: false,
@@ -128,7 +128,7 @@ export namespace CircuitData {
       nodes: [...circuitData.nodes, node],
     });
 
-    const isValid = isValidData(updated);
+    const isValid = validate(updated);
     return isValid.ok ? { ok: true, value: updated } : { ok: false, error: isValid.error };
   };
 
@@ -161,7 +161,7 @@ export namespace CircuitData {
       ),
     });
 
-    const isValid = isValidData(updated);
+    const isValid = validate(updated);
     return isValid.ok ? { ok: true, value: updated } : { ok: false, error: isValid.error };
   };
 
@@ -174,7 +174,7 @@ export namespace CircuitData {
       edges: [...circuitData.edges, edge],
     });
 
-    const isValid = isValidData(updated);
+    const isValid = validate(updated);
     return isValid.ok ? { ok: true, value: updated } : { ok: false, error: isValid.error };
   };
 
@@ -190,7 +190,7 @@ export namespace CircuitData {
     const updatedEdges = circuitData.edges.map((e) => (e.id === edge.id ? edge : e));
     const updated = CircuitData.from({ ...circuitData, edges: updatedEdges });
 
-    const isValid = isValidData(updated);
+    const isValid = validate(updated);
     return isValid.ok ? { ok: true, value: updated } : { ok: false, error: isValid.error };
   };
 
@@ -208,7 +208,7 @@ export namespace CircuitData {
       edges: circuitData.edges.filter((edge) => edge.id !== edgeId),
     });
 
-    const isValid = isValidData(updated);
+    const isValid = validate(updated);
     return isValid.ok ? { ok: true, value: updated } : { ok: false, error: isValid.error };
   };
 }

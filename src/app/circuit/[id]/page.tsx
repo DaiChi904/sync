@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import { CircuitViewPageHandlerContext } from "@/contexts/CircuitViewPageHandlerContext";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 import { CircuitParserService } from "@/domain/service/circuitParserService";
-import CircuitViewPageLayout from "@/features/routes/Circuit/CircuitView/CircuitViewPageLayout";
+import CircuitViewPageLayout from "@/features/routes/circuit/circuitView/CircuitViewPageLayout";
 import { useCircuitViewPageHandler } from "@/handler/circuitViewPageHandler";
 import { CircuitDetailQueryService } from "@/infrastructure/queryService/circuitDetailQueryService";
 import { CircuitRepository } from "@/infrastructure/repository/circuitRepository";

@@ -6,9 +6,9 @@ import Pending from "@/components/atoms/Pending";
 import Typography from "@/components/atoms/Typography";
 import LayoutContainer from "@/components/layouts/LayoutContainer";
 import { useCircuitEmulationPageHandlerContext } from "@/contexts/CircuitEmulationPageHandlerContext";
-import CircuitDiagram from "../../../common/CircuitDiagram";
+import CircuitDiagram from "../../../common/circuitDiagram";
 import BaseCircuitPageLayout from "../common/BaseCircuitPageLayout";
-import EvalMenu from "./EvalMenu";
+import EvalMenu from "./evalMenu";
 
 export default function CircuitEmulationPageLayout() {
   const {

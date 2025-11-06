@@ -12,7 +12,7 @@ import LayoutContainer from "@/components/layouts/LayoutContainer";
 import { useCircuitEditorPageHandlerContext } from "@/contexts/CircuitEditorPageHandlerContext";
 import { CircuitDescription } from "@/domain/model/valueObject/circuitDescription";
 import { CircuitTitle } from "@/domain/model/valueObject/circuitTitle";
-import CircuitDiagram from "../../../common/CircuitDiagram";
+import CircuitDiagram from "../../../common/circuitDiagram";
 import BaseCircuitPageLayout from "../common/BaseCircuitPageLayout";
 import ElementSideBar from "./ElementSideBar";
 import FormatSideBar from "./FormatSideBar";

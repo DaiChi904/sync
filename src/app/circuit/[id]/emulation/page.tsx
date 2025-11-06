@@ -7,7 +7,7 @@ import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 import { CircuitEmulatorService } from "@/domain/service/circuitEmulatorService";
 import { CircuitParserService } from "@/domain/service/circuitParserService";
 import { EmulationOrganizer } from "@/domain/service/emulationOrganizer";
-import CircuitEmulationPageLayout from "@/features/routes/Circuit/CircuitEmulation/CircuitEmulationPageLayout";
+import CircuitEmulationPageLayout from "@/features/routes/circuit/circuitEmulation/CircuitEmulationPageLayout";
 import { useCircuitEmulationPageHandler } from "@/handler/circuitEmulationPageHandler";
 import { CircuitDetailQueryService } from "@/infrastructure/queryService/circuitDetailQueryService";
 import { CircuitRepository } from "@/infrastructure/repository/circuitRepository";

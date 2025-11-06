@@ -108,7 +108,7 @@ export namespace CircuitData {
 
           return {
             ok: false,
-            error: new ModelValidationError("CircuitData", { cause: err }, `${messages.join(",\n")}.`),
+            error: new ModelValidationError("CircuitData", err, `${messages.join(",\n")}.`),
           };
         }
         default: {

@@ -269,7 +269,6 @@ class AndNode extends CircuitNode {
   }
 }
 
-// --- OrNode ---
 class OrNode extends CircuitNode {
   constructor(
     id: CircuitNodeId,
@@ -327,7 +326,6 @@ class OrNode extends CircuitNode {
   }
 }
 
-// --- NotNode ---
 class NotNode extends CircuitNode {
   constructor(
     id: CircuitNodeId,
@@ -383,7 +381,6 @@ class NotNode extends CircuitNode {
   }
 }
 
-// --- JunctionNode ---
 class JunctionNode extends CircuitNode {
   constructor(
     id: CircuitNodeId,

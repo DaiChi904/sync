@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Circuit } from "@/domain/model/aggregate/circuit";
-import type { CircuitGuiData } from "@/domain/model/entity/circuitGuiData";
 import {
   type CircuitEmulationPageErrorModel,
   type ICircuitEmulationPageHandler,
@@ -11,6 +10,7 @@ import type {
   IEmulationSession,
 } from "@/domain/model/usecase/ICreateEmulationSessionUsecase";
 import type { IGetCircuitDetailUsecase } from "@/domain/model/usecase/IGetCircuitDetailUsecase";
+import type { CircuitGuiData } from "@/domain/model/valueObject/circuitGuiData";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import { EvalDelay } from "@/domain/model/valueObject/evalDelay";

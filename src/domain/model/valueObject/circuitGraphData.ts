@@ -1,5 +1,5 @@
 import type { Brand } from "@/utils/brand";
-import type { CircuitGraphNode } from "./circuitGraphNode";
+import type { CircuitGraphNode } from "../entity/circuitGraphNode";
 
 const brandSymbol = Symbol("CircuitGraphData");
 

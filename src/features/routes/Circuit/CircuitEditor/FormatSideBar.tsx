@@ -1,13 +1,6 @@
 import Flex from "@/components/atoms/Flex";
 import Typography from "@/components/atoms/Typography";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeaderCell,
-  TableRow,
-} from "@/components/atoms/table";
+import { Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow } from "@/components/atoms/table";
 import type { CircuitGuiEdge } from "@/domain/model/entity/circuitGuiEdge";
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
 
@@ -25,7 +18,9 @@ export default function FormatSideBar({ data }: FormatSideBarProps) {
         </Flex>
       ) : data.kind === "node" ? (
         <>
-          <Typography size="defaultPlus" style={{ textAlign: "center" }}>Node format</Typography>
+          <Typography size="defaultPlus" style={{ textAlign: "center" }}>
+            Node format
+          </Typography>
           <Table style={{ display: "block", overflowX: "scroll", paddingTop: 5, paddingBottom: 10 }}>
             <TableHead>
               <TableRow>
@@ -85,7 +80,9 @@ export default function FormatSideBar({ data }: FormatSideBarProps) {
         </>
       ) : (
         <>
-          <Typography size="defaultPlus" style={{ textAlign: "center" }}>Edge format</Typography>
+          <Typography size="defaultPlus" style={{ textAlign: "center" }}>
+            Edge format
+          </Typography>
           <Table style={{ display: "block", overflowX: "scroll", paddingTop: 5, paddingBottom: 10 }}>
             <TableHead>
               <TableRow>

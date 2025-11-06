@@ -1,13 +1,12 @@
 import type { Circuit } from "../aggregate/circuit";
-import type { CircuitGuiData } from "../entity/circuitGuiData";
 import type { CircuitGuiEdge } from "../entity/circuitGuiEdge";
 import type { CircuitGuiNode } from "../entity/circuitGuiNode";
+import type { CircuitNode } from "../entity/circuitNode";
 import type { CircuitDescription } from "../valueObject/circuitDescription";
 import type { CircuitEdgeId } from "../valueObject/circuitEdgeId";
+import type { CircuitGuiData } from "../valueObject/circuitGuiData";
 import type { CircuitNodeId } from "../valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "../valueObject/circuitNodePinId";
-import type { CircuitNodeSize } from "../valueObject/circuitNodeSize";
-import type { CircuitNodeType } from "../valueObject/circuitNodeType";
 import type { CircuitTitle } from "../valueObject/circuitTitle";
 import type { Coordinate } from "../valueObject/coordinate";
 
@@ -58,14 +57,7 @@ export interface ICircuitEditorPageHandler {
   deleteCircuit: () => void;
   changeTitle: (title: CircuitTitle) => void;
   changeDescription: (description: CircuitDescription) => void;
-  addCircuitNode: (newNode: {
-    id: CircuitNodeId;
-    type: CircuitNodeType;
-    inputs: CircuitNodePinId[];
-    outputs: CircuitNodePinId[];
-    coordinate: Coordinate;
-    size: CircuitNodeSize;
-  }) => void;
+  addCircuitNode: (newNode: CircuitNode) => void;
   deleteCircuitNode: (nodeId: CircuitNodeId) => void;
   deleteCircuitEdge: (edgeId: CircuitEdgeId) => void;
   circuitDiagramContainer: React.RefObject<HTMLDivElement | null>;

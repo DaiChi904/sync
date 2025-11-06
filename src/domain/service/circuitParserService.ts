@@ -1,7 +1,5 @@
 import type { Result } from "@/utils/result";
-import { CircuitGraphData } from "../model/entity/circuitGraphData";
 import { CircuitGraphNode } from "../model/entity/circuitGraphNode";
-import { CircuitGuiData } from "../model/entity/circuitGuiData";
 import { CircuitGuiEdge } from "../model/entity/circuitGuiEdge";
 import { CircuitGuiNode } from "../model/entity/circuitGuiNode";
 import { ModelValidationError } from "../model/modelValidationError";
@@ -9,6 +7,8 @@ import { CircuitDataParseError, type ICircuitParserService } from "../model/serv
 import { UnexpectedError } from "../model/unexpectedError";
 import type { CircuitData } from "../model/valueObject/circuitData";
 import type { CircuitEdgeId } from "../model/valueObject/circuitEdgeId";
+import { CircuitGraphData } from "../model/valueObject/circuitGraphData";
+import { CircuitGuiData } from "../model/valueObject/circuitGuiData";
 import { CircuitNodeId } from "../model/valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "../model/valueObject/circuitNodePinId";
 import type { CircuitNodeType } from "../model/valueObject/circuitNodeType";

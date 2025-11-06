@@ -1,11 +1,15 @@
 import type { Brand } from "@/utils/brand";
-import type { CircuitNodeId } from "./circuitNodeId";
+import type { CircuitEdgeId } from "../valueObject/circuitEdgeId";
+import type { CircuitNodePinId } from "../valueObject/circuitNodePinId";
+import type { Waypoint } from "../valueObject/waypoint";
 
 const brandSymbol = Symbol("CircuitEdge");
 
 interface ICircuitEdge {
-  from: CircuitNodeId;
-  to: CircuitNodeId;
+  id: CircuitEdgeId;
+  from: CircuitNodePinId;
+  to: CircuitNodePinId;
+  waypoints: Waypoint | null;
 }
 
 export type CircuitEdge = Brand<ICircuitEdge, typeof brandSymbol>;

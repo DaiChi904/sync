@@ -1,8 +1,8 @@
 import { Svg, SvgRect, SvgTitle } from "@/components/atoms/svg";
-import type { CircuitGuiData } from "@/domain/model/entity/circuitGuiData";
 import type { CircuitGuiEdge } from "@/domain/model/entity/circuitGuiEdge";
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
 import type { CircuitEdgeId } from "@/domain/model/valueObject/circuitEdgeId";
+import type { CircuitGuiData } from "@/domain/model/valueObject/circuitGuiData";
 import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 import type { Coordinate } from "@/domain/model/valueObject/coordinate";

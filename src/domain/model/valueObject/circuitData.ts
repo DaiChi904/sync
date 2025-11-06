@@ -94,7 +94,10 @@ export namespace CircuitData {
       }
 
       if (Object.entries(flags).some(([_, value]) => value)) {
-        throw new ModelValidationError("CircuitData", {}, "Detected invalid data.");
+        const messages = Object.entries(flags)
+          .filter(([_, value]) => value)
+          .map(([key]) => key);
+        throw new ModelValidationError("CircuitData", circuit, `Detected invalid data.\n${messages.join(",\n")}.`);
       }
 
       return { ok: true, value: undefined };
@@ -102,14 +105,7 @@ export namespace CircuitData {
       console.error(err);
       switch (true) {
         case err instanceof ModelValidationError: {
-          const messages = Object.entries(flags)
-            .filter(([_, value]) => value)
-            .map(([key]) => key);
-
-          return {
-            ok: false,
-            error: new ModelValidationError("CircuitData", err, `${messages.join(",\n")}.`),
-          };
+          return { ok: false, error: err };
         }
         default: {
           const unexpectedError = err instanceof UnexpectedError ? err : new UnexpectedError({ cause: err });

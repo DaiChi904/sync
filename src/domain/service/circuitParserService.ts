@@ -117,11 +117,13 @@ export class CircuitParserService implements ICircuitParserService {
 
       const graphData = circuitData.nodes.map((node) => {
         const connectedInEdge = Array.from(edges.entries())
-          .filter((edge) => node.inputs.includes(edge[1].to))
-          .map((edge) => edge[0]);
+          .filter(([, edge]) => node.inputs.includes(edge.to))
+          .sort(([, a], [, b]) => node.inputs.indexOf(a.to) - node.inputs.indexOf(b.to))
+          .map(([edgeId]) => edgeId);
         const connectedOutEdge = Array.from(edges.entries())
-          .filter((edge) => node.outputs.includes(edge[1].from))
-          .map((edge) => edge[0]);
+          .filter(([, edge]) => node.outputs.includes(edge.from))
+          .sort(([, a], [, b]) => node.outputs.indexOf(a.from) - node.outputs.indexOf(b.from))
+          .map(([edgeId]) => edgeId);
 
         const inputs = connectedInEdge.map((edgeId) => {
           const targetEdge = edges.get(edgeId);

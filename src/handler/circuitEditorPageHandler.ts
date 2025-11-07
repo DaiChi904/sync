@@ -16,8 +16,9 @@ import {
 } from "@/domain/model/handler/ICircuitEditorPageHandler";
 import type { ICircuitRepository } from "@/domain/model/infrastructure/repository/ICircuitRepository";
 import type { ICircuitParserService } from "@/domain/model/service/ICircuitParserService";
-import type { ICircuitEditorUsecase } from "@/domain/model/usecase/ICircuitEditorUsecase";
+import type { IDeleteCircuitUsecase } from "@/domain/model/usecase/IDeleteCircuitUsecase";
 import type { IGetCircuitDetailUsecase } from "@/domain/model/usecase/IGetCircuitDetailUsecase";
+import type { IUpdateCircuitUsecase } from "@/domain/model/usecase/IUpdateCircuitUsecase";
 import { CircuitData } from "@/domain/model/valueObject/circuitData";
 import type { CircuitDescription } from "@/domain/model/valueObject/circuitDescription";
 import { CircuitEdgeId } from "@/domain/model/valueObject/circuitEdgeId";
@@ -35,7 +36,8 @@ interface CircuitEditorPageHandlerDependencies {
   query: CircuitId;
   getCircuitDetailUsecase: IGetCircuitDetailUsecase;
   circuitParserUsecase: ICircuitParserService;
-  circuitEditorUsecase: ICircuitEditorUsecase;
+  updateCircuitUsecase: IUpdateCircuitUsecase;
+  deleteCircuitUsecase: IDeleteCircuitUsecase;
   circuitRepository: ICircuitRepository;
 }
 
@@ -43,7 +45,8 @@ export const useCircuitEditorPageHandler = ({
   query,
   getCircuitDetailUsecase,
   circuitParserUsecase,
-  circuitEditorUsecase,
+  updateCircuitUsecase,
+  deleteCircuitUsecase,
 }: CircuitEditorPageHandlerDependencies): ICircuitEditorPageHandler => {
   const router = useRouter();
 
@@ -235,7 +238,7 @@ export const useCircuitEditorPageHandler = ({
       return;
     }
 
-    const res = await circuitEditorUsecase.save(circuit);
+    const res = await updateCircuitUsecase.execute(circuit);
     if (!res.ok) {
       const err = new CircuitEditorPageHandlerError("Failed to save circuit.", {
         cause: res.error,
@@ -247,7 +250,7 @@ export const useCircuitEditorPageHandler = ({
     }
 
     setError("failedToSaveCircuitError", false);
-  }, [circuit, circuitEditorUsecase, setError]);
+  }, [circuit, updateCircuitUsecase, setError]);
 
   const deleteCircuit = useCallback(async () => {
     if (!circuit) {
@@ -257,7 +260,7 @@ export const useCircuitEditorPageHandler = ({
       return;
     }
 
-    const res = await circuitEditorUsecase.delete(circuit.id);
+    const res = await deleteCircuitUsecase.execute(circuit.id);
     if (!res.ok) {
       const err = new CircuitEditorPageHandlerError("Failed to delete circuit.", {
         cause: res.error,
@@ -268,7 +271,7 @@ export const useCircuitEditorPageHandler = ({
     }
 
     router.push("/");
-  }, [circuit, circuitEditorUsecase, router]);
+  }, [circuit, deleteCircuitUsecase, router]);
 
   const changeTitle = useCallback((title: CircuitTitle): void => {
     try {

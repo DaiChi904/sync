@@ -7,40 +7,25 @@ import type {
   InvalidSaveMethodError,
 } from "@/domain/model/infrastructure/repository/ICircuitRepository";
 import type { UnexpectedError } from "@/domain/model/unexpectedError";
-import type { ICircuitEditorUsecase } from "@/domain/model/usecase/ICircuitEditorUsecase";
-import type { CircuitId } from "@/domain/model/valueObject/circuitId";
+import type { IUpdateCircuitUsecase } from "@/domain/model/usecase/IUpdateCircuitUsecase";
 import type { Result } from "@/utils/result";
 
-interface CircuitEditorUsecaseDependencies {
+interface UpdateCircuitUsecaseDependencies {
   circuitRepository: ICircuitRepository;
 }
 
-export class CircuitEditorUsecase implements ICircuitEditorUsecase {
+export class UpdateCircuitUsecase implements IUpdateCircuitUsecase {
   private readonly circuitRepository: ICircuitRepository;
 
-  constructor({ circuitRepository }: CircuitEditorUsecaseDependencies) {
+  constructor({ circuitRepository }: UpdateCircuitUsecaseDependencies) {
     this.circuitRepository = circuitRepository;
   }
 
-  async add(
-    newCircuit: Circuit,
-  ): Promise<
-    Result<void, DataIntegrityError | InfraError | InvalidSaveMethodError | CircuitNotFoundError | UnexpectedError>
-  > {
-    return await this.circuitRepository.save("ADD", newCircuit);
-  }
-
-  async save(
+  async execute(
     newCircuit: Circuit,
   ): Promise<
     Result<void, DataIntegrityError | InfraError | InvalidSaveMethodError | CircuitNotFoundError | UnexpectedError>
   > {
     return await this.circuitRepository.save("UPDATE", newCircuit);
-  }
-
-  async delete(
-    id: CircuitId,
-  ): Promise<Result<void, DataIntegrityError | InfraError | CircuitNotFoundError | UnexpectedError>> {
-    return await this.circuitRepository.delete(id);
   }
 }

@@ -10,8 +10,9 @@ import { useCircuitEditorPageHandler } from "@/handler/circuitEditorPageHandler"
 import { CircuitDetailQueryService } from "@/infrastructure/queryService/circuitDetailQueryService";
 import { CircuitRepository } from "@/infrastructure/repository/circuitRepository";
 import { LocalStorage } from "@/infrastructure/storage/localStorage";
-import { CircuitEditorUsecase } from "@/usecase/circuitEditorUsecase";
+import { DeleteCircuitUsecase } from "@/usecase/deleteCircuitUsecase";
 import { GetCircuitDetailUsecase } from "@/usecase/getCircuitDetailUsecase";
+import { UpdateCircuitUsecase } from "@/usecase/updateCircuitUsecase";
 
 export default function CircuitView() {
   const params = useParams<{ id: CircuitId }>();
@@ -28,12 +29,14 @@ export default function CircuitView() {
     [circuitDetailQueryService],
   );
   const circuitParserUsecase = useMemo(() => new CircuitParserService(), []);
-  const circuitEditorUsecase = useMemo(() => new CircuitEditorUsecase({ circuitRepository }), [circuitRepository]);
+  const updateCircuitUsecase = useMemo(() => new UpdateCircuitUsecase({ circuitRepository }), [circuitRepository]);
+  const deleteCircuitUsecase = useMemo(() => new DeleteCircuitUsecase({ circuitRepository }), [circuitRepository]);
   const circuitEditorHandler = useCircuitEditorPageHandler({
     query,
     getCircuitDetailUsecase,
     circuitParserUsecase,
-    circuitEditorUsecase,
+    updateCircuitUsecase,
+    deleteCircuitUsecase,
     circuitRepository,
   });
 

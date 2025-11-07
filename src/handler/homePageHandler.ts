@@ -11,7 +11,7 @@ import {
   type IHomePageHandler,
   initialHomePageError,
 } from "@/domain/model/handler/IHomePageHandler";
-import type { ICircuitEditorUsecase } from "@/domain/model/usecase/ICircuitEditorUsecase";
+import type { IAddCircuitUsecase } from "@/domain/model/usecase/IAddCircuitUsecase";
 import type { IGetCircuitOverviewsUsecase } from "@/domain/model/usecase/IGetCircuitOverviewsUsecase";
 import { CircuitData } from "@/domain/model/valueObject/circuitData";
 import { CircuitDescription } from "@/domain/model/valueObject/circuitDescription";
@@ -23,12 +23,12 @@ import { CreatedDateTime } from "./../domain/model/valueObject/createdDateTime";
 
 interface HomePageHandlerDependencies {
   getCircuitOverviewsUsecase: IGetCircuitOverviewsUsecase;
-  circuitEditorUsecase: ICircuitEditorUsecase;
+  addCircuitUsecase: IAddCircuitUsecase;
 }
 
 export const useHomePageHandler = ({
   getCircuitOverviewsUsecase,
-  circuitEditorUsecase,
+  addCircuitUsecase,
 }: HomePageHandlerDependencies): IHomePageHandler => {
   const router = useRouter();
 
@@ -61,7 +61,7 @@ export const useHomePageHandler = ({
         switch (kind) {
           case "empty": {
             const newCircuitId = CircuitId.generate();
-            const res = await circuitEditorUsecase.add(
+            const res = await addCircuitUsecase.execute(
               Circuit.from({
                 id: newCircuitId,
                 title: CircuitTitle.from(""),
@@ -85,7 +85,7 @@ export const useHomePageHandler = ({
         console.error(err);
       }
     },
-    [circuitEditorUsecase, router],
+    [addCircuitUsecase, router],
   );
 
   const changeActivityBarMenu = useCallback(

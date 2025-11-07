@@ -23,16 +23,12 @@ export default function CircuitView() {
     () => new CircuitDetailQueryService({ circuitRepository }),
     [circuitRepository],
   );
-  const circuitParserService = useMemo(() => new CircuitParserService(), []);
   const getCircuitDetailUsecase = useMemo(
     () => new GetCircuitDetailUsecase({ circuitDetailQueryService }),
     [circuitDetailQueryService],
   );
   const circuitParserUsecase = useMemo(() => new CircuitParserService(), []);
-  const circuitEditorUsecase = useMemo(
-    () => new CircuitEditorUsecase({ circuitRepository, circuitParserService }),
-    [circuitRepository, circuitParserService],
-  );
+  const circuitEditorUsecase = useMemo(() => new CircuitEditorUsecase({ circuitRepository }), [circuitRepository]);
   const circuitEditorHandler = useCircuitEditorPageHandler({
     query,
     getCircuitDetailUsecase,

@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import { HomePageHandlerContext } from "@/contexts/HomePageHandlerContext";
-import { CircuitParserService } from "@/domain/service/circuitParserService";
 import HomePageLayout from "@/features/routes/home/HomePageLayout";
 import { useHomePageHandler } from "@/handler/homePageHandler";
 import { CircuitOverviewsQueryService } from "@/infrastructure/queryService/circuitOverviewsQueryService";
@@ -18,14 +17,13 @@ export default function Home() {
     () => new CircuitOverviewsQueryService({ circuitRepository }),
     [circuitRepository],
   );
-  const circuitParserService = useMemo(() => new CircuitParserService(), []);
   const getCircuitOverviewsUsecase = useMemo(
     () => new GetCircuitOverviewsUsecase({ circuitOverviewsQueryService }),
     [circuitOverviewsQueryService],
   );
   const circuitEditorUsecase = useMemo(
-    () => new CircuitEditorUsecase({ circuitRepository, circuitParserService }),
-    [circuitRepository, circuitParserService],
+    () => new CircuitEditorUsecase({ circuitRepository }),
+    [circuitRepository],
   );
   const homePageHandler = useHomePageHandler({ getCircuitOverviewsUsecase, circuitEditorUsecase });
 

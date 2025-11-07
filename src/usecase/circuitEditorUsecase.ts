@@ -6,7 +6,6 @@ import type {
   ICircuitRepository,
   InvalidSaveMethodError,
 } from "@/domain/model/infrastructure/repository/ICircuitRepository";
-import type { ICircuitParserService } from "@/domain/model/service/ICircuitParserService";
 import type { UnexpectedError } from "@/domain/model/unexpectedError";
 import type { ICircuitEditorUsecase } from "@/domain/model/usecase/ICircuitEditorUsecase";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
@@ -14,7 +13,6 @@ import type { Result } from "@/utils/result";
 
 interface CircuitEditorUsecaseDependencies {
   circuitRepository: ICircuitRepository;
-  circuitParserService: ICircuitParserService;
 }
 
 export class CircuitEditorUsecase implements ICircuitEditorUsecase {

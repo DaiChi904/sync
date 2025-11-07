@@ -7,7 +7,7 @@ import { useHomePageHandler } from "@/handler/homePageHandler";
 import { CircuitOverviewsQueryService } from "@/infrastructure/queryService/circuitOverviewsQueryService";
 import { CircuitRepository } from "@/infrastructure/repository/circuitRepository";
 import { LocalStorage } from "@/infrastructure/storage/localStorage";
-import { CircuitEditorUsecase } from "@/usecase/circuitEditorUsecase";
+import { AddCircuitUsecase } from "@/usecase/addCircuitUsecase";
 import { GetCircuitOverviewsUsecase } from "@/usecase/getCircuitOverviewsUsecase";
 
 export default function Home() {
@@ -21,11 +21,8 @@ export default function Home() {
     () => new GetCircuitOverviewsUsecase({ circuitOverviewsQueryService }),
     [circuitOverviewsQueryService],
   );
-  const circuitEditorUsecase = useMemo(
-    () => new CircuitEditorUsecase({ circuitRepository }),
-    [circuitRepository],
-  );
-  const homePageHandler = useHomePageHandler({ getCircuitOverviewsUsecase, circuitEditorUsecase });
+  const addCircuitUsecase = useMemo(() => new AddCircuitUsecase({ circuitRepository }), [circuitRepository]);
+  const homePageHandler = useHomePageHandler({ getCircuitOverviewsUsecase, addCircuitUsecase });
 
   return (
     <HomePageHandlerContext.Provider value={homePageHandler}>

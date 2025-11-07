@@ -18,7 +18,7 @@ import { ExecutionOrder } from "@/domain/model/valueObject/executionOrder";
 import { InputRecord } from "@/domain/model/valueObject/inputRecord";
 import { OutputRecord } from "@/domain/model/valueObject/outputRecord";
 import type { Result } from "@/utils/result";
-import type { CircuitGraphData } from "../../model/entity/circuitGraphData";
+import type { CircuitGraphData } from "../../model/valueObject/circuitGraphData";
 import { CircuitNode } from "./circuitNode";
 
 export class CircuitEmulatorService implements ICircuitEmulatorService {

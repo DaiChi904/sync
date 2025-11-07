@@ -1,7 +1,5 @@
 import type { Result } from "@/utils/result";
-import { CircuitGraphData } from "../model/entity/circuitGraphData";
 import { CircuitGraphNode } from "../model/entity/circuitGraphNode";
-import { CircuitGuiData } from "../model/entity/circuitGuiData";
 import { CircuitGuiEdge } from "../model/entity/circuitGuiEdge";
 import { CircuitGuiNode } from "../model/entity/circuitGuiNode";
 import { ModelValidationError } from "../model/modelValidationError";
@@ -9,6 +7,8 @@ import { CircuitDataParseError, type ICircuitParserService } from "../model/serv
 import { UnexpectedError } from "../model/unexpectedError";
 import type { CircuitData } from "../model/valueObject/circuitData";
 import type { CircuitEdgeId } from "../model/valueObject/circuitEdgeId";
+import { CircuitGraphData } from "../model/valueObject/circuitGraphData";
+import { CircuitGuiData } from "../model/valueObject/circuitGuiData";
 import { CircuitNodeId } from "../model/valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "../model/valueObject/circuitNodePinId";
 import type { CircuitNodeType } from "../model/valueObject/circuitNodeType";
@@ -117,11 +117,13 @@ export class CircuitParserService implements ICircuitParserService {
 
       const graphData = circuitData.nodes.map((node) => {
         const connectedInEdge = Array.from(edges.entries())
-          .filter((edge) => node.inputs.includes(edge[1].to))
-          .map((edge) => edge[0]);
+          .filter(([, edge]) => node.inputs.includes(edge.to))
+          .sort(([, a], [, b]) => node.inputs.indexOf(a.to) - node.inputs.indexOf(b.to))
+          .map(([edgeId]) => edgeId);
         const connectedOutEdge = Array.from(edges.entries())
-          .filter((edge) => node.outputs.includes(edge[1].from))
-          .map((edge) => edge[0]);
+          .filter(([, edge]) => node.outputs.includes(edge.from))
+          .sort(([, a], [, b]) => node.outputs.indexOf(a.from) - node.outputs.indexOf(b.from))
+          .map(([edgeId]) => edgeId);
 
         const inputs = connectedInEdge.map((edgeId) => {
           const targetEdge = edges.get(edgeId);

@@ -4,7 +4,7 @@ import Grid from "@/components/atoms/Grid";
 import Typography from "@/components/atoms/Typography";
 import LayoutContainer from "@/components/layouts/LayoutContainer";
 import { useHomePageHandlerContext } from "@/contexts/HomePageHandlerContext";
-import CircuitList from "./CircuitList";
+import CircuitList from "./circuitList";
 
 export default function HomePageLayout() {
   const { error, uiState, circuitOverviews, changeActivityBarMenu, addNewCircuit } = useHomePageHandlerContext();

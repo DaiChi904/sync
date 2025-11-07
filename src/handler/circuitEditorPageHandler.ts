@@ -3,9 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Circuit } from "@/domain/model/aggregate/circuit";
-import type { CircuitGuiData } from "@/domain/model/entity/circuitGuiData";
+import { CircuitEdge } from "@/domain/model/entity/circuitEdge";
 import type { CircuitGuiEdge } from "@/domain/model/entity/circuitGuiEdge";
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
+import type { CircuitNode } from "@/domain/model/entity/circuitNode";
 import {
   type CircuitEditorPageErrorModel,
   CircuitEditorPageHandlerError,
@@ -20,11 +21,10 @@ import type { IGetCircuitDetailUsecase } from "@/domain/model/usecase/IGetCircui
 import { CircuitData } from "@/domain/model/valueObject/circuitData";
 import type { CircuitDescription } from "@/domain/model/valueObject/circuitDescription";
 import { CircuitEdgeId } from "@/domain/model/valueObject/circuitEdgeId";
+import type { CircuitGuiData } from "@/domain/model/valueObject/circuitGuiData";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
-import type { CircuitNodeSize } from "@/domain/model/valueObject/circuitNodeSize";
-import type { CircuitNodeType } from "@/domain/model/valueObject/circuitNodeType";
 import type { CircuitTitle } from "@/domain/model/valueObject/circuitTitle";
 import { Coordinate } from "@/domain/model/valueObject/coordinate";
 import { Waypoint } from "@/domain/model/valueObject/waypoint";
@@ -276,10 +276,7 @@ export const useCircuitEditorPageHandler = ({
         if (!prev) {
           throw new CircuitEditorPageHandlerError("Unable to change title. Circuit is not defined.");
         }
-        return Circuit.from({
-          ...prev,
-          title: title,
-        });
+        return Circuit.changeTitle(prev, title);
       });
     } catch (err: unknown) {
       console.error(err);
@@ -292,10 +289,7 @@ export const useCircuitEditorPageHandler = ({
         if (!prev) {
           throw new CircuitEditorPageHandlerError("Unable to change title. Circuit is not defined.");
         }
-        return Circuit.from({
-          ...prev,
-          description: description,
-        });
+        return Circuit.changeDescription(prev, description);
       });
     } catch (err: unknown) {
       console.error(err);
@@ -303,82 +297,56 @@ export const useCircuitEditorPageHandler = ({
   }, []);
 
   const addCircuitNode = useCallback(
-    (newNode: {
-      id: CircuitNodeId;
-      type: CircuitNodeType;
-      inputs: CircuitNodePinId[];
-      outputs: CircuitNodePinId[];
-      coordinate: Coordinate;
-      size: CircuitNodeSize;
-    }): void => {
+    (newNode: CircuitNode): void => {
       const prev = circuit;
       try {
         if (!prev) {
           throw new CircuitEditorPageHandlerError("Unable to add circuit node. Circuit is not defined.");
         }
 
-        const next = Circuit.from({
-          ...prev,
-          circuitData: {
-            ...prev.circuitData,
-            nodes: [...prev.circuitData.nodes, newNode],
-            edges: prev.circuitData.edges,
-          },
-        });
-
-        const isValid = circuitEditorUsecase.isValidData(next.circuitData);
-        if (!isValid.ok) {
+        const nodeAddResult = CircuitData.addNode(prev.circuitData, newNode);
+        if (!nodeAddResult.ok) {
           throw new CircuitEditorPageHandlerError("Failed to add circuit node.", {
-            cause: isValid.error,
+            cause: nodeAddResult.error,
           });
         }
+
+        const next = Circuit.changeCircuitData(prev, nodeAddResult.value);
 
         setCircuit(next);
       } catch (err: unknown) {
         console.error(err);
       }
     },
-    [circuit, circuitEditorUsecase],
+    [circuit],
   );
 
   const updateCircuitNode = useCallback(
-    (newNode: {
-      id: CircuitNodeId;
-      type: CircuitNodeType;
-      inputs: CircuitNodePinId[];
-      outputs: CircuitNodePinId[];
-      coordinate: Coordinate;
-      size: CircuitNodeSize;
-    }): void => {
+    (newNode: CircuitNode): void => {
       const prev = circuit;
       try {
         if (!prev) {
           throw new CircuitEditorPageHandlerError("Unable to update circuit node. Circuit is not defined.");
         }
 
-        const updated = CircuitData.from({
-          nodes: prev.circuitData.nodes.map((node) => (node.id === newNode.id ? newNode : node)),
-          edges: prev.circuitData.edges,
-        });
+        const nodeUpdateResult = CircuitData.updateNode(prev.circuitData, newNode);
+        if (!nodeUpdateResult.ok) {
+          throw new CircuitEditorPageHandlerError("Failed to update circuit node.", {
+            cause: nodeUpdateResult.error,
+          });
+        }
 
         const next = Circuit.from({
           ...prev,
-          circuitData: updated,
+          circuitData: nodeUpdateResult.value,
         });
-
-        const isValid = circuitEditorUsecase.isValidData(next.circuitData);
-        if (!isValid.ok) {
-          throw new CircuitEditorPageHandlerError("Failed to update circuit node.", {
-            cause: isValid.error,
-          });
-        }
 
         setCircuit(next);
       } catch (err: unknown) {
         console.error(err);
       }
     },
-    [circuit, circuitEditorUsecase],
+    [circuit],
   );
 
   const deleteCircuitNode = useCallback(
@@ -388,110 +356,81 @@ export const useCircuitEditorPageHandler = ({
         if (!prev) {
           throw new CircuitEditorPageHandlerError("Unable to delete circuit node. Circuit is not defined.");
         }
-        const deleted = prev.circuitData.nodes.find((node) => node.id === nodeId);
-        if (!deleted) {
-          throw new CircuitEditorPageHandlerError("Failed to delete circuit node. Node to delete not found.");
-        }
 
-        const updated = CircuitData.from({
-          nodes: prev.circuitData.nodes.filter((node) => node.id !== nodeId),
-          edges: prev.circuitData.edges.filter(
-            (edge) => ![...deleted.inputs].includes(edge.to) && ![...deleted.outputs].includes(edge.from),
-          ),
-        });
+        const nodeDeleteResult = CircuitData.deleteNode(prev.circuitData, nodeId);
+        if (!nodeDeleteResult.ok) {
+          throw new CircuitEditorPageHandlerError("Failed to delete circuit node.", {
+            cause: nodeDeleteResult.error,
+          });
+        }
 
         const next = Circuit.from({
           ...prev,
-          circuitData: updated,
+          circuitData: nodeDeleteResult.value,
         });
-
-        const isValid = circuitEditorUsecase.isValidData(next.circuitData);
-        if (!isValid.ok) {
-          throw new CircuitEditorPageHandlerError("Failed to delete circuit node.", {
-            cause: isValid.error,
-          });
-        }
 
         setCircuit(next);
       } catch (err: unknown) {
         console.error(err);
       }
     },
-    [circuit, circuitEditorUsecase],
+    [circuit],
   );
 
   const addCircuitEdge = useCallback(
-    (newEdge: {
-      id: CircuitEdgeId;
-      from: CircuitNodePinId;
-      to: CircuitNodePinId;
-      waypoints: Waypoint | null;
-    }): void => {
+    (newEdge: CircuitEdge): void => {
       const prev = circuit;
       try {
         if (!prev) {
           throw new CircuitEditorPageHandlerError("Unable to add circuit edge. Circuit is not defined.");
         }
 
-        const next = Circuit.from({
-          ...prev,
-          circuitData: CircuitData.from({
-            nodes: prev.circuitData.nodes,
-            edges: [...prev.circuitData.edges, newEdge],
-          }),
-        });
-
-        const isValid = circuitEditorUsecase.isValidData(next.circuitData);
-        if (!isValid.ok) {
+        const edgeAddResult = CircuitData.addEdge(prev.circuitData, newEdge);
+        if (!edgeAddResult.ok) {
           throw new CircuitEditorPageHandlerError("Failed to add circuit edge.", {
-            cause: isValid.error,
+            cause: edgeAddResult.error,
           });
         }
+
+        const next = Circuit.from({
+          ...prev,
+          circuitData: edgeAddResult.value,
+        });
 
         setCircuit(next);
       } catch (err: unknown) {
         console.error(err);
       }
     },
-    [circuit, circuitEditorUsecase],
+    [circuit],
   );
 
   const updateCircuitEdge = useCallback(
-    (newEdge: {
-      id: CircuitEdgeId;
-      from: CircuitNodePinId;
-      to: CircuitNodePinId;
-      waypoints: Waypoint | null;
-    }): void => {
+    (newEdge: CircuitEdge): void => {
       const prev = circuit;
       try {
         if (!prev) {
           throw new CircuitEditorPageHandlerError("Unable to update circuit edge. Circuit is not defined.");
         }
 
-        const updated = CircuitData.from({
-          nodes: prev.circuitData.nodes,
-          edges: prev.circuitData.edges.map((edge) => (edge.id === newEdge.id ? newEdge : edge)),
-        });
+        const edgeUpdateResult = CircuitData.updateEdge(prev.circuitData, newEdge);
+        if (!edgeUpdateResult.ok) {
+          throw new CircuitEditorPageHandlerError("Failed to update circuit edge.", {
+            cause: edgeUpdateResult.error,
+          });
+        }
 
         const next = Circuit.from({
           ...prev,
-          circuitData: updated,
+          circuitData: edgeUpdateResult.value,
         });
-
-        const isValid = circuitEditorUsecase.isValidData(next.circuitData);
-        if (!isValid.ok) {
-          throw new CircuitEditorPageHandlerError("Failed to update circuit edge. Invalid data.", {
-            cause: isValid.error,
-          });
-        }
 
         setCircuit(next);
       } catch (err: unknown) {
         console.error(err);
       }
     },
-    [circuit, circuitEditorUsecase],
+    [circuit],
   );
 
   const deleteCircuitEdge = useCallback(
@@ -502,29 +441,24 @@ export const useCircuitEditorPageHandler = ({
           throw new CircuitEditorPageHandlerError("Unable to delete circuit edge. Circuit is not defined.");
         }
 
-        const updated = CircuitData.from({
-          nodes: prev.circuitData.nodes,
-          edges: prev.circuitData.edges.filter((edge) => edge.id !== edgeId),
-        });
+        const edgeDeleteResult = CircuitData.deleteEdge(prev.circuitData, edgeId);
+        if (!edgeDeleteResult.ok) {
+          throw new CircuitEditorPageHandlerError("Failed to delete circuit edge.", {
+            cause: edgeDeleteResult.error,
+          });
+        }
 
         const next = Circuit.from({
           ...prev,
-          circuitData: updated,
+          circuitData: edgeDeleteResult.value,
         });
-
-        const isValid = circuitEditorUsecase.isValidData(next.circuitData);
-        if (!isValid.ok) {
-          throw new CircuitEditorPageHandlerError("Failed to delete circuit edge.", {
-            cause: isValid.error,
-          });
-        }
 
         setCircuit(next);
       } catch (err: unknown) {
         console.error(err);
       }
     },
-    [circuit, circuitEditorUsecase],
+    [circuit],
   );
 
   const getSvgCoords = useCallback((ev: React.MouseEvent): Result<Coordinate, CircuitEditorPageHandlerError> => {
@@ -592,6 +526,8 @@ export const useCircuitEditorPageHandler = ({
 
   const handleNodeMouseDown = useCallback(
     (ev: React.MouseEvent, node: CircuitGuiNode) => {
+      if (ev.button !== 0) return;
+
       const svgCoordinate = getSvgCoords(ev);
       if (!svgCoordinate.ok) return;
 
@@ -656,6 +592,8 @@ export const useCircuitEditorPageHandler = ({
     kind: "from" | "to",
     method: "ADD" | "UPDATE",
   ) => {
+    if (ev.button !== 0) return;
+
     const svgCoordinate = getSvgCoords(ev);
     if (!svgCoordinate.ok) return;
 
@@ -689,12 +627,14 @@ export const useCircuitEditorPageHandler = ({
 
     if (!draggingNodePin || !toPinId) return;
 
-    addCircuitEdge({
-      id: CircuitEdgeId.generate(),
-      from: draggingNodePin.kind === "from" ? draggingNodePin.id : toPinId,
-      to: draggingNodePin.kind === "from" ? toPinId : draggingNodePin.id,
-      waypoints: null,
-    });
+    addCircuitEdge(
+      CircuitEdge.from({
+        id: CircuitEdgeId.generate(),
+        from: draggingNodePin.kind === "from" ? draggingNodePin.id : toPinId,
+        to: draggingNodePin.kind === "from" ? toPinId : draggingNodePin.id,
+        waypoints: null,
+      }),
+    );
   };
 
   const handleUpdateEdgeOnMouseUp = (ev: React.MouseEvent) => {
@@ -717,21 +657,25 @@ export const useCircuitEditorPageHandler = ({
 
     switch (draggingNodePin.kind) {
       case "from": {
-        updateCircuitEdge({
-          id: prev.id,
-          from: draggingNodePin.id,
-          to: toPinId,
-          waypoints: null,
-        });
+        updateCircuitEdge(
+          CircuitEdge.from({
+            id: prev.id,
+            from: draggingNodePin.id,
+            to: toPinId,
+            waypoints: null,
+          }),
+        );
         break;
       }
       case "to": {
-        updateCircuitEdge({
-          id: prev.id,
-          from: toPinId,
-          to: draggingNodePin.id,
-          waypoints: null,
-        });
+        updateCircuitEdge(
+          CircuitEdge.from({
+            id: prev.id,
+            from: toPinId,
+            to: draggingNodePin.id,
+            waypoints: null,
+          }),
+        );
         break;
       }
     }
@@ -755,12 +699,14 @@ export const useCircuitEditorPageHandler = ({
         const waypoints = prev.waypoints ? Waypoint.waypointsToCoordinateArray(prev.waypoints) : [];
         waypoints.splice(index, 0, at);
 
-        updateCircuitEdge({
-          id: prev.id,
-          from: prev.from,
-          to: prev.to,
-          waypoints: Waypoint.coordinatesToWaypoints(waypoints),
-        });
+        updateCircuitEdge(
+          CircuitEdge.from({
+            id: prev.id,
+            from: prev.from,
+            to: prev.to,
+            waypoints: Waypoint.coordinatesToWaypoints(waypoints),
+          }),
+        );
       },
     [circuit, updateCircuitEdge],
   );
@@ -776,18 +722,22 @@ export const useCircuitEditorPageHandler = ({
 
         waypoints.splice(index, 1);
 
-        updateCircuitEdge({
-          id: prev.id,
-          from: prev.from,
-          to: prev.to,
-          waypoints: Waypoint.coordinatesToWaypoints(waypoints),
-        });
+        updateCircuitEdge(
+          CircuitEdge.from({
+            id: prev.id,
+            from: prev.from,
+            to: prev.to,
+            waypoints: Waypoint.coordinatesToWaypoints(waypoints),
+          }),
+        );
       },
     [circuit, updateCircuitEdge],
   );
 
   const handleWaypointMouseDown =
     (id: CircuitEdgeId) => (offset: Coordinate, index: number) => (ev: React.MouseEvent) => {
+      if (ev.button !== 0) return;
+
       const svgCoordinate = getSvgCoords(ev);
       if (!svgCoordinate.ok) return;
 
@@ -817,12 +767,14 @@ export const useCircuitEditorPageHandler = ({
       y: y - draggingWaypoint.offset.y,
     });
 
-    updateCircuitEdge({
-      id: edge.id,
-      from: edge.from,
-      to: edge.to,
-      waypoints: Waypoint.coordinatesToWaypoints(waypoints),
-    });
+    updateCircuitEdge(
+      CircuitEdge.from({
+        id: edge.id,
+        from: edge.from,
+        to: edge.to,
+        waypoints: Waypoint.coordinatesToWaypoints(waypoints),
+      }),
+    );
   };
 
   const handleWaypointMouseUp = () => {

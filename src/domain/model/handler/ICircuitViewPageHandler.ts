@@ -1,5 +1,5 @@
-import type { CircuitGuiData } from "../entity/circuitGuiData";
 import type { CircuitOverview } from "../entity/circuitOverview";
+import type { CircuitGuiData } from "../valueObject/circuitGuiData";
 
 export interface CircuitViewPageErrorModel {
   failedToGetCircuitDetailError: boolean;

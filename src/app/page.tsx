@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { HomePageHandlerContext } from "@/contexts/HomePageHandlerContext";
 import { CircuitParserService } from "@/domain/service/circuitParserService";
-import HomePageLayout from "@/features/routes/Home/HomePageLayout";
+import HomePageLayout from "@/features/routes/home/HomePageLayout";
 import { useHomePageHandler } from "@/handler/homePageHandler";
 import { CircuitOverviewsQueryService } from "@/infrastructure/queryService/circuitOverviewsQueryService";
 import { CircuitRepository } from "@/infrastructure/repository/circuitRepository";

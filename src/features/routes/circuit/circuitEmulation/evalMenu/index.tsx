@@ -4,7 +4,7 @@ import SecondaryButton from "@/components/atoms/buttons/SecondaryButton";
 import Flex from "@/components/atoms/Flex";
 import SecondaryInput from "@/components/atoms/input/SecondaryInput";
 import Typography from "@/components/atoms/Typography";
-import { Table, TableCaption, TableCell, TableRow } from "@/components/atoms/table";
+import { Table, TableBody, TableCaption, TableCell, TableRow } from "@/components/atoms/table";
 import type { ICircuitEmulationPageHandler } from "@/domain/model/handler/ICircuitEmulationPageHandler";
 import { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import { EvalDuration } from "@/domain/model/valueObject/evalDuration";
@@ -71,66 +71,70 @@ export default function EvalMenu({
         <TableCaption>
           <Typography size="medium">Entry Inputs</Typography>
         </TableCaption>
-        {entryInputs &&
-          Object.entries(entryInputs).map(([nodeId, input]) => (
-            <TableRow key={nodeId}>
-              <TableCell style={{ width: "300px" }}>
-                <Typography size="defaultPlus" style={{ marginRight: 10 }}>
-                  Node ID: {nodeId}
-                </Typography>
-              </TableCell>
-              <TableCell>
-                <Button
-                  className="button-animation-push"
-                  style={{
-                    color: "white",
-                    cursor: "pointer",
-                    width: "100px",
-                    height: "30px",
-                    padding: 5,
-                    backgroundColor: input ? "var(--color-circuit-state-high)" : "var(--color-circuit-state-low)",
-                    border: "none",
-                  }}
-                  onClick={() => updateEntryInputs(CircuitNodeId.from(nodeId), EvalResult.from(!input))}
-                >
-                  <Typography>{input ? "True" : "False"}</Typography>
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
+        <TableBody>
+          {entryInputs &&
+            Object.entries(entryInputs).map(([nodeId, input]) => (
+              <TableRow key={nodeId}>
+                <TableCell style={{ width: "300px" }}>
+                  <Typography size="defaultPlus" style={{ marginRight: 10 }}>
+                    Node ID: {nodeId}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Button
+                    className="button-animation-push"
+                    style={{
+                      color: "white",
+                      cursor: "pointer",
+                      width: "100px",
+                      height: "30px",
+                      padding: 5,
+                      backgroundColor: input ? "var(--color-circuit-state-high)" : "var(--color-circuit-state-low)",
+                      border: "none",
+                    }}
+                    onClick={() => updateEntryInputs(CircuitNodeId.from(nodeId), EvalResult.from(!input))}
+                  >
+                    <Typography>{input ? "True" : "False"}</Typography>
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+        </TableBody>
       </Table>
 
       <Table style={{ width: "400px" }}>
         <TableCaption>
           <Typography size="medium">Outputs</Typography>
         </TableCaption>
-        {entryInputs &&
-          Object.entries(outputs).map(([nodeId, input]) => (
-            <TableRow key={nodeId}>
-              <TableCell style={{ width: "300px" }}>
-                <Typography size="defaultPlus" style={{ marginRight: 10 }}>
-                  Node ID: {nodeId}
-                </Typography>
-              </TableCell>
-              <TableCell>
-                <Box
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
-                    width: "100px",
-                    height: "30px",
-                    padding: 5,
-                    backgroundColor: input ? "var(--color-circuit-state-high)" : "var(--color-circuit-state-low)",
-                    border: "none",
-                  }}
-                >
-                  <Typography style={{ textAlign: "center" }}>{input ? "True" : "False"}</Typography>
-                </Box>
-              </TableCell>
-            </TableRow>
-          ))}
+        <TableBody>
+          {entryInputs &&
+            Object.entries(outputs).map(([nodeId, input]) => (
+              <TableRow key={nodeId}>
+                <TableCell style={{ width: "300px" }}>
+                  <Typography size="defaultPlus" style={{ marginRight: 10 }}>
+                    Node ID: {nodeId}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Box
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "white",
+                      width: "100px",
+                      height: "30px",
+                      padding: 5,
+                      backgroundColor: input ? "var(--color-circuit-state-high)" : "var(--color-circuit-state-low)",
+                      border: "none",
+                    }}
+                  >
+                    <Typography style={{ textAlign: "center" }}>{input ? "True" : "False"}</Typography>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
+        </TableBody>
       </Table>
     </Flex>
   );

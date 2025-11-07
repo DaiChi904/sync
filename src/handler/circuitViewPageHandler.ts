@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { CircuitGuiData } from "@/domain/model/entity/circuitGuiData";
 import { CircuitOverview } from "@/domain/model/entity/circuitOverview";
 import {
   type CircuitViewPageErrorModel,
@@ -12,6 +11,7 @@ import {
 } from "@/domain/model/handler/ICircuitViewPageHandler";
 import type { ICircuitParserService } from "@/domain/model/service/ICircuitParserService";
 import type { IGetCircuitDetailUsecase } from "@/domain/model/usecase/IGetCircuitDetailUsecase";
+import type { CircuitGuiData } from "@/domain/model/valueObject/circuitGuiData";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 import { usePartialState } from "@/hooks/partialState";
 

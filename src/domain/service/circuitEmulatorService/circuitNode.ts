@@ -72,6 +72,7 @@ export abstract class CircuitNode implements ICircuitNode {
   }
 
   init(): void {
+    this.lastOutput = EvalResult.from(false);
     this.outputQueue = Array.from({ length: EvalDelay.unBrand(this.delay) }).fill(
       EvalResult.from(false),
     ) as Array<EvalResult>;
@@ -268,7 +269,6 @@ class AndNode extends CircuitNode {
   }
 }
 
-// --- OrNode ---
 class OrNode extends CircuitNode {
   constructor(
     id: CircuitNodeId,
@@ -326,7 +326,6 @@ class OrNode extends CircuitNode {
   }
 }
 
-// --- NotNode ---
 class NotNode extends CircuitNode {
   constructor(
     id: CircuitNodeId,
@@ -382,7 +381,6 @@ class NotNode extends CircuitNode {
   }
 }
 
-// --- JunctionNode ---
 class JunctionNode extends CircuitNode {
   constructor(
     id: CircuitNodeId,

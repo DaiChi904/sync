@@ -1,6 +1,6 @@
-import type { CircuitGuiData } from "@/domain/model/entity/circuitGuiData";
 import type { CircuitGuiEdge } from "@/domain/model/entity/circuitGuiEdge";
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
+import type { CircuitGuiData } from "@/domain/model/valueObject/circuitGuiData";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 import Node from "./Node";
 

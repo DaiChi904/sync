@@ -69,14 +69,14 @@ export class EmulationOrganizer implements IEmulationOrganizer {
 
       const currentOutputRecord: OutputRecord = res.value;
 
-      // In case of first iteration or all previous output record and all current output record is not identical.
-      if (!previousOutputRecord || JSON.stringify(previousOutputRecord) === JSON.stringify(currentOutputRecord)) {
+      if (!previousOutputRecord || JSON.stringify(previousOutputRecord) !== JSON.stringify(currentOutputRecord)) {
+        // In case of first iteration or all previous output record and all current output record is not identical.
         consecutiveStableTicks = 0;
-      }
-      // In case of all previous output record and all current output record is identical.
-      if (previousOutputRecord && JSON.stringify(previousOutputRecord) === JSON.stringify(currentOutputRecord)) {
+      } else {
+        // In case of all previous output record and all current output record is identical.
         consecutiveStableTicks++;
       }
+
       // In case of the output remains stable for a specified stabilityThreshold of ticks (It is considered the circuit to be in a steady state).
       if (consecutiveStableTicks >= stabilityThreshold) {
         this.history.set(this.currentTick, currentOutputRecord);

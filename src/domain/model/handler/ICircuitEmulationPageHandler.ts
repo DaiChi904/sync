@@ -1,5 +1,5 @@
 import type { Circuit } from "../aggregate/circuit";
-import type { CircuitGuiData } from "../entity/circuitGuiData";
+import type { CircuitGuiData } from "../valueObject/circuitGuiData";
 import type { CircuitNodeId } from "../valueObject/circuitNodeId";
 import type { EvalDuration } from "../valueObject/evalDuration";
 import type { EvalResult } from "../valueObject/evalResult";

@@ -1,6 +1,6 @@
 import type { Result } from "@/utils/result";
-import type { CircuitGraphData } from "../entity/circuitGraphData";
 import type { IEmulationOrganizer } from "../service/IEmulationOrganizer";
+import type { CircuitGraphData } from "../valueObject/circuitGraphData";
 import type { EvalDelay } from "../valueObject/evalDelay";
 
 export class EmulationSessionCreationError extends Error {

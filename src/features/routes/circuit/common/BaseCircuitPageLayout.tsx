@@ -18,7 +18,7 @@ export default function BaseCircuitPageLayout({
     <Flex direction="column" grow={1}>
       <ToolBar menuOptions={toolBarOptions} />
       <Flex direction="row" grow={1}>
-        <Flex basis="100px" style={{ width: "100px" }}>
+        <Flex basis="100px" style={{ flexShrink: 0, width: "100px" }}>
           <ActivityBar menuOptions={activityBarOptions} />
         </Flex>
         <Flex direction="column" grow={1}>

@@ -1,9 +1,9 @@
-import type { CircuitGraphData } from "@/domain/model/entity/circuitGraphData";
 import type { IEmulationOrganizer } from "@/domain/model/service/IEmulationOrganizer";
 import {
   EmulationSessionCreationError,
   type ICreateEmulationSessionUsecase,
 } from "@/domain/model/usecase/ICreateEmulationSessionUsecase";
+import type { CircuitGraphData } from "@/domain/model/valueObject/circuitGraphData";
 import type { EvalDelay } from "@/domain/model/valueObject/evalDelay";
 import type { CircuitEmulatorService } from "@/domain/service/circuitEmulatorService";
 import type { EmulationOrganizer } from "@/domain/service/emulationOrganizer";

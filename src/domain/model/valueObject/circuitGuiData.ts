@@ -1,6 +1,6 @@
 import type { Brand } from "@/utils/brand";
-import type { CircuitGuiEdge } from "./circuitGuiEdge";
-import type { CircuitGuiNode } from "./circuitGuiNode";
+import type { CircuitGuiEdge } from "../entity/circuitGuiEdge";
+import type { CircuitGuiNode } from "../entity/circuitGuiNode";
 
 const brandSymbol = Symbol("CircuitGuiData");
 

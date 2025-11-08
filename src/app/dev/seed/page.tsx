@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { mockCircuitData } from "@/constants/mockCircuitData";
+import { useMemo } from "react";
 import { SeedPageHandlerContext } from "@/contexts/SeedPageHandlerContext";
 import SeedPageLayout from "@/features/routes/dev/seed/SeedPageLayout";
 import { useSeedPageHandler } from "@/handler/seedPageHandler";

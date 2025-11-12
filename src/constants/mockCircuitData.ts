@@ -290,4 +290,273 @@ export const mockCircuitData: Array<Circuit> = [
     createdAt: "2025-11-08T12:19:32.754Z",
     updatedAt: "2025-11-08T12:19:32.754Z",
   } as Circuit,
+  {
+    id: "circuit-7dc091e9b0e658",
+    title: "Half Adder",
+    description: "This is circuit of half adder.",
+    circuitData: {
+      nodes: [
+        {
+          id: "node-4f5c80eaa5352",
+          type: "ENTRY",
+          inputs: [],
+          outputs: ["pin-15b7664e56dc2"],
+          coordinate: {
+            x: 0,
+            y: 0,
+          },
+          size: {
+            x: 60,
+            y: 40,
+          },
+        },
+        {
+          id: "node-1be466821f5aa8",
+          type: "ENTRY",
+          inputs: [],
+          outputs: ["pin-52fcf0b95feeb"],
+          coordinate: {
+            x: 0,
+            y: 100,
+          },
+          size: {
+            x: 60,
+            y: 40,
+          },
+        },
+        {
+          id: "node-62b065da45c2c8",
+          type: "JUNCTION",
+          inputs: ["pin-653e68ff2799d8"],
+          outputs: ["pin-55c8d0a48dbcb8"],
+          coordinate: {
+            x: 75,
+            y: 0,
+          },
+          size: {
+            x: 60,
+            y: 40,
+          },
+        },
+        {
+          id: "node-c91b25f3db0b88",
+          type: "JUNCTION",
+          inputs: ["pin-10cdc7183cf828"],
+          outputs: ["pin-d13d8e11d60028"],
+          coordinate: {
+            x: 125,
+            y: 100,
+          },
+          size: {
+            x: 60,
+            y: 40,
+          },
+        },
+        {
+          id: "node-61811e513359e",
+          type: "OR",
+          inputs: ["pin-7b831c91fdd7b8", "pin-4f725caae0a6e8"],
+          outputs: ["pin-8e913d74c0ce48"],
+          coordinate: {
+            x: 200,
+            y: 6.5,
+          },
+          size: {
+            x: 60,
+            y: 40,
+          },
+        },
+        {
+          id: "node-388bd1f2d1a1f8",
+          type: "AND",
+          inputs: ["pin-2bb41b3b5d5978", "pin-beb02b5b1fd008"],
+          outputs: ["pin-a0f5886be3e548"],
+          coordinate: {
+            x: 200,
+            y: 93.5,
+          },
+          size: {
+            x: 60,
+            y: 40,
+          },
+        },
+        {
+          id: "node-97ce8913164a5",
+          type: "JUNCTION",
+          inputs: ["pin-10baec4f03ed18"],
+          outputs: ["pin-a4d950475aed48"],
+          coordinate: {
+            x: 300,
+            y: 93.5,
+          },
+          size: {
+            x: 60,
+            y: 40,
+          },
+        },
+        {
+          id: "node-beaec8159a5c08",
+          type: "NOT",
+          inputs: ["pin-bc70854c0e201"],
+          outputs: ["pin-68d764d4125198"],
+          coordinate: {
+            x: 375,
+            y: 50,
+          },
+          size: {
+            x: 60,
+            y: 40,
+          },
+        },
+        {
+          id: "node-2f116bf76dc048",
+          type: "AND",
+          inputs: ["pin-9d4d3bb5162ef8", "pin-6506cbaeb585c8"],
+          outputs: ["pin-78228900d20a48"],
+          coordinate: {
+            x: 500,
+            y: 13.5,
+          },
+          size: {
+            x: 60,
+            y: 40,
+          },
+        },
+        {
+          id: "node-341d925273bce",
+          type: "EXIT",
+          inputs: ["pin-65ec0453a6722"],
+          outputs: [],
+          coordinate: {
+            x: 600,
+            y: 13.5,
+          },
+          size: {
+            x: 60,
+            y: 40,
+          },
+        },
+        {
+          id: "node-db16a115ce3fe8",
+          type: "EXIT",
+          inputs: ["pin-6042cbbd70636"],
+          outputs: [],
+          coordinate: {
+            x: 600,
+            y: 93.5,
+          },
+          size: {
+            x: 60,
+            y: 40,
+          },
+        },
+      ],
+      edges: [
+        {
+          id: "edge-dd494b58b684c",
+          from: "pin-15b7664e56dc2",
+          to: "pin-653e68ff2799d8",
+          waypoints: null,
+        },
+        {
+          id: "edge-3b63bad5ab23",
+          from: "pin-52fcf0b95feeb",
+          to: "pin-10cdc7183cf828",
+          waypoints: null,
+        },
+        {
+          id: "edge-e29958aa0be29",
+          from: "pin-55c8d0a48dbcb8",
+          to: "pin-7b831c91fdd7b8",
+          waypoints: null,
+        },
+        {
+          id: "edge-234e2bf5694a98",
+          from: "pin-d13d8e11d60028",
+          to: "pin-beb02b5b1fd008",
+          waypoints: null,
+        },
+        {
+          id: "edge-241dedcb95fce8",
+          from: "pin-55c8d0a48dbcb8",
+          to: "pin-2bb41b3b5d5978",
+          waypoints: {
+            coordinate: {
+              x: 75,
+              y: 87,
+            },
+            next: null,
+          },
+        },
+        {
+          id: "edge-4b848499ae8208",
+          from: "pin-d13d8e11d60028",
+          to: "pin-4f725caae0a6e8",
+          waypoints: {
+            coordinate: {
+              x: 125,
+              y: 13,
+            },
+            next: null,
+          },
+        },
+        {
+          id: "edge-569752721c19f8",
+          from: "pin-8e913d74c0ce48",
+          to: "pin-9d4d3bb5162ef8",
+          waypoints: null,
+        },
+        {
+          id: "edge-024e623ebb749",
+          from: "pin-a0f5886be3e548",
+          to: "pin-10baec4f03ed18",
+          waypoints: null,
+        },
+        {
+          id: "edge-2bc668fe3ee5b8",
+          from: "pin-a4d950475aed48",
+          to: "pin-bc70854c0e201",
+          waypoints: {
+            coordinate: {
+              x: 300,
+              y: 50,
+            },
+            next: null,
+          },
+        },
+        {
+          id: "edge-25d45818b88c28",
+          from: "pin-a4d950475aed48",
+          to: "pin-6042cbbd70636",
+          waypoints: null,
+        },
+        {
+          id: "edge-c5de3197980ce",
+          from: "pin-68d764d4125198",
+          to: "pin-6506cbaeb585c8",
+          waypoints: {
+            coordinate: {
+              x: 435,
+              y: 50,
+            },
+            next: {
+              coordinate: {
+                x: 435,
+                y: 20,
+              },
+              next: null,
+            },
+          },
+        },
+        {
+          id: "edge-7c7df138efd1",
+          from: "pin-78228900d20a48",
+          to: "pin-65ec0453a6722",
+          waypoints: null,
+        },
+      ],
+    },
+    createdAt: "2025-11-12T17:27:29.539Z",
+    updatedAt: "2025-11-12T17:27:29.539Z",
+  } as Circuit,
 ];

@@ -1,3 +1,5 @@
+import { CircuitEdge } from "@/domain/model/entity/circuitEdge";
+import { CircuitNode } from "@/domain/model/entity/circuitNode";
 import { DataIntegrityError } from "@/domain/model/infrastructure/dataIntegrityError";
 import { InfraError } from "@/domain/model/infrastructure/infraError";
 import {
@@ -50,20 +52,24 @@ export class CircuitRepository implements ICircuitRepository {
             title: CircuitTitle.from(circuit.title),
             description: CircuitDescription.from(circuit.description),
             circuitData: CircuitData.from({
-              nodes: circuit.circuitData.nodes.map((n) => ({
-                id: CircuitNodeId.from(n.id),
-                type: CircuitNodeType.from(n.type),
-                inputs: n.inputs.map(CircuitNodePinId.from),
-                outputs: n.outputs.map(CircuitNodePinId.from),
-                coordinate: Coordinate.from(n.coordinate),
-                size: CircuitNodeSize.from(n.size),
-              })),
-              edges: circuit.circuitData.edges.map((e) => ({
-                id: CircuitEdgeId.from(e.id),
-                from: CircuitNodePinId.from(e.from),
-                to: CircuitNodePinId.from(e.to),
-                waypoints: Waypoint.fromPrimitive(e.waypoints),
-              })),
+              nodes: circuit.circuitData.nodes.map((n) =>
+                CircuitNode.from({
+                  id: CircuitNodeId.from(n.id),
+                  type: CircuitNodeType.from(n.type),
+                  inputs: n.inputs.map(CircuitNodePinId.from),
+                  outputs: n.outputs.map(CircuitNodePinId.from),
+                  coordinate: Coordinate.from(n.coordinate),
+                  size: CircuitNodeSize.from(n.size),
+                }),
+              ),
+              edges: circuit.circuitData.edges.map((e) =>
+                CircuitEdge.from({
+                  id: CircuitEdgeId.from(e.id),
+                  from: CircuitNodePinId.from(e.from),
+                  to: CircuitNodePinId.from(e.to),
+                  waypoints: Waypoint.fromPrimitive(e.waypoints),
+                }),
+              ),
             }),
             createdAt: CreatedDateTime.fromString(circuit.createdAt),
             updatedAt: UpdatedDateTime.fromString(circuit.updatedAt),
@@ -109,20 +115,24 @@ export class CircuitRepository implements ICircuitRepository {
         title: CircuitTitle.from(rawCircuit.title),
         description: CircuitDescription.from(rawCircuit.description),
         circuitData: CircuitData.from({
-          nodes: rawCircuit.circuitData.nodes.map((n) => ({
-            id: CircuitNodeId.from(n.id),
-            type: CircuitNodeType.from(n.type),
-            inputs: n.inputs.map(CircuitNodePinId.from),
-            outputs: n.outputs.map(CircuitNodePinId.from),
-            coordinate: Coordinate.from(n.coordinate),
-            size: CircuitNodeSize.from(n.size),
-          })),
-          edges: rawCircuit.circuitData.edges.map((e) => ({
-            id: CircuitEdgeId.from(e.id),
-            from: CircuitNodePinId.from(e.from),
-            to: CircuitNodePinId.from(e.to),
-            waypoints: Waypoint.fromPrimitive(e.waypoints),
-          })),
+          nodes: rawCircuit.circuitData.nodes.map((n) =>
+            CircuitNode.from({
+              id: CircuitNodeId.from(n.id),
+              type: CircuitNodeType.from(n.type),
+              inputs: n.inputs.map(CircuitNodePinId.from),
+              outputs: n.outputs.map(CircuitNodePinId.from),
+              coordinate: Coordinate.from(n.coordinate),
+              size: CircuitNodeSize.from(n.size),
+            }),
+          ),
+          edges: rawCircuit.circuitData.edges.map((e) =>
+            CircuitEdge.from({
+              id: CircuitEdgeId.from(e.id),
+              from: CircuitNodePinId.from(e.from),
+              to: CircuitNodePinId.from(e.to),
+              waypoints: Waypoint.fromPrimitive(e.waypoints),
+            }),
+          ),
         }),
         createdAt: CreatedDateTime.fromString(rawCircuit.createdAt),
         updatedAt: UpdatedDateTime.fromString(rawCircuit.updatedAt),

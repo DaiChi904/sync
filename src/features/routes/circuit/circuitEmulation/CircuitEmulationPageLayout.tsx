@@ -5,7 +5,7 @@ import LoadingPuls from "@/components/atoms/LoadingPuls";
 import Pending from "@/components/atoms/Pending";
 import Typography from "@/components/atoms/Typography";
 import LayoutContainer from "@/components/layouts/LayoutContainer";
-import { useCircuitEmulationPageHandlerContext } from "@/contexts/CircuitEmulationPageHandlerContext";
+import { useCircuitEmulationPageControllerContext } from "@/contexts/CircuitEmulationPageControllerContext";
 import CircuitDiagram from "../../../common/circuitDiagram";
 import BaseCircuitPageLayout from "../common/BaseCircuitPageLayout";
 import EvalMenu from "./evalMenu";
@@ -26,7 +26,7 @@ export default function CircuitEmulationPageLayout() {
     openToolBarMenu,
     closeToolBarMenu,
     changeActivityBarMenu,
-  } = useCircuitEmulationPageHandlerContext();
+  } = useCircuitEmulationPageControllerContext();
 
   const isInCriticalError = error.emulationEnvironmentCreationError;
 

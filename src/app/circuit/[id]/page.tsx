@@ -2,11 +2,11 @@
 
 import { useParams } from "next/navigation";
 import { useMemo } from "react";
-import { CircuitViewPageHandlerContext } from "@/contexts/CircuitViewPageHandlerContext";
+import { useCircuitViewPageController } from "@/Controller/circuitViewPageController";
+import { CircuitViewPageControllerContext } from "@/contexts/CircuitViewPageControllerContext";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 import { CircuitParserService } from "@/domain/service/circuitParserService";
 import CircuitViewPageLayout from "@/features/routes/circuit/circuitView/CircuitViewPageLayout";
-import { useCircuitViewPageHandler } from "@/handler/circuitViewPageHandler";
 import { CircuitDetailQueryService } from "@/infrastructure/queryService/circuitDetailQueryService";
 import { CircuitRepository } from "@/infrastructure/repository/circuitRepository";
 import { LocalStorage } from "@/infrastructure/storage/localStorage";
@@ -27,11 +27,15 @@ export default function CircuitView() {
     [circuitDetailQueryService],
   );
   const circuitParserUsecase = useMemo(() => new CircuitParserService(), []);
-  const circuitViewPageHandler = useCircuitViewPageHandler({ query, getCircuitDetailUsecase, circuitParserUsecase });
+  const circuitViewPageController = useCircuitViewPageController({
+    query,
+    getCircuitDetailUsecase,
+    circuitParserUsecase,
+  });
 
   return (
-    <CircuitViewPageHandlerContext.Provider value={circuitViewPageHandler}>
+    <CircuitViewPageControllerContext.Provider value={circuitViewPageController}>
       <CircuitViewPageLayout />
-    </CircuitViewPageHandlerContext.Provider>
+    </CircuitViewPageControllerContext.Provider>
   );
 }

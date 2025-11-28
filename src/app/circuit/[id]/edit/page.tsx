@@ -2,11 +2,11 @@
 
 import { useParams } from "next/navigation";
 import { useMemo } from "react";
-import { CircuitEditorPageHandlerContext } from "@/contexts/CircuitEditorPageHandlerContext";
+import { useCircuitEditorPageController } from "@/Controller/circuitEditorPageController";
+import { CircuitEditorPageControllerContext } from "@/contexts/CircuitEditorPageControllerContext";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 import { CircuitParserService } from "@/domain/service/circuitParserService";
 import CircuitEditorPageLayout from "@/features/routes/circuit/circuitEditor/CircuitEditorPageLayout";
-import { useCircuitEditorPageHandler } from "@/handler/circuitEditorPageHandler";
 import { CircuitDetailQueryService } from "@/infrastructure/queryService/circuitDetailQueryService";
 import { CircuitRepository } from "@/infrastructure/repository/circuitRepository";
 import { LocalStorage } from "@/infrastructure/storage/localStorage";
@@ -31,7 +31,7 @@ export default function CircuitView() {
   const circuitParserUsecase = useMemo(() => new CircuitParserService(), []);
   const updateCircuitUsecase = useMemo(() => new UpdateCircuitUsecase({ circuitRepository }), [circuitRepository]);
   const deleteCircuitUsecase = useMemo(() => new DeleteCircuitUsecase({ circuitRepository }), [circuitRepository]);
-  const circuitEditorHandler = useCircuitEditorPageHandler({
+  const circuitEditorController = useCircuitEditorPageController({
     query,
     getCircuitDetailUsecase,
     circuitParserUsecase,
@@ -41,8 +41,8 @@ export default function CircuitView() {
   });
 
   return (
-    <CircuitEditorPageHandlerContext.Provider value={circuitEditorHandler}>
+    <CircuitEditorPageControllerContext.Provider value={circuitEditorController}>
       <CircuitEditorPageLayout />
-    </CircuitEditorPageHandlerContext.Provider>
+    </CircuitEditorPageControllerContext.Provider>
   );
 }

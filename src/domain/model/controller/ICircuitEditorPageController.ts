@@ -33,15 +33,15 @@ export interface CircuitEditorPageUiStateModel {
   activityBarMenu: { open: "infomation" | "circuitDiagram" | "rowCircuitData" };
 }
 
-export class CircuitEditorPageHandlerError extends Error {
+export class CircuitEditorPageControllerError extends Error {
   constructor(message: string, options?: { cause?: unknown }) {
     super(message);
-    this.name = "CircuitEditorPageHandlerError";
+    this.name = "CircuitEditorPageControllerError";
     this.cause = options?.cause;
   }
 }
 
-export interface ICircuitEditorPageHandler {
+export interface ICircuitEditorPageController {
   error: CircuitEditorPageErrorModel;
   uiState: CircuitEditorPageUiStateModel;
   circuit: Circuit | undefined;

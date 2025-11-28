@@ -3,14 +3,14 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Circuit } from "@/domain/model/aggregate/circuit";
-import type { CircuitOverview } from "@/domain/model/entity/circuitOverview";
 import {
+  HomePageControllerError,
   type HomePageErrorModel,
-  HomePageHandlerError,
   type HomePageUiStateModel,
-  type IHomePageHandler,
+  type IHomePageController,
   initialHomePageError,
-} from "@/domain/model/handler/IHomePageHandler";
+} from "@/domain/model/controller/IHomePageController";
+import type { CircuitOverview } from "@/domain/model/entity/circuitOverview";
 import type { IAddCircuitUsecase } from "@/domain/model/usecase/IAddCircuitUsecase";
 import type { IGetCircuitOverviewsUsecase } from "@/domain/model/usecase/IGetCircuitOverviewsUsecase";
 import { CircuitData } from "@/domain/model/valueObject/circuitData";
@@ -19,17 +19,17 @@ import { CircuitId } from "@/domain/model/valueObject/circuitId";
 import { CircuitTitle } from "@/domain/model/valueObject/circuitTitle";
 import { UpdatedDateTime } from "@/domain/model/valueObject/updatedDateTime";
 import { usePartialState } from "@/hooks/partialState";
-import { CreatedDateTime } from "./../domain/model/valueObject/createdDateTime";
+import { CreatedDateTime } from "../domain/model/valueObject/createdDateTime";
 
-interface HomePageHandlerDependencies {
+interface HomePageControllerDependencies {
   getCircuitOverviewsUsecase: IGetCircuitOverviewsUsecase;
   addCircuitUsecase: IAddCircuitUsecase;
 }
 
-export const useHomePageHandler = ({
+export const useHomePageController = ({
   getCircuitOverviewsUsecase,
   addCircuitUsecase,
-}: HomePageHandlerDependencies): IHomePageHandler => {
+}: HomePageControllerDependencies): IHomePageController => {
   const router = useRouter();
 
   const [error, setError] = usePartialState<HomePageErrorModel>(initialHomePageError);
@@ -43,7 +43,7 @@ export const useHomePageHandler = ({
     try {
       const circuitOverviews = await getCircuitOverviewsUsecase.getOverviews();
       if (!circuitOverviews.ok) {
-        throw new HomePageHandlerError("Failed to get circuit overviews.", {
+        throw new HomePageControllerError("Failed to get circuit overviews.", {
           cause: circuitOverviews.error,
         });
       }
@@ -72,7 +72,7 @@ export const useHomePageHandler = ({
               }),
             );
             if (!res.ok) {
-              throw new HomePageHandlerError("Failed to add new circuit.", {
+              throw new HomePageControllerError("Failed to add new circuit.", {
                 cause: res.error,
               });
             }

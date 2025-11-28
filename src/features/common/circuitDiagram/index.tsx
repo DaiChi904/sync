@@ -223,21 +223,21 @@ export default function CircuitDiagram({
                 menuOptions={[
                   {
                     label: "Delete",
-                    onClickHandler: () => {
+                    onClickController: () => {
                       deleteCircuitEdge?.(focusedElement.value.id);
                       closeUtilityMenu?.();
                     },
                   },
                   {
                     label: "Add Waypoint",
-                    onClickHandler: () => {
+                    onClickController: () => {
                       addEdgeWaypoint?.(focusedElement.value.id)(at, focusedElement.value.waypointIdx);
                       closeUtilityMenu?.();
                     },
                   },
                   {
                     label: "Delete Waypoint",
-                    onClickHandler: () => {
+                    onClickController: () => {
                       deleteEdgeWaypoint?.(focusedElement.value.id)(focusedElement.value.waypointIdx);
                       closeUtilityMenu?.();
                     },
@@ -271,7 +271,7 @@ export default function CircuitDiagram({
                 menuOptions={[
                   {
                     label: "Delete",
-                    onClickHandler: () => {
+                    onClickController: () => {
                       deleteCircuitNode?.(focusedElement.value.id);
                       closeUtilityMenu?.();
                     },

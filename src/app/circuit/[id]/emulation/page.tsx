@@ -2,13 +2,13 @@
 
 import { useParams } from "next/navigation";
 import { useMemo } from "react";
-import { CircuitEmulationPageHandlerContext } from "@/contexts/CircuitEmulationPageHandlerContext";
+import { useCircuitEmulationPageController } from "@/Controller/circuitEmulationPageController";
+import { CircuitEmulationPageControllerContext } from "@/contexts/CircuitEmulationPageControllerContext";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 import { CircuitEmulatorService } from "@/domain/service/circuitEmulatorService";
 import { CircuitParserService } from "@/domain/service/circuitParserService";
 import { EmulationOrganizer } from "@/domain/service/emulationOrganizer";
 import CircuitEmulationPageLayout from "@/features/routes/circuit/circuitEmulation/CircuitEmulationPageLayout";
-import { useCircuitEmulationPageHandler } from "@/handler/circuitEmulationPageHandler";
 import { CircuitDetailQueryService } from "@/infrastructure/queryService/circuitDetailQueryService";
 import { CircuitRepository } from "@/infrastructure/repository/circuitRepository";
 import { LocalStorage } from "@/infrastructure/storage/localStorage";
@@ -36,7 +36,7 @@ export default function CircuitView() {
     [circuitEmulatorService, emulationOrganizer],
   );
   const circuitParserUsecase = useMemo(() => new CircuitParserService(), []);
-  const circuitEmulationPageHandler = useCircuitEmulationPageHandler({
+  const circuitEmulationPageController = useCircuitEmulationPageController({
     query,
     getCircuitDetailUsecase,
     createEmulationSessionUsecase,
@@ -44,8 +44,8 @@ export default function CircuitView() {
   });
 
   return (
-    <CircuitEmulationPageHandlerContext.Provider value={circuitEmulationPageHandler}>
+    <CircuitEmulationPageControllerContext.Provider value={circuitEmulationPageController}>
       <CircuitEmulationPageLayout />
-    </CircuitEmulationPageHandlerContext.Provider>
+    </CircuitEmulationPageControllerContext.Provider>
   );
 }

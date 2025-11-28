@@ -3,17 +3,17 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Circuit } from "@/domain/model/aggregate/circuit";
+import {
+  CircuitEditorPageControllerError,
+  type CircuitEditorPageErrorModel,
+  type CircuitEditorPageUiStateModel,
+  type ICircuitEditorPageController,
+  initialCircuitEditorPageError,
+} from "@/domain/model/controller/ICircuitEditorPageController";
 import { CircuitEdge } from "@/domain/model/entity/circuitEdge";
 import type { CircuitGuiEdge } from "@/domain/model/entity/circuitGuiEdge";
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
 import type { CircuitNode } from "@/domain/model/entity/circuitNode";
-import {
-  type CircuitEditorPageErrorModel,
-  CircuitEditorPageHandlerError,
-  type CircuitEditorPageUiStateModel,
-  type ICircuitEditorPageHandler,
-  initialCircuitEditorPageError,
-} from "@/domain/model/handler/ICircuitEditorPageHandler";
 import type { ICircuitRepository } from "@/domain/model/infrastructure/repository/ICircuitRepository";
 import type { ICircuitParserService } from "@/domain/model/service/ICircuitParserService";
 import type { IDeleteCircuitUsecase } from "@/domain/model/usecase/IDeleteCircuitUsecase";
@@ -32,7 +32,7 @@ import { Waypoint } from "@/domain/model/valueObject/waypoint";
 import { usePartialState } from "@/hooks/partialState";
 import type { Result } from "@/utils/result";
 
-interface CircuitEditorPageHandlerDependencies {
+interface CircuitEditorPageControllerDependencies {
   query: CircuitId;
   getCircuitDetailUsecase: IGetCircuitDetailUsecase;
   circuitParserUsecase: ICircuitParserService;
@@ -41,13 +41,13 @@ interface CircuitEditorPageHandlerDependencies {
   circuitRepository: ICircuitRepository;
 }
 
-export const useCircuitEditorPageHandler = ({
+export const useCircuitEditorPageController = ({
   query,
   getCircuitDetailUsecase,
   circuitParserUsecase,
   updateCircuitUsecase,
   deleteCircuitUsecase,
-}: CircuitEditorPageHandlerDependencies): ICircuitEditorPageHandler => {
+}: CircuitEditorPageControllerDependencies): ICircuitEditorPageController => {
   const router = useRouter();
 
   const [error, setError] = usePartialState<CircuitEditorPageErrorModel>(initialCircuitEditorPageError);
@@ -87,7 +87,7 @@ export const useCircuitEditorPageHandler = ({
   const fetch = useCallback(async (): Promise<void> => {
     const circuitDetail = await getCircuitDetailUsecase.getById(query);
     if (!circuitDetail.ok) {
-      const err = new CircuitEditorPageHandlerError("Failed to get circuit detail.", {
+      const err = new CircuitEditorPageControllerError("Failed to get circuit detail.", {
         cause: circuitDetail.error,
       });
       console.error(err);
@@ -101,7 +101,7 @@ export const useCircuitEditorPageHandler = ({
 
   const updateCircuitGuiData = useCallback((): void => {
     if (!circuit) {
-      const err = new CircuitEditorPageHandlerError("Unable to update gui data. Circuit is not defined.");
+      const err = new CircuitEditorPageControllerError("Unable to update gui data. Circuit is not defined.");
       console.error(err);
 
       setError("failedToParseCircuitDataError", true);
@@ -110,7 +110,7 @@ export const useCircuitEditorPageHandler = ({
 
     const circuitGuiData = circuitParserUsecase.parseToGuiData(circuit.circuitData);
     if (!circuitGuiData.ok) {
-      const err = new CircuitEditorPageHandlerError(
+      const err = new CircuitEditorPageControllerError(
         "Failed to update gui data. Failed to parse circuit data to gui data.",
         {
           cause: circuitGuiData.error,
@@ -168,7 +168,7 @@ export const useCircuitEditorPageHandler = ({
 
     setViewBox((prev) => {
       if (!prev) {
-        const err = new CircuitEditorPageHandlerError("Unable to handle ViewBox move. ViewBox is not defined.");
+        const err = new CircuitEditorPageControllerError("Unable to handle ViewBox move. ViewBox is not defined.");
         console.error(err);
 
         setError("failedToRenderCircuitError", true);
@@ -197,7 +197,7 @@ export const useCircuitEditorPageHandler = ({
 
     setViewBox((prev) => {
       if (!prev) {
-        const err = new CircuitEditorPageHandlerError("Unable to handle ViewBox zoom. ViewBox is not defined.");
+        const err = new CircuitEditorPageControllerError("Unable to handle ViewBox zoom. ViewBox is not defined.");
         console.error(err);
 
         setError("failedToRenderCircuitError", true);
@@ -220,18 +220,18 @@ export const useCircuitEditorPageHandler = ({
       const el = ref.current;
       if (!el) return;
 
-      const wheelHandler = (e: WheelEvent) => {
+      const wheelController = (e: WheelEvent) => {
         if (e.ctrlKey) e.preventDefault();
       };
 
-      el.addEventListener("wheel", wheelHandler, { passive: false });
-      return () => el.removeEventListener("wheel", wheelHandler);
+      el.addEventListener("wheel", wheelController, { passive: false });
+      return () => el.removeEventListener("wheel", wheelController);
     }, [ref]);
   };
 
   const save = useCallback(async (): Promise<void> => {
     if (!circuit) {
-      const err = new CircuitEditorPageHandlerError("Unable to save. Circuit is not defined.");
+      const err = new CircuitEditorPageControllerError("Unable to save. Circuit is not defined.");
       console.error(err);
 
       setError("failedToSaveCircuitError", true);
@@ -240,7 +240,7 @@ export const useCircuitEditorPageHandler = ({
 
     const res = await updateCircuitUsecase.execute(circuit);
     if (!res.ok) {
-      const err = new CircuitEditorPageHandlerError("Failed to save circuit.", {
+      const err = new CircuitEditorPageControllerError("Failed to save circuit.", {
         cause: res.error,
       });
       console.error(err);
@@ -254,7 +254,7 @@ export const useCircuitEditorPageHandler = ({
 
   const deleteCircuit = useCallback(async () => {
     if (!circuit) {
-      const err = new CircuitEditorPageHandlerError("Unable to delete circuit. Circuit is not defined.");
+      const err = new CircuitEditorPageControllerError("Unable to delete circuit. Circuit is not defined.");
       console.error(err);
 
       return;
@@ -262,7 +262,7 @@ export const useCircuitEditorPageHandler = ({
 
     const res = await deleteCircuitUsecase.execute(circuit.id);
     if (!res.ok) {
-      const err = new CircuitEditorPageHandlerError("Failed to delete circuit.", {
+      const err = new CircuitEditorPageControllerError("Failed to delete circuit.", {
         cause: res.error,
       });
       console.error(err);
@@ -277,7 +277,7 @@ export const useCircuitEditorPageHandler = ({
     try {
       setCircuit((prev) => {
         if (!prev) {
-          throw new CircuitEditorPageHandlerError("Unable to change title. Circuit is not defined.");
+          throw new CircuitEditorPageControllerError("Unable to change title. Circuit is not defined.");
         }
         return Circuit.changeTitle(prev, title);
       });
@@ -290,7 +290,7 @@ export const useCircuitEditorPageHandler = ({
     try {
       setCircuit((prev) => {
         if (!prev) {
-          throw new CircuitEditorPageHandlerError("Unable to change title. Circuit is not defined.");
+          throw new CircuitEditorPageControllerError("Unable to change title. Circuit is not defined.");
         }
         return Circuit.changeDescription(prev, description);
       });
@@ -304,12 +304,12 @@ export const useCircuitEditorPageHandler = ({
       const prev = circuit;
       try {
         if (!prev) {
-          throw new CircuitEditorPageHandlerError("Unable to add circuit node. Circuit is not defined.");
+          throw new CircuitEditorPageControllerError("Unable to add circuit node. Circuit is not defined.");
         }
 
         const nodeAddResult = CircuitData.addNode(prev.circuitData, newNode);
         if (!nodeAddResult.ok) {
-          throw new CircuitEditorPageHandlerError("Failed to add circuit node.", {
+          throw new CircuitEditorPageControllerError("Failed to add circuit node.", {
             cause: nodeAddResult.error,
           });
         }
@@ -329,12 +329,12 @@ export const useCircuitEditorPageHandler = ({
       const prev = circuit;
       try {
         if (!prev) {
-          throw new CircuitEditorPageHandlerError("Unable to update circuit node. Circuit is not defined.");
+          throw new CircuitEditorPageControllerError("Unable to update circuit node. Circuit is not defined.");
         }
 
         const nodeUpdateResult = CircuitData.updateNode(prev.circuitData, newNode);
         if (!nodeUpdateResult.ok) {
-          throw new CircuitEditorPageHandlerError("Failed to update circuit node.", {
+          throw new CircuitEditorPageControllerError("Failed to update circuit node.", {
             cause: nodeUpdateResult.error,
           });
         }
@@ -357,12 +357,12 @@ export const useCircuitEditorPageHandler = ({
       const prev = circuit;
       try {
         if (!prev) {
-          throw new CircuitEditorPageHandlerError("Unable to delete circuit node. Circuit is not defined.");
+          throw new CircuitEditorPageControllerError("Unable to delete circuit node. Circuit is not defined.");
         }
 
         const nodeDeleteResult = CircuitData.deleteNode(prev.circuitData, nodeId);
         if (!nodeDeleteResult.ok) {
-          throw new CircuitEditorPageHandlerError("Failed to delete circuit node.", {
+          throw new CircuitEditorPageControllerError("Failed to delete circuit node.", {
             cause: nodeDeleteResult.error,
           });
         }
@@ -385,12 +385,12 @@ export const useCircuitEditorPageHandler = ({
       const prev = circuit;
       try {
         if (!prev) {
-          throw new CircuitEditorPageHandlerError("Unable to add circuit edge. Circuit is not defined.");
+          throw new CircuitEditorPageControllerError("Unable to add circuit edge. Circuit is not defined.");
         }
 
         const edgeAddResult = CircuitData.addEdge(prev.circuitData, newEdge);
         if (!edgeAddResult.ok) {
-          throw new CircuitEditorPageHandlerError("Failed to add circuit edge.", {
+          throw new CircuitEditorPageControllerError("Failed to add circuit edge.", {
             cause: edgeAddResult.error,
           });
         }
@@ -413,12 +413,12 @@ export const useCircuitEditorPageHandler = ({
       const prev = circuit;
       try {
         if (!prev) {
-          throw new CircuitEditorPageHandlerError("Unable to update circuit edge. Circuit is not defined.");
+          throw new CircuitEditorPageControllerError("Unable to update circuit edge. Circuit is not defined.");
         }
 
         const edgeUpdateResult = CircuitData.updateEdge(prev.circuitData, newEdge);
         if (!edgeUpdateResult.ok) {
-          throw new CircuitEditorPageHandlerError("Failed to update circuit edge.", {
+          throw new CircuitEditorPageControllerError("Failed to update circuit edge.", {
             cause: edgeUpdateResult.error,
           });
         }
@@ -441,12 +441,12 @@ export const useCircuitEditorPageHandler = ({
       const prev = circuit;
       try {
         if (!prev) {
-          throw new CircuitEditorPageHandlerError("Unable to delete circuit edge. Circuit is not defined.");
+          throw new CircuitEditorPageControllerError("Unable to delete circuit edge. Circuit is not defined.");
         }
 
         const edgeDeleteResult = CircuitData.deleteEdge(prev.circuitData, edgeId);
         if (!edgeDeleteResult.ok) {
-          throw new CircuitEditorPageHandlerError("Failed to delete circuit edge.", {
+          throw new CircuitEditorPageControllerError("Failed to delete circuit edge.", {
             cause: edgeDeleteResult.error,
           });
         }
@@ -464,11 +464,11 @@ export const useCircuitEditorPageHandler = ({
     [circuit],
   );
 
-  const getSvgCoords = useCallback((ev: React.MouseEvent): Result<Coordinate, CircuitEditorPageHandlerError> => {
+  const getSvgCoords = useCallback((ev: React.MouseEvent): Result<Coordinate, CircuitEditorPageControllerError> => {
     try {
       const svg = svgRef.current;
       if (!svg) {
-        throw new CircuitEditorPageHandlerError("Unable to get svg coordinates. svgRef is null.");
+        throw new CircuitEditorPageControllerError("Unable to get svg coordinates. svgRef is null.");
       }
 
       const pt = svg.createSVGPoint();
@@ -479,13 +479,13 @@ export const useCircuitEditorPageHandler = ({
       return { ok: true, value: Coordinate.from({ x: cursorPt.x, y: cursorPt.y }) };
     } catch (err: unknown) {
       console.error(err);
-      if (err instanceof CircuitEditorPageHandlerError) {
+      if (err instanceof CircuitEditorPageControllerError) {
         return { ok: false, error: err };
       }
 
       return {
         ok: false,
-        error: new CircuitEditorPageHandlerError("Unknow error occurred when trying to get svg coordinates.", {
+        error: new CircuitEditorPageControllerError("Unknow error occurred when trying to get svg coordinates.", {
           cause: err,
         }),
       };

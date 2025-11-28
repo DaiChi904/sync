@@ -1,31 +1,31 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CircuitOverview } from "@/domain/model/entity/circuitOverview";
 import {
+  CircuitViewPageControllerError,
   type CircuitViewPageErrorModel,
-  CircuitViewPageHandlerError,
   type CircuitViewPageUiStateModel,
-  type ICircuitViewPageHandler,
+  type ICircuitViewPageController,
   initialCircuitViewPageError,
-} from "@/domain/model/handler/ICircuitViewPageHandler";
+} from "@/domain/model/controller/ICircuitViewPageController";
+import { CircuitOverview } from "@/domain/model/entity/circuitOverview";
 import type { ICircuitParserService } from "@/domain/model/service/ICircuitParserService";
 import type { IGetCircuitDetailUsecase } from "@/domain/model/usecase/IGetCircuitDetailUsecase";
 import type { CircuitGuiData } from "@/domain/model/valueObject/circuitGuiData";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 import { usePartialState } from "@/hooks/partialState";
 
-interface CircuitViewPageHandlerDependencies {
+interface CircuitViewPageControllerDependencies {
   query: CircuitId;
   getCircuitDetailUsecase: IGetCircuitDetailUsecase;
   circuitParserUsecase: ICircuitParserService;
 }
 
-export const useCircuitViewPageHandler = ({
+export const useCircuitViewPageController = ({
   query,
   getCircuitDetailUsecase,
   circuitParserUsecase,
-}: CircuitViewPageHandlerDependencies): ICircuitViewPageHandler => {
+}: CircuitViewPageControllerDependencies): ICircuitViewPageController => {
   const [error, setError] = usePartialState<CircuitViewPageErrorModel>(initialCircuitViewPageError);
   const [uiState, setUiState] = usePartialState<CircuitViewPageUiStateModel>({
     toolBarMenu: { open: "none" },
@@ -38,7 +38,7 @@ export const useCircuitViewPageHandler = ({
   const fetch = useCallback(async (): Promise<void> => {
     const circuitDetail = await getCircuitDetailUsecase.getById(query);
     if (!circuitDetail.ok) {
-      const err = new CircuitViewPageHandlerError("Failed to get circuit detail.", {
+      const err = new CircuitViewPageControllerError("Failed to get circuit detail.", {
         cause: circuitDetail.error,
       });
       console.error(err);
@@ -60,7 +60,7 @@ export const useCircuitViewPageHandler = ({
 
     const circuitGuiData = circuitParserUsecase.parseToGuiData(circuitDetail.value.circuitData);
     if (!circuitGuiData.ok) {
-      const err = new CircuitViewPageHandlerError("Failed to parse circuit data.", {
+      const err = new CircuitViewPageControllerError("Failed to parse circuit data.", {
         cause: circuitGuiData.error,
       });
       console.error(err);

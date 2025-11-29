@@ -56,6 +56,7 @@ export const useCircuitEditorPageController = ({
     diagramUtilityMenu: { open: "none", at: null },
     toolBarMenu: { open: "none" },
     activityBarMenu: { open: "infomation" },
+    showGridLines: false,
   });
 
   const [circuit, setCircuit] = useState<Circuit | undefined>(undefined);
@@ -817,6 +818,10 @@ export const useCircuitEditorPageController = ({
     [setUiState],
   );
 
+  const toggleShowGridLines = useCallback(() => {
+    setUiState("showGridLines", !uiState.showGridLines);
+  }, [uiState, setUiState]);
+
   useEffect(() => {
     fetch();
   }, [fetch]);
@@ -871,5 +876,6 @@ export const useCircuitEditorPageController = ({
     openToolBarMenu,
     closeToolBarMenu,
     changeActivityBarMenu,
+    toggleShowGridLines
   };
 };

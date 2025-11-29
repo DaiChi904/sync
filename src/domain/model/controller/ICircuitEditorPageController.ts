@@ -31,6 +31,7 @@ export interface CircuitEditorPageUiStateModel {
   diagramUtilityMenu: { open: "none" | "edge" | "node"; at: Coordinate | null };
   toolBarMenu: { open: "none" | "file" | "view" | "goTo" | "help" };
   activityBarMenu: { open: "infomation" | "circuitDiagram" | "rowCircuitData" };
+  showGridLines: boolean;
 }
 
 export class CircuitEditorPageControllerError extends Error {
@@ -104,4 +105,5 @@ export interface ICircuitEditorPageController {
   openToolBarMenu: (kind: "file" | "view" | "goTo" | "help") => void;
   closeToolBarMenu: () => void;
   changeActivityBarMenu: (kind: "infomation" | "circuitDiagram" | "rowCircuitData") => void;
+  toggleShowGridLines: () => void;
 }

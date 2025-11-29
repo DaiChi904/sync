@@ -1,4 +1,4 @@
-import { Svg, SvgRect, SvgTitle } from "@/components/atoms/svg";
+import { Svg, SvgLine, SvgRect, SvgTitle } from "@/components/atoms/svg";
 import type { CircuitGuiEdge } from "@/domain/model/entity/circuitGuiEdge";
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
 import type { CircuitEdgeId } from "@/domain/model/valueObject/circuitEdgeId";
@@ -18,6 +18,7 @@ import NodeUtilityMenu from "./utilityMenu/NodeUtilityMenu";
 
 interface CircuitDiagramProps {
   showTouchableArea?: boolean;
+  showGridLines?: boolean;
   diagramUtilityMenuState?: {
     open: "none" | "node" | "edge";
     at: Coordinate | null;
@@ -79,6 +80,7 @@ interface CircuitDiagramProps {
 
 export default function CircuitDiagram({
   showTouchableArea = false,
+  showGridLines = false,
   diagramUtilityMenuState = { open: "none", at: null },
   data,
   outputRecord,
@@ -155,6 +157,44 @@ export default function CircuitDiagram({
           strokeDasharray="4 2"
         />
       )}
+
+      {showGridLines &&
+        (() => {
+          const verticalLines = [];
+          const horizontalLines = [];
+          for (let i = Math.abs(minX) % 40; i <= viewWidth; i += 40) {
+            verticalLines.push(
+              <SvgLine
+                key={`v-${i}`}
+                x1={minX + i}
+                y1={minY}
+                x2={minX + i}
+                y2={maxY}
+                stroke="#555"
+                strokeWidth={2}
+              />,
+            );
+          }
+          for (let i = Math.abs(minY) % 40; i <= viewHeight; i += 40) {
+            horizontalLines.push(
+              <SvgLine
+                key={`h-${i}`}
+                x1={minX}
+                y1={minY + i}
+                x2={maxX}
+                y2={minY + i}
+                stroke="#555"
+                strokeWidth={2}
+              />,
+            );
+          }
+          return (
+            <>
+              {verticalLines}
+              {horizontalLines}
+            </>
+          );
+        })()}
 
       <Edges
         data={data}

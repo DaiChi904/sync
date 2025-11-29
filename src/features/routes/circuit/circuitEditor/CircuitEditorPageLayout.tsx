@@ -61,6 +61,7 @@ export default function CircuitEditorPageLayout() {
     openToolBarMenu,
     closeToolBarMenu,
     changeActivityBarMenu,
+    toggleShowGridLines
   } = useCircuitEditorPageControllerContext();
 
   const isInCriticalError =
@@ -93,7 +94,9 @@ export default function CircuitEditorPageLayout() {
     },
     {
       label: "View",
-      menuOptions: [],
+      menuOptions: [
+        { label: uiState.showGridLines ? "Hide Grid Lines" : "Show Grid Lines", kind: "func", onClick: () => toggleShowGridLines() }
+      ],
       isExpanded: uiState.toolBarMenu.open === "view",
       onClickExpand: () => openToolBarMenu("view"),
       onClickClose: () => closeToolBarMenu(),
@@ -194,6 +197,7 @@ export default function CircuitEditorPageLayout() {
                         <Pending isLoading={!viewBox}>
                           <CircuitDiagram
                             showTouchableArea
+                            showGridLines={uiState.showGridLines}
                             diagramUtilityMenuState={uiState.diagramUtilityMenu}
                             // biome-ignore lint/style/noNonNullAssertion: guiData is guaranteed to be present when isLoading is false
                             data={guiData!}

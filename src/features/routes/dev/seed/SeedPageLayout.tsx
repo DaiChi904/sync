@@ -2,11 +2,11 @@ import PrimaryButton from "@/components/atoms/buttons/PrimaryButton";
 import Flex from "@/components/atoms/Flex";
 import Typography from "@/components/atoms/Typography";
 import LayoutContainer from "@/components/layouts/LayoutContainer";
-import { useSeedPageHandlerContext } from "@/contexts/SeedPageHandlerContext";
-import type { SeedPageStatus } from "@/domain/model/handler/ISeedPageHandler";
+import { useSeedPageControllerContext } from "@/contexts/SeedPageControllerContext";
+import type { SeedPageStatus } from "@/domain/model/controller/ISeedPageController";
 
 export default function SeedPageLayout() {
-  const { status, countDown, seed } = useSeedPageHandlerContext();
+  const { status, countDown, seed } = useSeedPageControllerContext();
 
   const statusMsg = new Map<SeedPageStatus, string>([
     ["pending", "Waiting your instruction..."],

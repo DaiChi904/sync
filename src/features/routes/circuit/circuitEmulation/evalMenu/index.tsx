@@ -5,7 +5,7 @@ import Flex from "@/components/atoms/Flex";
 import SecondaryInput from "@/components/atoms/input/SecondaryInput";
 import Typography from "@/components/atoms/Typography";
 import { Table, TableBody, TableCaption, TableCell, TableRow } from "@/components/atoms/table";
-import type { ICircuitEmulationPageHandler } from "@/domain/model/handler/ICircuitEmulationPageHandler";
+import type { ICircuitEmulationPageController } from "@/domain/model/controller/ICircuitEmulationPageController";
 import { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import { EvalDuration } from "@/domain/model/valueObject/evalDuration";
 import { EvalResult } from "@/domain/model/valueObject/evalResult";
@@ -13,7 +13,7 @@ import type { InputRecord } from "@/domain/model/valueObject/inputRecord";
 import type { Tick } from "@/domain/model/valueObject/tick";
 
 interface EvalMenuProps {
-  error: ICircuitEmulationPageHandler["error"];
+  error: ICircuitEmulationPageController["error"];
   currentTick: Tick;
   evalDuration: EvalDuration;
   entryInputs: InputRecord;

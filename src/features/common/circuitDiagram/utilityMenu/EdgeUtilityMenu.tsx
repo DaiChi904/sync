@@ -6,7 +6,7 @@ interface EdgeUtilityMenuProps {
   menuOptions: Array<{
     label: string;
     // biome-ignore lint/suspicious/noExplicitAny: This is fine.
-    onClickHandler: (...args: any[]) => void;
+    onClickController: (...args: any[]) => void;
   }>;
 }
 

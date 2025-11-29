@@ -25,15 +25,15 @@ export interface CircuitEmulationPageUiStateModel {
   };
 }
 
-export class CircuitEmulationPageHandlerError extends Error {
+export class CircuitEmulationPageControllerError extends Error {
   constructor(message: string, options?: { cause?: unknown }) {
     super(message);
-    this.name = "CircuitEmulationPageHandlerError";
+    this.name = "CircuitEmulationPageControllerError";
     this.cause = options?.cause;
   }
 }
 
-export interface ICircuitEmulationPageHandler {
+export interface ICircuitEmulationPageController {
   error: CircuitEmulationPageErrorModel;
   uiState: CircuitEmulationPageUiStateModel;
   circuit: Circuit | undefined;

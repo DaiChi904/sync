@@ -3,11 +3,11 @@ import Flex from "@/components/atoms/Flex";
 import Grid from "@/components/atoms/Grid";
 import Typography from "@/components/atoms/Typography";
 import LayoutContainer from "@/components/layouts/LayoutContainer";
-import { useHomePageHandlerContext } from "@/contexts/HomePageHandlerContext";
+import { useHomePageControllerContext } from "@/contexts/HomePageControllerContext";
 import CircuitList from "./circuitList";
 
 export default function HomePageLayout() {
-  const { error, uiState, circuitOverviews, changeActivityBarMenu, addNewCircuit } = useHomePageHandlerContext();
+  const { error, uiState, circuitOverviews, changeActivityBarMenu, addNewCircuit } = useHomePageControllerContext();
 
   return (
     <LayoutContainer>

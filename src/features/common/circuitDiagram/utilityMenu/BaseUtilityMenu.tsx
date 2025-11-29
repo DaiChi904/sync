@@ -8,7 +8,7 @@ interface BaseUtilityMenuProps {
   menuOptions: Array<{
     label: string;
     // biome-ignore lint/suspicious/noExplicitAny: This is fine.
-    onClickHandler: (...args: any[]) => void;
+    onClickController: (...args: any[]) => void;
   }>;
 }
 
@@ -31,7 +31,7 @@ export default function BaseUtilityMenu({ at, menuOptions }: BaseUtilityMenuProp
               style={{ height: MENU_HEIGHT, padding: 5, border: "none" }}
               variant="outlined"
               animation="push"
-              onClick={option.onClickHandler}
+              onClick={option.onClickController}
             >
               <Typography size="default">{option.label}</Typography>
             </SecondaryButton>

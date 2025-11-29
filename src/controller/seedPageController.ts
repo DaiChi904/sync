@@ -4,25 +4,25 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { mockCircuitData } from "@/constants/mockCircuitData";
 import {
-  type ISeedPageHandler,
-  SeedPageHandlerError,
+  type ISeedPageController,
+  SeedPageControllerError,
   type SeedPageStatus,
-} from "@/domain/model/handler/ISeedPageHandler";
+} from "@/domain/model/controller/ISeedPageController";
 import type { IAddCircuitUsecase } from "@/domain/model/usecase/IAddCircuitUsecase";
 import type { IDeleteCircuitUsecase } from "@/domain/model/usecase/IDeleteCircuitUsecase";
 import type { IGetCircuitOverviewsUsecase } from "@/domain/model/usecase/IGetCircuitOverviewsUsecase";
 
-interface SeedPageHandlerDependencies {
+interface SeedPageControllerDependencies {
   getCircuitOverviewsUsecase: IGetCircuitOverviewsUsecase;
   addCircuitUsecase: IAddCircuitUsecase;
   deleteCircuitUsecase: IDeleteCircuitUsecase;
 }
 
-export const useSeedPageHandler = ({
+export const useSeedPageController = ({
   getCircuitOverviewsUsecase,
   addCircuitUsecase,
   deleteCircuitUsecase,
-}: SeedPageHandlerDependencies): ISeedPageHandler => {
+}: SeedPageControllerDependencies): ISeedPageController => {
   const params = useSearchParams();
   const router = useRouter();
 
@@ -36,7 +36,7 @@ export const useSeedPageHandler = ({
       setStatus("seeding");
       const getCircuitOverviewsResult = await getCircuitOverviewsUsecase.getOverviews();
       if (!getCircuitOverviewsResult.ok) {
-        throw new SeedPageHandlerError("Couldn't get circuits infomation.", {
+        throw new SeedPageControllerError("Couldn't get circuits infomation.", {
           cause: getCircuitOverviewsResult.error,
         });
       }
@@ -44,11 +44,11 @@ export const useSeedPageHandler = ({
       const storedCircuitIds = getCircuitOverviewsResult.value.map((c) => c.id);
       for (const id of storedCircuitIds) {
         const res = await deleteCircuitUsecase.execute(id);
-        if (!res.ok) throw new SeedPageHandlerError("Failed to delete circuit.", { cause: res.error });
+        if (!res.ok) throw new SeedPageControllerError("Failed to delete circuit.", { cause: res.error });
       }
       for (const mcd of mockCircuitData) {
         const res = await addCircuitUsecase.execute(mcd);
-        if (!res.ok) throw new SeedPageHandlerError("Failed to save circuit.", { cause: res.error });
+        if (!res.ok) throw new SeedPageControllerError("Failed to save circuit.", { cause: res.error });
       }
       setStatus("done");
     } catch (err: unknown) {

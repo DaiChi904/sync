@@ -20,15 +20,15 @@ export interface CircuitViewPageUiStateModel {
   };
 }
 
-export class CircuitViewPageHandlerError extends Error {
+export class CircuitViewPageControllerError extends Error {
   constructor(message: string, options?: { cause?: unknown }) {
     super(message);
-    this.name = "HomePageHandlerError";
+    this.name = "HomePageControllerError";
     this.cause = options?.cause;
   }
 }
 
-export interface ICircuitViewPageHandler {
+export interface ICircuitViewPageController {
   error: CircuitViewPageErrorModel;
   uiState: CircuitViewPageUiStateModel;
   overview: CircuitOverview | undefined;

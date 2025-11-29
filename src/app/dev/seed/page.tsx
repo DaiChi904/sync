@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { SeedPageHandlerContext } from "@/contexts/SeedPageHandlerContext";
+import { useSeedPageController } from "@/Controller/seedPageController";
+import { SeedPageControllerContext } from "@/contexts/SeedPageControllerContext";
 import SeedPageLayout from "@/features/routes/dev/seed/SeedPageLayout";
-import { useSeedPageHandler } from "@/handler/seedPageHandler";
 import { CircuitOverviewsQueryService } from "@/infrastructure/queryService/circuitOverviewsQueryService";
 import { CircuitRepository } from "@/infrastructure/repository/circuitRepository";
 import { LocalStorage } from "@/infrastructure/storage/localStorage";
@@ -24,11 +24,15 @@ export default function SeedPage() {
   );
   const addCircuitUsecase = useMemo(() => new AddCircuitUsecase({ circuitRepository }), [circuitRepository]);
   const deleteCircuitUsecase = useMemo(() => new DeleteCircuitUsecase({ circuitRepository }), [circuitRepository]);
-  const seedPageHandler = useSeedPageHandler({ getCircuitOverviewsUsecase, addCircuitUsecase, deleteCircuitUsecase });
+  const seedPageController = useSeedPageController({
+    getCircuitOverviewsUsecase,
+    addCircuitUsecase,
+    deleteCircuitUsecase,
+  });
 
   return (
-    <SeedPageHandlerContext.Provider value={seedPageHandler}>
+    <SeedPageControllerContext.Provider value={seedPageController}>
       <SeedPageLayout />
-    </SeedPageHandlerContext.Provider>
+    </SeedPageControllerContext.Provider>
   );
 }

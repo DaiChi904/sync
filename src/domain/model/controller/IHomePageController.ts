@@ -12,15 +12,15 @@ export interface HomePageUiStateModel {
   tab: { open: "home" | "new" };
 }
 
-export class HomePageHandlerError extends Error {
+export class HomePageControllerError extends Error {
   constructor(message: string, options?: { cause?: unknown }) {
     super(message);
-    this.name = "HomePageHandlerError";
+    this.name = "HomePageControllerError";
     this.cause = options?.cause;
   }
 }
 
-export interface IHomePageHandler {
+export interface IHomePageController {
   error: HomePageErrorModel;
   uiState: HomePageUiStateModel;
   circuitOverviews: Array<CircuitOverview> | undefined;

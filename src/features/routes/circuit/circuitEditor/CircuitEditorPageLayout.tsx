@@ -9,7 +9,7 @@ import Pending from "@/components/atoms/Pending";
 import Typography from "@/components/atoms/Typography";
 import SecondaryTextarea from "@/components/atoms/textarea/SecondaryTextarea";
 import LayoutContainer from "@/components/layouts/LayoutContainer";
-import { useCircuitEditorPageHandlerContext } from "@/contexts/CircuitEditorPageHandlerContext";
+import { useCircuitEditorPageControllerContext } from "@/contexts/CircuitEditorPageControllerContext";
 import { CircuitDescription } from "@/domain/model/valueObject/circuitDescription";
 import { CircuitTitle } from "@/domain/model/valueObject/circuitTitle";
 import CircuitDiagram from "../../../common/circuitDiagram";
@@ -61,7 +61,7 @@ export default function CircuitEditorPageLayout() {
     openToolBarMenu,
     closeToolBarMenu,
     changeActivityBarMenu,
-  } = useCircuitEditorPageHandlerContext();
+  } = useCircuitEditorPageControllerContext();
 
   const isInCriticalError =
     error.failedToGetCircuitDetailError || error.failedToParseCircuitDataError || error.failedToRenderCircuitError;

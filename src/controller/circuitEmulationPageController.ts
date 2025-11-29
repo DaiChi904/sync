@@ -2,9 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import type { Circuit } from "@/domain/model/aggregate/circuit";
 import {
   type CircuitEmulationPageErrorModel,
-  type ICircuitEmulationPageHandler,
+  type ICircuitEmulationPageController,
   initialCircuitEmulationPageError,
-} from "@/domain/model/handler/ICircuitEmulationPageHandler";
+} from "@/domain/model/controller/ICircuitEmulationPageController";
 import type {
   ICreateEmulationSessionUsecase,
   IEmulationSession,
@@ -22,21 +22,21 @@ import { Tick } from "@/domain/model/valueObject/tick";
 import type { CircuitParserService } from "@/domain/service/circuitParserService";
 import { usePartialState } from "@/hooks/partialState";
 
-interface CircuitEmulationPageHandlerDependencies {
+interface CircuitEmulationPageControllerDependencies {
   query: CircuitId;
   getCircuitDetailUsecase: IGetCircuitDetailUsecase;
   createEmulationSessionUsecase: ICreateEmulationSessionUsecase;
   circuitParserUsecase: CircuitParserService;
 }
 
-export const useCircuitEmulationPageHandler = ({
+export const useCircuitEmulationPageController = ({
   query,
   getCircuitDetailUsecase,
   createEmulationSessionUsecase,
   circuitParserUsecase,
-}: CircuitEmulationPageHandlerDependencies): ICircuitEmulationPageHandler => {
+}: CircuitEmulationPageControllerDependencies): ICircuitEmulationPageController => {
   const [error, setError] = usePartialState<CircuitEmulationPageErrorModel>(initialCircuitEmulationPageError);
-  const [uiState, setUiState] = usePartialState<ICircuitEmulationPageHandler["uiState"]>({
+  const [uiState, setUiState] = usePartialState<ICircuitEmulationPageController["uiState"]>({
     toolBarMenu: { open: "none" },
     activityBarMenu: { open: "evalMenu" },
   });

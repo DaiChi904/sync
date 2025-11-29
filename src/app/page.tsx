@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import { useHomePageController } from "@/Controller/homePageController";
 import { HomePageControllerContext } from "@/contexts/HomePageControllerContext";
+import { useHomePageController } from "@/controller/homePageController";
 import HomePageLayout from "@/features/routes/home/HomePageLayout";
 import { CircuitOverviewsQueryService } from "@/infrastructure/queryService/circuitOverviewsQueryService";
 import { CircuitRepository } from "@/infrastructure/repository/circuitRepository";

@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import { useSeedPageController } from "@/Controller/seedPageController";
 import { SeedPageControllerContext } from "@/contexts/SeedPageControllerContext";
+import { useSeedPageController } from "@/controller/seedPageController";
 import SeedPageLayout from "@/features/routes/dev/seed/SeedPageLayout";
 import { CircuitOverviewsQueryService } from "@/infrastructure/queryService/circuitOverviewsQueryService";
 import { CircuitRepository } from "@/infrastructure/repository/circuitRepository";

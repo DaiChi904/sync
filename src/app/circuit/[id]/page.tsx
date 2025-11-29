@@ -2,8 +2,8 @@
 
 import { useParams } from "next/navigation";
 import { useMemo } from "react";
-import { useCircuitViewPageController } from "@/Controller/circuitViewPageController";
 import { CircuitViewPageControllerContext } from "@/contexts/CircuitViewPageControllerContext";
+import { useCircuitViewPageController } from "@/controller/circuitViewPageController";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 import { CircuitParserService } from "@/domain/service/circuitParserService";
 import CircuitViewPageLayout from "@/features/routes/circuit/circuitView/CircuitViewPageLayout";

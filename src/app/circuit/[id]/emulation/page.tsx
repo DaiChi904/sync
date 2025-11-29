@@ -2,8 +2,8 @@
 
 import { useParams } from "next/navigation";
 import { useMemo } from "react";
-import { useCircuitEmulationPageController } from "@/Controller/circuitEmulationPageController";
 import { CircuitEmulationPageControllerContext } from "@/contexts/CircuitEmulationPageControllerContext";
+import { useCircuitEmulationPageController } from "@/controller/circuitEmulationPageController";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 import { CircuitEmulatorService } from "@/domain/service/circuitEmulatorService";
 import { CircuitParserService } from "@/domain/service/circuitParserService";

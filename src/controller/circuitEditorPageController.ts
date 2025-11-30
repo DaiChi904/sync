@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { LEFT_CLICK } from "@/constants/mouseEvent";
 import { Circuit } from "@/domain/model/aggregate/circuit";
 import {
@@ -29,12 +29,10 @@ import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 import type { CircuitTitle } from "@/domain/model/valueObject/circuitTitle";
 import { Coordinate } from "@/domain/model/valueObject/coordinate";
-import { ViewBox } from "@/domain/model/valueObject/viewBox";
 import { Waypoint } from "@/domain/model/valueObject/waypoint";
 import { useCircuitDiagram } from "@/hooks/circuitDiagram";
 import { usePartialState } from "@/hooks/partialState";
 import { useViewBox } from "@/hooks/viewBox";
-import type { Result } from "@/utils/result";
 
 interface CircuitEditorPageControllerDependencies {
   query: CircuitId;
@@ -141,7 +139,7 @@ export const useCircuitEditorPageController = ({
     // define INITIAL viewbox value
     if (!isViewBoxInitialized || circuitDiagramContainer.current) {
       initViewBox(circuitGuiData.value);
-    };
+    }
   }, [circuit, circuitParserUsecase, setError, isViewBoxInitialized, initViewBox, circuitDiagramContainer]);
 
   const save = useCallback(async (): Promise<void> => {

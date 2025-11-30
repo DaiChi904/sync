@@ -13,7 +13,7 @@ export const useCircuitDiagram = (viewBoxApi: ReturnType<typeof useViewBox>) => 
       if (isViewBoxInitialized || !circuitDiagramContainer.current) return;
 
       const MARRGIN = 20;
-      
+
       const hasNodes = guiData.nodes.length > 0;
       const minX = hasNodes
         ? Math.min(...guiData.nodes.map((node) => node.coordinate.x - node.size.x / 2)) - MARRGIN

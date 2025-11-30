@@ -15,6 +15,7 @@ import WaypointDragInteractionLayer from "./eventCaptureLayer/WaypointDragIntera
 import Nodes from "./node/Nodes";
 import EdgeUtilityMenu from "./utilityMenu/EdgeUtilityMenu";
 import NodeUtilityMenu from "./utilityMenu/NodeUtilityMenu";
+import { ViewBox } from "@/domain/model/valueObject/viewBox";
 
 interface CircuitDiagramProps {
   showTouchableArea?: boolean;
@@ -25,8 +26,8 @@ interface CircuitDiagramProps {
   data: CircuitGuiData;
   outputRecord?: Record<CircuitNodeId, EvalResult>;
   svgRef?: React.RefObject<SVGSVGElement | null>;
-  viewBox?: { x: number; y: number; w: number; h: number };
-  isPanningRef?: React.RefObject<boolean>;
+  viewBox?: ViewBox;
+  panningRef?: React.RefObject<boolean>;
   handleViewBoxMouseDown?: (ev: React.MouseEvent) => void;
   handleViewBoxMouseMove?: (ev: React.MouseEvent) => void;
   handleViewBoxMouseUp?: () => void;
@@ -84,7 +85,7 @@ export default function CircuitDiagram({
   outputRecord,
   svgRef,
   viewBox,
-  isPanningRef,
+  panningRef,
   handleViewBoxMouseDown,
   handleViewBoxMouseMove,
   handleViewBoxMouseUp,
@@ -131,9 +132,9 @@ export default function CircuitDiagram({
     <Svg
       ref={svgRef}
       viewBox={
-        viewBox ? `${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}` : `${minX} ${minY} ${viewWidth} ${viewHeight}`
+        viewBox ? ViewBox.toHtmlFormat(viewBox) : `${minX} ${minY} ${viewWidth} ${viewHeight}`
       }
-      style={{ background: "var(--color-circuit-diagram-bg)", cursor: isPanningRef?.current ? "grabbing" : "default" }}
+      style={{ background: "var(--color-circuit-diagram-bg)", cursor: panningRef?.current ? "grabbing" : "default" }}
       onContextMenu={disableContextMenu}
       onWheel={handleViewBoxZoom}
       onMouseDown={handleViewBoxMouseDown}

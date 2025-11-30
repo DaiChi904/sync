@@ -23,7 +23,7 @@ export default function CircuitEditorPageLayout() {
     circuit,
     guiData,
     viewBox,
-    isPanningRef,
+    panningRef,
     handleViewBoxMouseDown,
     handleViewBoxMouseMove,
     handleViewBoxMouseUp,
@@ -199,7 +199,7 @@ export default function CircuitEditorPageLayout() {
                             data={guiData!}
                             svgRef={svgRef}
                             viewBox={viewBox}
-                            isPanningRef={isPanningRef}
+                            panningRef={panningRef}
                             handleViewBoxMouseDown={handleViewBoxMouseDown}
                             handleViewBoxMouseMove={handleViewBoxMouseMove}
                             handleViewBoxMouseUp={handleViewBoxMouseUp}

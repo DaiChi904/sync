@@ -23,7 +23,7 @@ export default function CircuitEditorPageLayout() {
     circuit,
     guiData,
     viewBox,
-    isPanningRef,
+    panningRef,
     handleViewBoxMouseDown,
     handleViewBoxMouseMove,
     handleViewBoxMouseUp,
@@ -61,7 +61,7 @@ export default function CircuitEditorPageLayout() {
     openToolBarMenu,
     closeToolBarMenu,
     changeActivityBarMenu,
-    toggleShowGridLines
+    toggleShowGridLines,
   } = useCircuitEditorPageControllerContext();
 
   const isInCriticalError =
@@ -95,7 +95,11 @@ export default function CircuitEditorPageLayout() {
     {
       label: "View",
       menuOptions: [
-        { label: uiState.showGridLines ? "Hide Grid Lines" : "Show Grid Lines", kind: "func", onClick: () => toggleShowGridLines() }
+        {
+          label: uiState.showGridLines ? "Hide Grid Lines" : "Show Grid Lines",
+          kind: "func",
+          onClick: () => toggleShowGridLines(),
+        },
       ],
       isExpanded: uiState.toolBarMenu.open === "view",
       onClickExpand: () => openToolBarMenu("view"),
@@ -203,7 +207,7 @@ export default function CircuitEditorPageLayout() {
                             data={guiData!}
                             svgRef={svgRef}
                             viewBox={viewBox}
-                            isPanningRef={isPanningRef}
+                            panningRef={panningRef}
                             handleViewBoxMouseDown={handleViewBoxMouseDown}
                             handleViewBoxMouseMove={handleViewBoxMouseMove}
                             handleViewBoxMouseUp={handleViewBoxMouseUp}

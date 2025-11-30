@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { LEFT_CLICK } from "@/constants/mouseEvent";
 import { Circuit } from "@/domain/model/aggregate/circuit";
 import {
   CircuitEditorPageControllerError,
@@ -28,8 +29,11 @@ import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 import type { CircuitTitle } from "@/domain/model/valueObject/circuitTitle";
 import { Coordinate } from "@/domain/model/valueObject/coordinate";
+import { ViewBox } from "@/domain/model/valueObject/viewBox";
 import { Waypoint } from "@/domain/model/valueObject/waypoint";
+import { useCircuitDiagram } from "@/hooks/circuitDiagram";
 import { usePartialState } from "@/hooks/partialState";
+import { useViewBox } from "@/hooks/viewBox";
 import type { Result } from "@/utils/result";
 
 interface CircuitEditorPageControllerDependencies {
@@ -61,12 +65,21 @@ export const useCircuitEditorPageController = ({
 
   const [circuit, setCircuit] = useState<Circuit | undefined>(undefined);
   const [guiData, setGuiData] = useState<CircuitGuiData | undefined>(undefined);
-  const [viewBox, setViewBox] = useState<{ x: number; y: number; w: number; h: number } | undefined>(undefined);
 
-  const circuitDiagramContainer = useRef<HTMLDivElement | null>(null);
-  const svgRef = useRef<SVGSVGElement | null>(null);
-  const isPanningRef = useRef(false);
-  const [lastMousePosition, setLastMousePosition] = useState<{ x: number; y: number } | null>(null);
+  const {
+    isViewBoxInitialized,
+    viewBox,
+    circuitDiagramContainer,
+    svgRef,
+    panningRef,
+    initViewBox,
+    getSvgCoords,
+    handleViewBoxMouseDown,
+    handleViewBoxMouseMove,
+    handleViewBoxMouseUp,
+    handleViewBoxZoom,
+    preventBrowserZoom,
+  } = useCircuitDiagram(useViewBox());
 
   const [focusedElement, setFocusedElement] = useState<
     { kind: "node"; value: CircuitGuiNode } | { kind: "edge"; value: CircuitGuiEdge & { waypointIdx: number } } | null
@@ -125,110 +138,11 @@ export const useCircuitEditorPageController = ({
 
     setGuiData(circuitGuiData.value);
 
-    //-- define INITIAL viewbox value --//
-    if (viewBox || !circuitDiagramContainer.current) return;
-
-    const MARRGIN = 20;
-    const hasNodes = circuit.circuitData.nodes.length > 0;
-    const minX = hasNodes
-      ? Math.min(...circuit.circuitData.nodes.map((node) => node.coordinate.x - node.size.x / 2)) - MARRGIN
-      : 0;
-    const minY = hasNodes
-      ? Math.min(...circuit.circuitData.nodes.map((node) => node.coordinate.y - node.size.y / 2)) - MARRGIN
-      : 0;
-    const maxX = hasNodes
-      ? Math.max(...circuit.circuitData.nodes.map((node) => node.coordinate.x + node.size.x / 2)) + MARRGIN
-      : 0;
-    const maxY = hasNodes
-      ? Math.max(...circuit.circuitData.nodes.map((node) => node.coordinate.y + node.size.y / 2)) + MARRGIN
-      : 0;
-    const viewWidth = circuitDiagramContainer.current.clientWidth;
-    const viewHeight = circuitDiagramContainer.current.clientHeight;
-    const centerX = (minX + maxX) / 2;
-    const centerY = (minY + maxY) / 2;
-
-    setViewBox({ x: centerX - viewWidth / 2, y: centerY - viewHeight / 2, w: viewWidth, h: viewHeight });
-    //-- define INITIAL viewbox value --//
-  }, [circuit, circuitParserUsecase, viewBox, setError]);
-
-  const handleViewBoxMouseDown = (ev: React.MouseEvent) => {
-    // On right click.
-    if (ev.button !== 2) return;
-
-    isPanningRef.current = true;
-    setLastMousePosition({ x: ev.clientX, y: ev.clientY });
-  };
-
-  const handleViewBoxMouseMove = (ev: React.MouseEvent) => {
-    if (!isPanningRef.current || !lastMousePosition) return;
-
-    if (!viewBox) return;
-
-    const dx = (ev.clientX - lastMousePosition.x) * (viewBox.w / window.innerWidth);
-    const dy = (ev.clientY - lastMousePosition.y) * (viewBox.h / window.innerHeight);
-
-    setViewBox((prev) => {
-      if (!prev) {
-        const err = new CircuitEditorPageControllerError("Unable to handle ViewBox move. ViewBox is not defined.");
-        console.error(err);
-
-        setError("failedToRenderCircuitError", true);
-        return prev;
-      }
-      return {
-        ...prev,
-        x: prev.x - dx,
-        y: prev.y - dy,
-      };
-    });
-
-    setLastMousePosition({ x: ev.clientX, y: ev.clientY });
-  };
-
-  const handleViewBoxMouseUp = () => {
-    isPanningRef.current = false;
-  };
-
-  const handleViewBoxZoom = (ev: React.WheelEvent) => {
-    if (!ev.ctrlKey) return;
-
-    const scaleAmount = ev.deltaY < 0 ? 0.9 : 1.1;
-    const mouseX = ev.clientX / window.innerWidth;
-    const mouseY = ev.clientY / window.innerHeight;
-
-    setViewBox((prev) => {
-      if (!prev) {
-        const err = new CircuitEditorPageControllerError("Unable to handle ViewBox zoom. ViewBox is not defined.");
-        console.error(err);
-
-        setError("failedToRenderCircuitError", true);
-        return;
-      }
-      const newW = prev.w * scaleAmount;
-      const newH = prev.h * scaleAmount;
-      return {
-        x: prev.x + (prev.w - newW) * mouseX,
-        y: prev.y + (prev.h - newH) * mouseY,
-        w: newW,
-        h: newH,
-      };
-    });
-  };
-
-  const preventBrowserZoom = (ref: React.RefObject<SVGSVGElement | null>) => {
-    // biome-ignore lint/correctness/useHookAtTopLevel: This is safe under the Rules of Hooks. We've just encapsulated useEffect in a local function for readability. Since it depends on a ref, it's guaranteed to run on the initial render, making it equivalent to a top-level call.
-    useEffect(() => {
-      const el = ref.current;
-      if (!el) return;
-
-      const wheelController = (e: WheelEvent) => {
-        if (e.ctrlKey) e.preventDefault();
-      };
-
-      el.addEventListener("wheel", wheelController, { passive: false });
-      return () => el.removeEventListener("wheel", wheelController);
-    }, [ref]);
-  };
+    // define INITIAL viewbox value
+    if (!isViewBoxInitialized || circuitDiagramContainer.current) {
+      initViewBox(circuitGuiData.value);
+    };
+  }, [circuit, circuitParserUsecase, setError, isViewBoxInitialized, initViewBox, circuitDiagramContainer]);
 
   const save = useCallback(async (): Promise<void> => {
     if (!circuit) {
@@ -465,34 +379,6 @@ export const useCircuitEditorPageController = ({
     [circuit],
   );
 
-  const getSvgCoords = useCallback((ev: React.MouseEvent): Result<Coordinate, CircuitEditorPageControllerError> => {
-    try {
-      const svg = svgRef.current;
-      if (!svg) {
-        throw new CircuitEditorPageControllerError("Unable to get svg coordinates. svgRef is null.");
-      }
-
-      const pt = svg.createSVGPoint();
-      pt.x = ev.clientX;
-      pt.y = ev.clientY;
-      const cursorPt = pt.matrixTransform(svg.getScreenCTM()?.inverse());
-
-      return { ok: true, value: Coordinate.from({ x: cursorPt.x, y: cursorPt.y }) };
-    } catch (err: unknown) {
-      console.error(err);
-      if (err instanceof CircuitEditorPageControllerError) {
-        return { ok: false, error: err };
-      }
-
-      return {
-        ok: false,
-        error: new CircuitEditorPageControllerError("Unknow error occurred when trying to get svg coordinates.", {
-          cause: err,
-        }),
-      };
-    }
-  }, []);
-
   const focusElement: {
     (kind: "node"): (value: CircuitGuiNode) => void;
     (kind: "edge"): (value: CircuitGuiEdge) => void;
@@ -530,7 +416,7 @@ export const useCircuitEditorPageController = ({
 
   const handleNodeMouseDown = useCallback(
     (ev: React.MouseEvent, node: CircuitGuiNode) => {
-      if (ev.button !== 0) return;
+      if (ev.button !== LEFT_CLICK) return;
 
       const svgCoordinate = getSvgCoords(ev);
       if (!svgCoordinate.ok) return;
@@ -596,7 +482,7 @@ export const useCircuitEditorPageController = ({
     kind: "from" | "to",
     method: "ADD" | "UPDATE",
   ) => {
-    if (ev.button !== 0) return;
+    if (ev.button !== LEFT_CLICK) return;
 
     const svgCoordinate = getSvgCoords(ev);
     if (!svgCoordinate.ok) return;
@@ -740,7 +626,7 @@ export const useCircuitEditorPageController = ({
 
   const handleWaypointMouseDown =
     (id: CircuitEdgeId) => (offset: Coordinate, index: number) => (ev: React.MouseEvent) => {
-      if (ev.button !== 0) return;
+      if (ev.button !== LEFT_CLICK) return;
 
       const svgCoordinate = getSvgCoords(ev);
       if (!svgCoordinate.ok) return;
@@ -838,7 +724,7 @@ export const useCircuitEditorPageController = ({
     circuit,
     guiData,
     viewBox,
-    isPanningRef,
+    panningRef,
     handleViewBoxMouseDown,
     handleViewBoxMouseMove,
     handleViewBoxMouseUp,
@@ -876,6 +762,6 @@ export const useCircuitEditorPageController = ({
     openToolBarMenu,
     closeToolBarMenu,
     changeActivityBarMenu,
-    toggleShowGridLines
+    toggleShowGridLines,
   };
 };

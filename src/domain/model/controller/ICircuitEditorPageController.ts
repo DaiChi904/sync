@@ -1,3 +1,4 @@
+import type { RefObject } from "react";
 import type { Circuit } from "../aggregate/circuit";
 import type { CircuitGuiEdge } from "../entity/circuitGuiEdge";
 import type { CircuitGuiNode } from "../entity/circuitGuiNode";
@@ -9,6 +10,7 @@ import type { CircuitNodeId } from "../valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "../valueObject/circuitNodePinId";
 import type { CircuitTitle } from "../valueObject/circuitTitle";
 import type { Coordinate } from "../valueObject/coordinate";
+import type { ViewBox } from "../valueObject/viewBox";
 
 export interface CircuitEditorPageErrorModel {
   failedToGetCircuitDetailError: boolean;
@@ -47,13 +49,13 @@ export interface ICircuitEditorPageController {
   uiState: CircuitEditorPageUiStateModel;
   circuit: Circuit | undefined;
   guiData: CircuitGuiData | undefined;
-  viewBox: { x: number; y: number; w: number; h: number } | undefined;
-  isPanningRef: React.RefObject<boolean>;
+  viewBox: ViewBox;
+  panningRef: React.RefObject<boolean>;
   handleViewBoxMouseDown: (ev: React.MouseEvent) => void;
   handleViewBoxMouseMove: (ev: React.MouseEvent) => void;
   handleViewBoxMouseUp: () => void;
   handleViewBoxZoom: (ev: React.WheelEvent) => void;
-  preventBrowserZoom: (ref: React.RefObject<SVGSVGElement | null>) => void;
+  preventBrowserZoom: (ref: RefObject<SVGSVGElement | null>) => void;
   save: () => void;
   deleteCircuit: () => void;
   changeTitle: (title: CircuitTitle) => void;
@@ -61,8 +63,8 @@ export interface ICircuitEditorPageController {
   addCircuitNode: (newNode: CircuitNode) => void;
   deleteCircuitNode: (nodeId: CircuitNodeId) => void;
   deleteCircuitEdge: (edgeId: CircuitEdgeId) => void;
-  circuitDiagramContainer: React.RefObject<HTMLDivElement | null>;
-  svgRef: React.RefObject<SVGSVGElement | null>;
+  circuitDiagramContainer: RefObject<HTMLDivElement | null>;
+  svgRef: RefObject<SVGSVGElement | null>;
   focusedElement:
     | { kind: "node"; value: CircuitGuiNode }
     | { kind: "edge"; value: CircuitGuiEdge & { waypointIdx: number } }

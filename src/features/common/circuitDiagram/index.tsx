@@ -75,6 +75,10 @@ interface CircuitDiagramProps {
   } | null;
   handleWaypointMouseMove?: (ev: React.MouseEvent) => void;
   handleWaypointMouseUp?: () => void;
+  activeSnap: {
+    x: Coordinate | null;
+    y: Coordinate | null;
+  };
   openUtilityMenu?: (kind: "node" | "edge") => (ev: React.MouseEvent) => void;
   closeUtilityMenu?: () => void;
 }
@@ -112,6 +116,7 @@ export default function CircuitDiagram({
   handleWaypointMouseDown,
   handleWaypointMouseMove,
   handleWaypointMouseUp,
+  activeSnap,
   openUtilityMenu,
   closeUtilityMenu,
 }: CircuitDiagramProps) {
@@ -197,6 +202,29 @@ export default function CircuitDiagram({
         handleNodePinMouseDown={handleNodePinMouseDown}
         openNodeUtilityMenu={openUtilityMenu?.("node")}
       />
+
+      {activeSnap.x && (
+        <SvgLine
+          x1={activeSnap.x.x}
+          y1={minY}
+          x2={activeSnap.x.x}
+          y2={maxY}
+          stroke="red"
+          strokeWidth={1}
+          strokeDasharray="4 2"
+        />
+      )}
+      {activeSnap.y && (
+        <SvgLine
+          x1={minX}
+          y1={activeSnap.y.y}
+          x2={maxX}
+          y2={activeSnap.y.y}
+          stroke="red"
+          strokeWidth={1}
+          strokeDasharray="4 2"
+        />
+      )}
 
       <NodePinDragInteractionLayer
         isActive={!!draggingNodePin}

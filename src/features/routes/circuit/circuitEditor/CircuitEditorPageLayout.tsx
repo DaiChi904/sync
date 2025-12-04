@@ -23,6 +23,7 @@ export default function CircuitEditorPageLayout() {
     circuit,
     guiData,
     viewBox,
+    activeSnap,
     panningRef,
     handleViewBoxMouseDown,
     handleViewBoxMouseMove,
@@ -232,6 +233,7 @@ export default function CircuitEditorPageLayout() {
                             handleWaypointMouseDown={handleWaypointMouseDown}
                             handleWaypointMouseMove={handleWaypointMouseMove}
                             handleWaypointMouseUp={handleWaypointMouseUp}
+                            activeSnap={activeSnap}
                             openUtilityMenu={openUtilityMenu}
                             closeUtilityMenu={closeUtilityMenu}
                           />

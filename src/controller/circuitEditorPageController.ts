@@ -31,6 +31,7 @@ import type { CircuitTitle } from "@/domain/model/valueObject/circuitTitle";
 import { Coordinate } from "@/domain/model/valueObject/coordinate";
 import { Waypoint } from "@/domain/model/valueObject/waypoint";
 import { useCircuitDiagram } from "@/hooks/circuitDiagram";
+import { useCircuitDiagramUtils } from "@/hooks/circuitDiagramUtils";
 import { usePartialState } from "@/hooks/partialState";
 import { useViewBox } from "@/hooks/viewBox";
 
@@ -78,6 +79,7 @@ export const useCircuitEditorPageController = ({
     handleViewBoxZoom,
     preventBrowserZoom,
   } = useCircuitDiagram(useViewBox());
+  const { findNearestPin, clearActiveSnap, getSnapDelta, activeSnap } = useCircuitDiagramUtils();
 
   const [focusedElement, setFocusedElement] = useState<
     { kind: "node"; value: CircuitGuiNode } | { kind: "edge"; value: CircuitGuiEdge & { waypointIdx: number } } | null
@@ -111,6 +113,7 @@ export const useCircuitEditorPageController = ({
     setCircuit(circuitDetail.value);
   }, [query, getCircuitDetailUsecase, setError]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: If initViewBox is inside of dependencies, it causes infinite rendering.
   const updateCircuitGuiData = useCallback((): void => {
     if (!circuit) {
       const err = new CircuitEditorPageControllerError("Unable to update gui data. Circuit is not defined.");
@@ -140,7 +143,7 @@ export const useCircuitEditorPageController = ({
     if (!isViewBoxInitialized || circuitDiagramContainer.current) {
       initViewBox(circuitGuiData.value);
     }
-  }, [circuit, circuitParserUsecase, setError, isViewBoxInitialized, initViewBox, circuitDiagramContainer]);
+  }, [circuit, circuitParserUsecase, setError, isViewBoxInitialized, circuitDiagramContainer]);
 
   const save = useCallback(async (): Promise<void> => {
     if (!circuit) {
@@ -379,7 +382,7 @@ export const useCircuitEditorPageController = ({
 
   const focusElement: {
     (kind: "node"): (value: CircuitGuiNode) => void;
-    (kind: "edge"): (value: CircuitGuiEdge) => void;
+    (kind: "edge"): (value: CircuitGuiEdge & { waypointIdx: number }) => void;
   } = useCallback((kind: "node" | "edge") => {
     // biome-ignore lint/suspicious/noExplicitAny: Type safety is preserved.
     return (value: any) => {
@@ -431,7 +434,7 @@ export const useCircuitEditorPageController = ({
 
   const handleNodeMouseMove = useCallback(
     (ev: React.MouseEvent) => {
-      if (!draggingNode) return;
+      if (!guiData || !draggingNode) return;
 
       const svgCoordinate = getSvgCoords(ev);
       if (!svgCoordinate.ok) return;
@@ -440,144 +443,144 @@ export const useCircuitEditorPageController = ({
       const newX = x - draggingNode.coordinate.x;
       const newY = y - draggingNode.coordinate.y;
 
+      const currentPos = Coordinate.from({ x: newX, y: newY });
+      const snapDelta = getSnapDelta(guiData)(currentPos, draggingNode.id);
+
       const node = circuit?.circuitData.nodes.find((n) => n.id === draggingNode.id);
       if (node) {
         updateCircuitNode({
           ...node,
-          coordinate: Coordinate.from({ x: newX, y: newY }),
+          coordinate: Coordinate.from({ x: newX + snapDelta.dx, y: newY + snapDelta.dy }),
         });
       }
     },
-    [draggingNode, getSvgCoords, circuit, updateCircuitNode],
+    [guiData, draggingNode, getSvgCoords, circuit, updateCircuitNode, getSnapDelta],
   );
 
   const handleNodeMouseUp = useCallback(() => {
+    clearActiveSnap();
     setDraggingNode(null);
     reattachFocusedElement();
-  }, [reattachFocusedElement]);
+  }, [reattachFocusedElement, clearActiveSnap]);
 
-  const SNAP_RADIUS = 20; // 半径10px以内にいたら接続とみなす
+  const handleNodePinMouseDown = useCallback(
+    (ev: React.MouseEvent, id: CircuitNodePinId, kind: "from" | "to", method: "ADD" | "UPDATE") => {
+      if (ev.button !== LEFT_CLICK) return;
 
-  const findNearestPin = (coordinate: Coordinate) => {
-    for (const node of guiData?.nodes ?? []) {
-      for (const pin of [...node.inputs, ...node.outputs]) {
-        const dx = coordinate.x - pin.coordinate.x;
-        const dy = coordinate.y - pin.coordinate.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+      const svgCoordinate = getSvgCoords(ev);
+      if (!svgCoordinate.ok) return;
 
-        if (dist < SNAP_RADIUS) {
-          return pin.id;
-        }
+      const { x: initialMouseX, y: initialMouseY } = svgCoordinate.value;
+
+      setDraggingNodePin({
+        id: id,
+        offset: Coordinate.from({ x: initialMouseX, y: initialMouseY }),
+        kind: kind,
+        method: method,
+      });
+    },
+    [getSvgCoords],
+  );
+
+  const handleNodePinMouseMove = useCallback(
+    (ev: React.MouseEvent) => {
+      if (draggingNodePin) {
+        const svgCoordinate = getSvgCoords(ev);
+        if (!svgCoordinate.ok) return;
+
+        const { x, y } = svgCoordinate.value;
+
+        setTempEdge({ from: draggingNodePin.offset, to: Coordinate.from({ x, y }) });
       }
-    }
+    },
+    [draggingNodePin, getSvgCoords],
+  );
 
-    return null;
-  };
+  const handleAddEdgeOnMouseUp = useCallback(
+    (ev: React.MouseEvent) => {
+      if (!guiData) return;
 
-  const handleNodePinMouseDown = (
-    ev: React.MouseEvent,
-    id: CircuitNodePinId,
-    kind: "from" | "to",
-    method: "ADD" | "UPDATE",
-  ) => {
-    if (ev.button !== LEFT_CLICK) return;
+      const svgCoordinate = getSvgCoords(ev);
+      if (!svgCoordinate.ok) return;
 
-    const svgCoordinate = getSvgCoords(ev);
-    if (!svgCoordinate.ok) return;
+      const { x, y } = svgCoordinate.value;
+      const toPinId = findNearestPin(guiData)(Coordinate.from({ x, y }));
 
-    const { x: initialMouseX, y: initialMouseY } = svgCoordinate.value;
+      if (!draggingNodePin || !toPinId) return;
 
-    setDraggingNodePin({
-      id: id,
-      offset: Coordinate.from({ x: initialMouseX, y: initialMouseY }),
-      kind: kind,
-      method: method,
-    });
-  };
+      addCircuitEdge(
+        CircuitEdge.from({
+          id: CircuitEdgeId.generate(),
+          from: draggingNodePin.kind === "from" ? draggingNodePin.id : toPinId,
+          to: draggingNodePin.kind === "from" ? toPinId : draggingNodePin.id,
+          waypoints: null,
+        }),
+      );
+    },
+    [guiData, draggingNodePin, getSvgCoords, findNearestPin, addCircuitEdge],
+  );
 
-  const handleNodePinMouseMove = (ev: React.MouseEvent) => {
-    if (draggingNodePin) {
+  const handleUpdateEdgeOnMouseUp = useCallback(
+    (ev: React.MouseEvent) => {
+      if (!guiData) return;
+
       const svgCoordinate = getSvgCoords(ev);
       if (!svgCoordinate.ok) return;
 
       const { x, y } = svgCoordinate.value;
 
-      setTempEdge({ from: draggingNodePin.offset, to: Coordinate.from({ x, y }) });
-    }
-  };
+      const edgeId = guiData.edges.find((edge) => {
+        return edge.from === draggingNodePin?.id || edge.to === draggingNodePin?.id;
+      })?.id;
+      if (!edgeId) return;
 
-  const handleAddEdgeOnMouseUp = (ev: React.MouseEvent) => {
-    const svgCoordinate = getSvgCoords(ev);
-    if (!svgCoordinate.ok) return;
+      const prev = guiData.edges.find((edge) => edge.id === edgeId);
+      if (!prev) return;
 
-    const { x, y } = svgCoordinate.value;
-    const toPinId = findNearestPin(Coordinate.from({ x, y }));
+      const toPinId = findNearestPin(guiData)(Coordinate.from({ x, y }));
 
-    if (!draggingNodePin || !toPinId) return;
+      if (!draggingNodePin || !toPinId) return;
 
-    addCircuitEdge(
-      CircuitEdge.from({
-        id: CircuitEdgeId.generate(),
-        from: draggingNodePin.kind === "from" ? draggingNodePin.id : toPinId,
-        to: draggingNodePin.kind === "from" ? toPinId : draggingNodePin.id,
-        waypoints: null,
-      }),
-    );
-  };
-
-  const handleUpdateEdgeOnMouseUp = (ev: React.MouseEvent) => {
-    const svgCoordinate = getSvgCoords(ev);
-    if (!svgCoordinate.ok) return;
-
-    const { x, y } = svgCoordinate.value;
-
-    const edgeId = guiData?.edges.find((edge) => {
-      return edge.from === draggingNodePin?.id || edge.to === draggingNodePin?.id;
-    })?.id;
-    if (!edgeId) return;
-
-    const prev = guiData?.edges.find((edge) => edge.id === edgeId);
-    if (!prev) return;
-
-    const toPinId = findNearestPin(Coordinate.from({ x, y }));
-
-    if (!draggingNodePin || !toPinId) return;
-
-    switch (draggingNodePin.kind) {
-      case "from": {
-        updateCircuitEdge(
-          CircuitEdge.from({
-            id: prev.id,
-            from: draggingNodePin.id,
-            to: toPinId,
-            waypoints: null,
-          }),
-        );
-        break;
+      switch (draggingNodePin.kind) {
+        case "from": {
+          updateCircuitEdge(
+            CircuitEdge.from({
+              id: prev.id,
+              from: draggingNodePin.id,
+              to: toPinId,
+              waypoints: null,
+            }),
+          );
+          break;
+        }
+        case "to": {
+          updateCircuitEdge(
+            CircuitEdge.from({
+              id: prev.id,
+              from: toPinId,
+              to: draggingNodePin.id,
+              waypoints: null,
+            }),
+          );
+          break;
+        }
       }
-      case "to": {
-        updateCircuitEdge(
-          CircuitEdge.from({
-            id: prev.id,
-            from: toPinId,
-            to: draggingNodePin.id,
-            waypoints: null,
-          }),
-        );
-        break;
-      }
-    }
-  };
+    },
+    [guiData, draggingNodePin, getSvgCoords, findNearestPin, updateCircuitEdge],
+  );
 
-  const handleNodePinMouseUp = (ev: React.MouseEvent) => {
-    if (!draggingNodePin) return;
+  const handleNodePinMouseUp = useCallback(
+    (ev: React.MouseEvent) => {
+      if (!draggingNodePin) return;
 
-    draggingNodePin.method === "ADD" ? handleAddEdgeOnMouseUp(ev) : handleUpdateEdgeOnMouseUp(ev);
+      draggingNodePin.method === "ADD" ? handleAddEdgeOnMouseUp(ev) : handleUpdateEdgeOnMouseUp(ev);
 
-    setDraggingNodePin(null);
-    setTempEdge(null);
-    reattachFocusedElement();
-  };
+      setDraggingNodePin(null);
+      setTempEdge(null);
+      reattachFocusedElement();
+    },
+    [draggingNodePin, reattachFocusedElement, handleAddEdgeOnMouseUp, handleUpdateEdgeOnMouseUp],
+  );
 
   const addEdgeWaypoint = useCallback(
     (id: CircuitEdgeId) =>
@@ -622,7 +625,7 @@ export const useCircuitEditorPageController = ({
     [circuit, updateCircuitEdge],
   );
 
-  const handleWaypointMouseDown =
+  const handleWaypointMouseDown = useCallback(
     (id: CircuitEdgeId) => (offset: Coordinate, index: number) => (ev: React.MouseEvent) => {
       if (ev.button !== LEFT_CLICK) return;
 
@@ -633,42 +636,56 @@ export const useCircuitEditorPageController = ({
 
       setDraggingWaypoint({
         id,
-        offset: Coordinate.from({ x: initialMouseX - offset.x, y: initialMouseY - offset.y }),
+        offset: Coordinate.from({
+          x: initialMouseX - offset.x,
+          y: initialMouseY - offset.y,
+        }),
         index,
       });
-    };
+    },
+    [getSvgCoords],
+  );
 
-  const handleWaypointMouseMove = (ev: React.MouseEvent) => {
-    if (!draggingWaypoint) return;
+  const handleWaypointMouseMove = useCallback(
+    (ev: React.MouseEvent) => {
+      if (!guiData || !draggingWaypoint) return;
 
-    const svgCoordinate = getSvgCoords(ev);
-    if (!svgCoordinate.ok) return;
+      const svgCoordinate = getSvgCoords(ev);
+      if (!svgCoordinate.ok) return;
 
-    const { x, y } = svgCoordinate.value;
+      const mousePos = svgCoordinate.value;
+      const waypointPos = Coordinate.from({
+        x: mousePos.x - draggingWaypoint.offset.x,
+        y: mousePos.y - draggingWaypoint.offset.y,
+      });
+      const snapDelta = getSnapDelta(guiData)(waypointPos, null); // Waypoint doesn't belong to a specific node
 
-    const edge = circuit?.circuitData?.edges.find((edge) => edge.id === draggingWaypoint.id);
-    if (!edge || !edge.waypoints) return;
+      const edge = circuit?.circuitData?.edges.find((edge) => edge.id === draggingWaypoint.id);
+      if (!edge || !edge.waypoints) return;
 
-    const waypoints = Waypoint.waypointsToCoordinateArray(edge.waypoints);
-    waypoints[draggingWaypoint.index] = Coordinate.from({
-      x: x - draggingWaypoint.offset.x,
-      y: y - draggingWaypoint.offset.y,
-    });
+      const waypoints = Waypoint.waypointsToCoordinateArray(edge.waypoints);
+      waypoints[draggingWaypoint.index] = Coordinate.from({
+        x: waypointPos.x + snapDelta.dx,
+        y: waypointPos.y + snapDelta.dy,
+      });
 
-    updateCircuitEdge(
-      CircuitEdge.from({
-        id: edge.id,
-        from: edge.from,
-        to: edge.to,
-        waypoints: Waypoint.coordinatesToWaypoints(waypoints),
-      }),
-    );
-  };
+      updateCircuitEdge(
+        CircuitEdge.from({
+          id: edge.id,
+          from: edge.from,
+          to: edge.to,
+          waypoints: Waypoint.coordinatesToWaypoints(waypoints),
+        }),
+      );
+    },
+    [guiData, draggingWaypoint, getSvgCoords, circuit, updateCircuitEdge, getSnapDelta],
+  );
 
-  const handleWaypointMouseUp = () => {
+  const handleWaypointMouseUp = useCallback(() => {
+    clearActiveSnap();
     setDraggingWaypoint(null);
     reattachFocusedElement();
-  };
+  }, [reattachFocusedElement, clearActiveSnap]);
 
   const openUtilityMenu = useCallback(
     (kind: "node" | "edge") => (ev: React.MouseEvent) => {
@@ -715,13 +732,14 @@ export const useCircuitEditorPageController = ({
     if (!circuit) return;
 
     updateCircuitGuiData();
-  }, [circuit, updateCircuitGuiData, uiState.activityBarMenu.open]);
+  }, [circuit, updateCircuitGuiData, uiState.activityBarMenu]);
 
   return {
     error,
     circuit,
     guiData,
     viewBox,
+    activeSnap,
     panningRef,
     handleViewBoxMouseDown,
     handleViewBoxMouseMove,

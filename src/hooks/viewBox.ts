@@ -18,9 +18,9 @@ export const useViewBox = () => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const panningRef = useRef(false);
 
-  const updateViewBox = (viewBox: ViewBox) => {
+  const updateViewBox = useCallback((viewBox: ViewBox) => {
     setViewBox(viewBox);
-  };
+  }, []);
 
   const getSvgCoords = useCallback((ev: React.MouseEvent): Result<Coordinate, UseViewBoxInternalError> => {
     try {

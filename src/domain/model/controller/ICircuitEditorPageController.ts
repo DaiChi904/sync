@@ -50,6 +50,10 @@ export interface ICircuitEditorPageController {
   circuit: Circuit | undefined;
   guiData: CircuitGuiData | undefined;
   viewBox: ViewBox;
+  activeSnap: {
+    x: Coordinate | null;
+    y: Coordinate | null;
+  };
   panningRef: React.RefObject<boolean>;
   handleViewBoxMouseDown: (ev: React.MouseEvent) => void;
   handleViewBoxMouseMove: (ev: React.MouseEvent) => void;

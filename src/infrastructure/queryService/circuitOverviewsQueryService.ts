@@ -2,25 +2,30 @@ import { CircuitOverview } from "@/domain/model/entity/circuitOverview";
 import { DataIntegrityError } from "@/domain/model/infrastructure/dataIntegrityError";
 import { InfraError } from "@/domain/model/infrastructure/infraError";
 import type { ICircuitOverviewsQueryService } from "@/domain/model/infrastructure/queryService/ICircuitOverviewsQueryService";
-import type { ICircuitRepository } from "@/domain/model/infrastructure/repository/ICircuitRepository";
 import { ModelValidationError } from "@/domain/model/modelValidationError";
 import { UnexpectedError } from "@/domain/model/unexpectedError";
+import { CircuitDescription } from "@/domain/model/valueObject/circuitDescription";
+import { CircuitId } from "@/domain/model/valueObject/circuitId";
+import { CircuitTitle } from "@/domain/model/valueObject/circuitTitle";
+import { CreatedDateTime } from "@/domain/model/valueObject/createdDateTime";
+import { UpdatedDateTime } from "@/domain/model/valueObject/updatedDateTime";
 import type { Result } from "@/utils/result";
+import type { ILocalStorage } from "../storage/localStorage";
 
 interface CircuitOverviewsQueryServiceDependencies {
-  circuitRepository: ICircuitRepository;
+  localStorage: ILocalStorage<"circuit">;
 }
 
 export class CircuitOverviewsQueryService implements ICircuitOverviewsQueryService {
-  private readonly circuitRepository: ICircuitRepository;
+  private readonly localStorage: ILocalStorage<"circuit">;
 
-  constructor({ circuitRepository }: CircuitOverviewsQueryServiceDependencies) {
-    this.circuitRepository = circuitRepository;
+  constructor({ localStorage }: CircuitOverviewsQueryServiceDependencies) {
+    this.localStorage = localStorage;
   }
 
   async getAll(): Promise<Result<Array<CircuitOverview>, InfraError | DataIntegrityError | UnexpectedError>> {
     try {
-      const res = await this.circuitRepository.getAll();
+      const res = await this.localStorage.get();
       if (!res.ok) {
         throw res.error;
       }
@@ -29,11 +34,11 @@ export class CircuitOverviewsQueryService implements ICircuitOverviewsQueryServi
       const circuitOverviews =
         rawCircuits?.map((circuit) =>
           CircuitOverview.from({
-            id: circuit.id,
-            title: circuit.title,
-            description: circuit.description,
-            createdAt: circuit.createdAt,
-            updatedAt: circuit.updatedAt,
+            id: CircuitId.from(circuit.id),
+            title: CircuitTitle.from(circuit.title),
+            description: CircuitDescription.from(circuit.description),
+            createdAt: CreatedDateTime.fromString(circuit.createdAt),
+            updatedAt: UpdatedDateTime.fromString(circuit.updatedAt),
           }),
         ) ?? [];
 

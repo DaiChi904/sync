@@ -14,8 +14,8 @@ export default function Home() {
   const localStorage = useMemo(() => new LocalStorage("circuit"), []);
   const circuitRepository = useMemo(() => new CircuitRepository({ localStorage }), [localStorage]);
   const circuitOverviewsQueryService = useMemo(
-    () => new CircuitOverviewsQueryService({ circuitRepository }),
-    [circuitRepository],
+    () => new CircuitOverviewsQueryService({ localStorage }),
+    [localStorage],
   );
   const getCircuitOverviewsUsecase = useMemo(
     () => new GetCircuitOverviewsUsecase({ circuitOverviewsQueryService }),

@@ -29,7 +29,6 @@ export const initialCircuitEditorPageError: CircuitEditorPageErrorModel = {
 };
 
 export interface CircuitEditorPageUiStateModel {
-  toolbarMenu: { open: "none" | "file" | "view" | "help" };
   diagramUtilityMenu: { open: "none" | "edge" | "node"; at: Coordinate | null };
   toolBarMenu: { open: "none" | "file" | "view" | "goTo" | "help" };
   activityBarMenu: { open: "infomation" | "circuitDiagram" | "rowCircuitData" };
@@ -65,9 +64,9 @@ export interface ICircuitEditorPageController {
   circuitDiagramContainerRef: RefObject<HTMLDivElement | null>;
   circuitDiagramSvgRef: RefObject<SVGSVGElement | null>;
   focusedElement:
-    | { kind: "node"; value: CircuitGuiNode }
-    | { kind: "edge"; value: CircuitGuiEdge & { waypointIdx: number } }
-    | null;
+  | { kind: "node"; value: CircuitGuiNode }
+  | { kind: "edge"; value: CircuitGuiEdge & { waypointIdx: number } }
+  | null;
   focusElement: {
     (kind: "node"): (value: CircuitGuiNode) => void;
     (kind: "edge"): (value: CircuitGuiEdge & { waypointIdx: number }) => void;

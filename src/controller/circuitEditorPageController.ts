@@ -54,7 +54,6 @@ export const useCircuitEditorPageController = ({
 
   const [error, setError] = usePartialState<CircuitEditorPageErrorModel>(initialCircuitEditorPageError);
   const [uiState, setUiState] = usePartialState<CircuitEditorPageUiStateModel>({
-    toolbarMenu: { open: "none" },
     diagramUtilityMenu: { open: "none", at: null },
     toolBarMenu: { open: "none" },
     activityBarMenu: { open: "infomation" },

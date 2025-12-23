@@ -20,7 +20,9 @@ import { InputRecord } from "@/domain/model/valueObject/inputRecord";
 import { OutputRecord } from "@/domain/model/valueObject/outputRecord";
 import { Tick } from "@/domain/model/valueObject/tick";
 import type { CircuitParserService } from "@/domain/service/circuitParserService";
+import { useCircuitDiagram } from "@/hooks/circuitDiagram";
 import { usePartialState } from "@/hooks/partialState";
+import { useViewBox } from "@/hooks/viewBox";
 
 interface CircuitEmulationPageControllerDependencies {
   query: CircuitId;
@@ -41,9 +43,23 @@ export const useCircuitEmulationPageController = ({
     activityBarMenu: { open: "evalMenu" },
   });
 
-  const [circuit, setCircuit] = useState<Circuit | undefined>(undefined);
-  const [guiData, setGuiData] = useState<CircuitGuiData | undefined>(undefined);
-  const [session, setSession] = useState<IEmulationSession | undefined>(undefined);
+  const {
+    isViewBoxInitialized,
+    viewBox,
+    circuitDiagramContainerRef,
+    circuitDiagramSvgRef,
+    panningRef,
+    initViewBox,
+    handleViewBoxMouseDown,
+    handleViewBoxMouseMove,
+    handleViewBoxMouseUp,
+    handleViewBoxZoom,
+    preventBrowserZoom,
+  } = useCircuitDiagram(useViewBox());
+
+  const [circuit, setCircuit] = useState<Circuit>();
+  const [guiData, setGuiData] = useState<CircuitGuiData>();
+  const [session, setSession] = useState<IEmulationSession>();
 
   const [currentTick, setCurrentTick] = useState<Tick>(Tick.from(0));
   const [evalDuration, setEvalDuration] = useState<EvalDuration>(EvalDuration.from(10));
@@ -73,6 +89,7 @@ export const useCircuitEmulationPageController = ({
       setError("emulationEnvironmentCreationError", true);
       return;
     }
+
     setGuiData(gui.value);
   }, [circuit, circuitParserUsecase, setError]);
 
@@ -183,6 +200,12 @@ export const useCircuitEmulationPageController = ({
   }, [fetch]);
 
   useEffect(() => {
+    if (!isViewBoxInitialized && guiData) {
+      initViewBox(guiData);
+    }
+  }, [isViewBoxInitialized, initViewBox, guiData]);
+
+  useEffect(() => {
     if (circuit) {
       createGuiData();
       createNewSession({ evalDelay: EvalDelay.from(1) });
@@ -206,6 +229,15 @@ export const useCircuitEmulationPageController = ({
     evalDuration,
     entryInputs,
     outputs,
+    viewBox,
+    circuitDiagramContainerRef,
+    circuitDiagramSvgRef,
+    panningRef,
+    handleViewBoxMouseDown,
+    handleViewBoxMouseMove,
+    handleViewBoxMouseUp,
+    handleViewBoxZoom,
+    preventBrowserZoom,
     updateEntryInputs,
     evalCircuit,
     changeEvalDuration,

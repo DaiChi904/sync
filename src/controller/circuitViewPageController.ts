@@ -13,7 +13,9 @@ import type { ICircuitParserService } from "@/domain/model/service/ICircuitParse
 import type { IGetCircuitDetailUsecase } from "@/domain/model/usecase/IGetCircuitDetailUsecase";
 import type { CircuitGuiData } from "@/domain/model/valueObject/circuitGuiData";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
+import { useCircuitDiagram } from "@/hooks/circuitDiagram";
 import { usePartialState } from "@/hooks/partialState";
+import { useViewBox } from "@/hooks/viewBox";
 
 interface CircuitViewPageControllerDependencies {
   query: CircuitId;
@@ -32,8 +34,22 @@ export const useCircuitViewPageController = ({
     activityBarMenu: { open: "infomation" },
   });
 
-  const [overview, setOverview] = useState<CircuitOverview | undefined>(undefined);
-  const [guiData, setGuiData] = useState<CircuitGuiData | undefined>(undefined);
+  const {
+    isViewBoxInitialized,
+    viewBox,
+    circuitDiagramContainerRef,
+    circuitDiagramSvgRef,
+    panningRef,
+    initViewBox,
+    handleViewBoxMouseDown,
+    handleViewBoxMouseMove,
+    handleViewBoxMouseUp,
+    handleViewBoxZoom,
+    preventBrowserZoom,
+  } = useCircuitDiagram(useViewBox());
+
+  const [overview, setOverview] = useState<CircuitOverview>();
+  const [guiData, setGuiData] = useState<CircuitGuiData>();
 
   const fetch = useCallback(async (): Promise<void> => {
     const circuitDetail = await getCircuitDetailUsecase.getById(query);
@@ -90,15 +106,31 @@ export const useCircuitViewPageController = ({
     [setUiState],
   );
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: If dependencies are not exhaustive, it will cause infinite rendering.
   useEffect(() => {
     fetch();
-  }, [fetch]);
+  }, []);
+
+  useEffect(() => {
+    if (!isViewBoxInitialized && guiData) {
+      initViewBox(guiData);
+    }
+  }, [isViewBoxInitialized, initViewBox, guiData]);
 
   return {
     error,
     uiState,
     overview,
     guiData,
+    viewBox,
+    circuitDiagramContainerRef,
+    circuitDiagramSvgRef,
+    panningRef,
+    handleViewBoxMouseDown,
+    handleViewBoxMouseMove,
+    handleViewBoxMouseUp,
+    handleViewBoxZoom,
+    preventBrowserZoom,
     openToolBarMenu,
     closeToolBarMenu,
     changeActivityBarMenu,

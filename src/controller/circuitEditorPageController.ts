@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { LEFT_CLICK } from "@/constants/mouseEvent";
 import { Circuit } from "@/domain/model/aggregate/circuit";
 import {
@@ -29,12 +29,10 @@ import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 import type { CircuitTitle } from "@/domain/model/valueObject/circuitTitle";
 import { Coordinate } from "@/domain/model/valueObject/coordinate";
-import { ViewBox } from "@/domain/model/valueObject/viewBox";
 import { Waypoint } from "@/domain/model/valueObject/waypoint";
 import { useCircuitDiagram } from "@/hooks/circuitDiagram";
 import { usePartialState } from "@/hooks/partialState";
 import { useViewBox } from "@/hooks/viewBox";
-import type { Result } from "@/utils/result";
 
 interface CircuitEditorPageControllerDependencies {
   query: CircuitId;
@@ -68,8 +66,8 @@ export const useCircuitEditorPageController = ({
   const {
     isViewBoxInitialized,
     viewBox,
-    circuitDiagramContainer,
-    svgRef,
+    circuitDiagramContainerRef,
+    circuitDiagramSvgRef,
     panningRef,
     initViewBox,
     getSvgCoords,
@@ -138,10 +136,10 @@ export const useCircuitEditorPageController = ({
     setGuiData(circuitGuiData.value);
 
     // define INITIAL viewbox value
-    if (!isViewBoxInitialized || circuitDiagramContainer.current) {
+    if (!isViewBoxInitialized || circuitGuiData.value) {
       initViewBox(circuitGuiData.value);
-    };
-  }, [circuit, circuitParserUsecase, setError, isViewBoxInitialized, initViewBox, circuitDiagramContainer]);
+    }
+  }, [circuit, circuitParserUsecase, setError, isViewBoxInitialized, initViewBox]);
 
   const save = useCallback(async (): Promise<void> => {
     if (!circuit) {
@@ -707,12 +705,12 @@ export const useCircuitEditorPageController = ({
     fetch();
   }, [fetch]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: updateCircuitGuiData is depends on circuitDiagramContainer defined when activityBarMenu.open is "circuitDiagram". To define viewbox correctly, uiState.activityBarMenu.open in dependencies are essential.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: With guiData, it causes infinite rendering. Without current activityBarMenu state, it cannot display circuit diagram when activityBarMenu is changed.
   useEffect(() => {
     if (!circuit) return;
 
     updateCircuitGuiData();
-  }, [circuit, updateCircuitGuiData, uiState.activityBarMenu.open]);
+  }, [circuit, uiState.activityBarMenu.open]);
 
   return {
     error,
@@ -732,8 +730,8 @@ export const useCircuitEditorPageController = ({
     addCircuitNode,
     deleteCircuitNode,
     deleteCircuitEdge,
-    circuitDiagramContainer,
-    svgRef,
+    circuitDiagramContainerRef,
+    circuitDiagramSvgRef,
     focusedElement,
     focusElement,
     draggingNode,

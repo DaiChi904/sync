@@ -36,8 +36,8 @@ export default function CircuitEditorPageLayout() {
     addCircuitNode,
     deleteCircuitNode,
     deleteCircuitEdge,
-    circuitDiagramContainer,
-    svgRef,
+    circuitDiagramContainerRef,
+    circuitDiagramSvgRef,
     focusedElement,
     focusElement,
     draggingNode,
@@ -175,7 +175,6 @@ export default function CircuitEditorPageLayout() {
                       <ElementSideBar viewBox={viewBox} addCircuitNode={addCircuitNode} />
                     </Grid>
                     <Grid
-                      ref={circuitDiagramContainer}
                       xs={5}
                       style={{
                         display: "flex",
@@ -185,6 +184,7 @@ export default function CircuitEditorPageLayout() {
                       }}
                     >
                       <Flex
+                        ref={circuitDiagramContainerRef}
                         direction="column"
                         alignItems="center"
                         justifyContent="center"
@@ -197,7 +197,7 @@ export default function CircuitEditorPageLayout() {
                             diagramUtilityMenuState={uiState.diagramUtilityMenu}
                             // biome-ignore lint/style/noNonNullAssertion: guiData is guaranteed to be present when isLoading is false
                             data={guiData!}
-                            svgRef={svgRef}
+                            circuitDiagramSvgRef={circuitDiagramSvgRef}
                             viewBox={viewBox}
                             panningRef={panningRef}
                             handleViewBoxMouseDown={handleViewBoxMouseDown}

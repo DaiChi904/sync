@@ -7,6 +7,7 @@ import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
 import type { Coordinate } from "@/domain/model/valueObject/coordinate";
 import type { EvalResult } from "@/domain/model/valueObject/evalResult";
+import { ViewBox } from "@/domain/model/valueObject/viewBox";
 import Edges from "./edge/Edges";
 import DiagramUtilityMenuBackdrop from "./eventCaptureLayer/DiagramUtilityMenuBackdrop";
 import NodeDragInteractionLayer from "./eventCaptureLayer/NodeDragInteractionLayer";
@@ -15,7 +16,6 @@ import WaypointDragInteractionLayer from "./eventCaptureLayer/WaypointDragIntera
 import Nodes from "./node/Nodes";
 import EdgeUtilityMenu from "./utilityMenu/EdgeUtilityMenu";
 import NodeUtilityMenu from "./utilityMenu/NodeUtilityMenu";
-import { ViewBox } from "@/domain/model/valueObject/viewBox";
 
 interface CircuitDiagramProps {
   showTouchableArea?: boolean;
@@ -25,7 +25,7 @@ interface CircuitDiagramProps {
   };
   data: CircuitGuiData;
   outputRecord?: Record<CircuitNodeId, EvalResult>;
-  svgRef?: React.RefObject<SVGSVGElement | null>;
+  circuitDiagramSvgRef?: React.RefObject<SVGSVGElement | null>;
   viewBox?: ViewBox;
   panningRef?: React.RefObject<boolean>;
   handleViewBoxMouseDown?: (ev: React.MouseEvent) => void;
@@ -83,7 +83,7 @@ export default function CircuitDiagram({
   diagramUtilityMenuState = { open: "none", at: null },
   data,
   outputRecord,
-  svgRef,
+  circuitDiagramSvgRef,
   viewBox,
   panningRef,
   handleViewBoxMouseDown,
@@ -113,7 +113,7 @@ export default function CircuitDiagram({
   openUtilityMenu,
   closeUtilityMenu,
 }: CircuitDiagramProps) {
-  svgRef && preventBrowserZoom && preventBrowserZoom(svgRef);
+  circuitDiagramSvgRef && preventBrowserZoom && preventBrowserZoom(circuitDiagramSvgRef);
 
   const disableContextMenu = (ev: React.MouseEvent) => {
     ev.preventDefault();
@@ -130,10 +130,8 @@ export default function CircuitDiagram({
 
   return (
     <Svg
-      ref={svgRef}
-      viewBox={
-        viewBox ? ViewBox.toHtmlFormat(viewBox) : `${minX} ${minY} ${viewWidth} ${viewHeight}`
-      }
+      ref={circuitDiagramSvgRef}
+      viewBox={viewBox ? ViewBox.toHtmlFormat(viewBox) : `${minX} ${minY} ${viewWidth} ${viewHeight}`}
       style={{ background: "var(--color-circuit-diagram-bg)", cursor: panningRef?.current ? "grabbing" : "default" }}
       onContextMenu={disableContextMenu}
       onWheel={handleViewBoxZoom}

@@ -20,6 +20,15 @@ export default function CircuitEmulationPageLayout() {
     evalDuration,
     entryInputs,
     outputs,
+    viewBox,
+    circuitDiagramContainerRef,
+    circuitDiagramSvgRef,
+    panningRef,
+    handleViewBoxMouseDown,
+    handleViewBoxMouseMove,
+    handleViewBoxMouseUp,
+    handleViewBoxZoom,
+    preventBrowserZoom,
     updateEntryInputs,
     evalCircuit,
     changeEvalDuration,
@@ -99,6 +108,7 @@ export default function CircuitEmulationPageLayout() {
             </Grid>
             <Grid xs={3} xfs={5} grow={1}>
               <Flex
+                ref={circuitDiagramContainerRef}
                 direction="column"
                 alignItems="center"
                 justifyContent="center"
@@ -109,6 +119,14 @@ export default function CircuitEmulationPageLayout() {
                   // biome-ignore lint/style/noNonNullAssertion: guiData is guaranteed to be present when isLoading is false
                   data={guiData!}
                   outputRecord={outputs}
+                  circuitDiagramSvgRef={circuitDiagramSvgRef}
+                  viewBox={viewBox}
+                  panningRef={panningRef}
+                  handleViewBoxMouseDown={handleViewBoxMouseDown}
+                  handleViewBoxMouseMove={handleViewBoxMouseMove}
+                  handleViewBoxMouseUp={handleViewBoxMouseUp}
+                  handleViewBoxZoom={handleViewBoxZoom}
+                  preventBrowserZoom={preventBrowserZoom}
                 />
               </Flex>
             </Grid>

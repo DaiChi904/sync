@@ -1,5 +1,7 @@
+import type { RefObject } from "react";
 import type { CircuitOverview } from "../entity/circuitOverview";
 import type { CircuitGuiData } from "../valueObject/circuitGuiData";
+import type { ViewBox } from "../valueObject/viewBox";
 
 export interface CircuitViewPageErrorModel {
   failedToGetCircuitDetailError: boolean;
@@ -33,6 +35,15 @@ export interface ICircuitViewPageController {
   uiState: CircuitViewPageUiStateModel;
   overview: CircuitOverview | undefined;
   guiData: CircuitGuiData | undefined;
+  viewBox: ViewBox;
+  circuitDiagramContainerRef: RefObject<HTMLDivElement | null>;
+  circuitDiagramSvgRef: RefObject<SVGSVGElement | null>;
+  panningRef: RefObject<boolean>;
+  handleViewBoxMouseDown: (ev: React.MouseEvent) => void;
+  handleViewBoxMouseMove: (ev: React.MouseEvent) => void;
+  handleViewBoxMouseUp: () => void;
+  handleViewBoxZoom: (ev: React.WheelEvent) => void;
+  preventBrowserZoom: (ref: RefObject<SVGSVGElement | null>) => void;
   openToolBarMenu: (kind: "file" | "view" | "goTo" | "help") => void;
   closeToolBarMenu: () => void;
   changeActivityBarMenu: (kind: "infomation" | "circuitDiagram") => void;

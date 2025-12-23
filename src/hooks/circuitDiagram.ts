@@ -4,16 +4,16 @@ import { ViewBox } from "@/domain/model/valueObject/viewBox";
 import type { useViewBox } from "./viewBox";
 
 export const useCircuitDiagram = (viewBoxApi: ReturnType<typeof useViewBox>) => {
-  const circuitDiagramContainer = useRef<HTMLDivElement | null>(null);
+  const circuitDiagramContainerRef = useRef<HTMLDivElement | null>(null);
 
   const [isViewBoxInitialized, setIsViewBoxInitialized] = useState<boolean>(false);
 
   const initViewBox = useCallback(
     (guiData: CircuitGuiData) => {
-      if (isViewBoxInitialized || !circuitDiagramContainer.current) return;
+      if (isViewBoxInitialized || !circuitDiagramContainerRef.current) return;
 
       const MARRGIN = 20;
-      
+
       const hasNodes = guiData.nodes.length > 0;
       const minX = hasNodes
         ? Math.min(...guiData.nodes.map((node) => node.coordinate.x - node.size.x / 2)) - MARRGIN
@@ -27,8 +27,8 @@ export const useCircuitDiagram = (viewBoxApi: ReturnType<typeof useViewBox>) => 
       const maxY = hasNodes
         ? Math.max(...guiData.nodes.map((node) => node.coordinate.y + node.size.y / 2)) + MARRGIN
         : 0;
-      const viewWidth = circuitDiagramContainer.current.clientWidth;
-      const viewHeight = circuitDiagramContainer.current.clientHeight;
+      const viewWidth = circuitDiagramContainerRef.current.clientWidth;
+      const viewHeight = circuitDiagramContainerRef.current.clientHeight;
       const centerX = (minX + maxX) / 2;
       const centerY = (minY + maxY) / 2;
 
@@ -44,8 +44,8 @@ export const useCircuitDiagram = (viewBoxApi: ReturnType<typeof useViewBox>) => 
   return {
     isViewBoxInitialized,
     viewBox: viewBoxApi.viewBox,
-    circuitDiagramContainer,
-    svgRef: viewBoxApi.svgRef,
+    circuitDiagramContainerRef,
+    circuitDiagramSvgRef: viewBoxApi.svgRef,
     panningRef: viewBoxApi.panningRef,
     initViewBox,
     getSvgCoords: viewBoxApi.getSvgCoords,

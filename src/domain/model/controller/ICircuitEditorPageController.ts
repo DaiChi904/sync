@@ -62,8 +62,8 @@ export interface ICircuitEditorPageController {
   addCircuitNode: (newNode: CircuitNode) => void;
   deleteCircuitNode: (nodeId: CircuitNodeId) => void;
   deleteCircuitEdge: (edgeId: CircuitEdgeId) => void;
-  circuitDiagramContainer: RefObject<HTMLDivElement | null>;
-  svgRef: RefObject<SVGSVGElement | null>;
+  circuitDiagramContainerRef: RefObject<HTMLDivElement | null>;
+  circuitDiagramSvgRef: RefObject<SVGSVGElement | null>;
   focusedElement:
     | { kind: "node"; value: CircuitGuiNode }
     | { kind: "edge"; value: CircuitGuiEdge & { waypointIdx: number } }

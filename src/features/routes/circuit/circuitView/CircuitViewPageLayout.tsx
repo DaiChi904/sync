@@ -10,8 +10,24 @@ import CircuitDiagram from "../../../common/circuitDiagram";
 import BaseCircuitPageLayout from "../common/BaseCircuitPageLayout";
 
 export default function CircuitViewPageLayout() {
-  const { error, uiState, overview, guiData, openToolBarMenu, closeToolBarMenu, changeActivityBarMenu } =
-    useCircuitViewPageControllerContext();
+  const {
+    error,
+    uiState,
+    overview,
+    guiData,
+    viewBox,
+    circuitDiagramContainerRef,
+    circuitDiagramSvgRef,
+    panningRef,
+    handleViewBoxMouseDown,
+    handleViewBoxMouseMove,
+    handleViewBoxMouseUp,
+    handleViewBoxZoom,
+    preventBrowserZoom,
+    openToolBarMenu,
+    closeToolBarMenu,
+    changeActivityBarMenu,
+  } = useCircuitViewPageControllerContext();
 
   const isInError = error.failedToGetCircuitDetailError || error.failedToParseCircuitDataError;
 
@@ -116,6 +132,7 @@ export default function CircuitViewPageLayout() {
                 case "circuitDiagram": {
                   return (
                     <Flex
+                      ref={circuitDiagramContainerRef}
                       direction="column"
                       alignItems="center"
                       justifyContent="center"
@@ -125,6 +142,14 @@ export default function CircuitViewPageLayout() {
                       <CircuitDiagram
                         // biome-ignore lint/style/noNonNullAssertion: guiData is guaranteed to be present when isLoading is false
                         data={guiData!}
+                        viewBox={viewBox}
+                        circuitDiagramSvgRef={circuitDiagramSvgRef}
+                        panningRef={panningRef}
+                        handleViewBoxMouseDown={handleViewBoxMouseDown}
+                        handleViewBoxMouseMove={handleViewBoxMouseMove}
+                        handleViewBoxMouseUp={handleViewBoxMouseUp}
+                        handleViewBoxZoom={handleViewBoxZoom}
+                        preventBrowserZoom={preventBrowserZoom}
                       />
                     </Flex>
                   );

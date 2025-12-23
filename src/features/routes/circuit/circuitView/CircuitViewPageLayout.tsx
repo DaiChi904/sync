@@ -1,9 +1,9 @@
 import type { ComponentProps } from "react";
 import Flex from "@/components/atoms/Flex";
 import LoadingPuls from "@/components/atoms/LoadingPuls";
-import Pending from "@/components/atoms/Pending";
 import Typography from "@/components/atoms/Typography";
 import { Table, TableBody, TableCaption, TableCell, TableRow } from "@/components/atoms/table";
+import { SafePending } from "@/components/atoms/utils/SafePending";
 import LayoutContainer from "@/components/layouts/LayoutContainer";
 import { useCircuitViewPageControllerContext } from "@/contexts/CircuitViewPageControllerContext";
 import CircuitDiagram from "../../../common/circuitDiagram";
@@ -73,76 +73,84 @@ export default function CircuitViewPageLayout() {
     <LayoutContainer>
       <BaseCircuitPageLayout toolBarOptions={toolBarOptions} activityBarOptions={activityBarOptions}>
         <Flex direction="column" alignItems="center" justifyContent="center" grow={1}>
-          <Pending
-            isLoading={!overview && !isInError}
-            fallback={<LoadingPuls />}
-            error={isInError}
-            onFailure={<Typography>Failed to load circuit data.</Typography>}
-          >
-            {(() => {
-              switch (uiState.activityBarMenu.open) {
-                case "infomation": {
-                  return (
-                    <Flex direction="column" grow={1} style={{ height: "100%", width: "100%", padding: 20 }}>
-                      <Typography size="superLarge">Infomation</Typography>
-                      <Flex>
-                        <Flex direction="column" basis="60%" style={{ padding: 10 }}>
-                          <Typography size="huge">{overview?.title}</Typography>
-                          <Typography size="medium">{overview?.description}</Typography>
-                        </Flex>
-                        <Flex direction="column" basis="40%" style={{ padding: 10, minWidth: "450px" }}>
-                          <Table>
-                            <TableCaption>
-                              <Typography size="medium" style={{ paddingLeft: 20, textAlign: "start" }}>
-                                Property
-                              </Typography>
-                            </TableCaption>
-                            <TableBody>
-                              <TableRow>
-                                <TableCell style={{ padding: "8px 20px" }}>
-                                  <Typography size="defaultPlus">ID</Typography>
-                                </TableCell>
-                                <TableCell style={{ padding: "8px 20px" }}>
-                                  <Typography size="defaultPlus">{overview?.id}</Typography>
-                                </TableCell>
-                              </TableRow>
-                              <TableRow>
-                                <TableCell style={{ padding: "8px 20px" }}>
-                                  <Typography size="defaultPlus">Created At</Typography>
-                                </TableCell>
-                                <TableCell style={{ padding: "8px 20px" }}>
-                                  <Typography size="defaultPlus">{overview?.createdAt}</Typography>
-                                </TableCell>
-                              </TableRow>
-                              <TableRow>
-                                <TableCell style={{ padding: "8px 20px" }}>
-                                  <Typography size="defaultPlus">Updated At</Typography>
-                                </TableCell>
-                                <TableCell style={{ padding: "8px 20px" }}>
-                                  <Typography size="defaultPlus">{overview?.updatedAt}</Typography>
-                                </TableCell>
-                              </TableRow>
-                            </TableBody>
-                          </Table>
+          {(() => {
+            switch (uiState.activityBarMenu.open) {
+              case "infomation": {
+                return (
+                  <SafePending
+                    data={overview}
+                    isLoading={!overview}
+                    isError={isInError}
+                    fallback={{
+                      onLoading: () => <LoadingPuls />,
+                      onError: () => <Typography>Failed to load circuit data.</Typography>,
+                    }}
+                  >
+                    {(overview) => (
+                      <Flex direction="column" grow={1} style={{ height: "100%", width: "100%", padding: 20 }}>
+                        <Typography size="superLarge">Infomation</Typography>
+                        <Flex>
+                          <Flex direction="column" basis="60%" style={{ padding: 10 }}>
+                            <Typography size="huge">{overview?.title}</Typography>
+                            <Typography size="medium">{overview?.description}</Typography>
+                          </Flex>
+                          <Flex direction="column" basis="40%" style={{ padding: 10, minWidth: "450px" }}>
+                            <Table>
+                              <TableCaption>
+                                <Typography size="medium" style={{ paddingLeft: 20, textAlign: "start" }}>
+                                  Property
+                                </Typography>
+                              </TableCaption>
+                              <TableBody>
+                                <TableRow>
+                                  <TableCell style={{ padding: "8px 20px" }}>
+                                    <Typography size="defaultPlus">ID</Typography>
+                                  </TableCell>
+                                  <TableCell style={{ padding: "8px 20px" }}>
+                                    <Typography size="defaultPlus">{overview?.id}</Typography>
+                                  </TableCell>
+                                </TableRow>
+                                <TableRow>
+                                  <TableCell style={{ padding: "8px 20px" }}>
+                                    <Typography size="defaultPlus">Created At</Typography>
+                                  </TableCell>
+                                  <TableCell style={{ padding: "8px 20px" }}>
+                                    <Typography size="defaultPlus">{overview?.createdAt}</Typography>
+                                  </TableCell>
+                                </TableRow>
+                                <TableRow>
+                                  <TableCell style={{ padding: "8px 20px" }}>
+                                    <Typography size="defaultPlus">Updated At</Typography>
+                                  </TableCell>
+                                  <TableCell style={{ padding: "8px 20px" }}>
+                                    <Typography size="defaultPlus">{overview?.updatedAt}</Typography>
+                                  </TableCell>
+                                </TableRow>
+                              </TableBody>
+                            </Table>
+                          </Flex>
                         </Flex>
                       </Flex>
-                    </Flex>
-                  );
-                }
-                case "circuitDiagram": {
-                  return (
-                    <Flex
-                      ref={circuitDiagramContainerRef}
-                      direction="column"
-                      alignItems="center"
-                      justifyContent="center"
-                      grow={1}
-                      style={{ height: "100%", width: "100%", background: "var(--color-circuit-diagram-bg)" }}
-                    >
+                    )}
+                  </SafePending>
+                );
+              }
+              case "circuitDiagram": {
+                return (
+                  <SafePending
+                    data={guiData}
+                    isLoading={!guiData}
+                    isError={isInError}
+                    fallback={{
+                      onLoading: () => <LoadingPuls />,
+                      onError: () => <Typography>Failed to load circuit data.</Typography>,
+                    }}
+                  >
+                    {(guiData) => (
                       <CircuitDiagram
-                        // biome-ignore lint/style/noNonNullAssertion: guiData is guaranteed to be present when isLoading is false
-                        data={guiData!}
+                        data={guiData}
                         viewBox={viewBox}
+                        circuitDiagramContainerRef={circuitDiagramContainerRef}
                         circuitDiagramSvgRef={circuitDiagramSvgRef}
                         panningRef={panningRef}
                         handleViewBoxMouseDown={handleViewBoxMouseDown}
@@ -151,12 +159,12 @@ export default function CircuitViewPageLayout() {
                         handleViewBoxZoom={handleViewBoxZoom}
                         preventBrowserZoom={preventBrowserZoom}
                       />
-                    </Flex>
-                  );
-                }
+                    )}
+                  </SafePending>
+                );
               }
-            })()}
-          </Pending>
+            }
+          })()}
         </Flex>
       </BaseCircuitPageLayout>
     </LayoutContainer>

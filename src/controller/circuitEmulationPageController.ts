@@ -86,7 +86,7 @@ export const useCircuitEmulationPageController = ({
     const gui = circuitParserUsecase.parseToGuiData(circuit.circuitData);
     if (!gui.ok) {
       console.error(gui.error);
-      setError("emulationEnvironmentCreationError", true);
+      setError("guiRenderError", true);
       return;
     }
 

@@ -5,9 +5,9 @@ import Grid from "@/components/atoms/Grid";
 import SecondaryInput from "@/components/atoms/input/SecondaryInput";
 import Label from "@/components/atoms/Label";
 import LoadingPuls from "@/components/atoms/LoadingPuls";
-import Pending from "@/components/atoms/Pending";
 import Typography from "@/components/atoms/Typography";
 import SecondaryTextarea from "@/components/atoms/textarea/SecondaryTextarea";
+import { SafePending } from "@/components/atoms/utils/SafePending";
 import LayoutContainer from "@/components/layouts/LayoutContainer";
 import { useCircuitEditorPageControllerContext } from "@/contexts/CircuitEditorPageControllerContext";
 import { CircuitDescription } from "@/domain/model/valueObject/circuitDescription";
@@ -125,131 +125,127 @@ export default function CircuitEditorPageLayout() {
   return (
     <LayoutContainer>
       <BaseCircuitPageLayout toolBarOptions={toolBarOptions} activityBarOptions={activityBarOptions}>
-        <Pending
-          isLoading={(!circuit || !guiData) && !isInCriticalError}
-          fallback={
-            <Flex
-              direction="column"
-              alignItems="center"
-              justifyContent="center"
-              grow={1}
-              style={{ width: "100%", height: "100%" }}
-            >
-              <LoadingPuls />
-            </Flex>
-          }
-          error={isInCriticalError}
-          onFailure={<Typography>Something went wrong</Typography>}
-        >
-          {(() => {
-            switch (uiState.activityBarMenu.open) {
-              case "infomation":
-                return (
-                  <Flex direction="column" grow={1} style={{ width: "100%", height: "100%", padding: 10 }}>
-                    <Typography size="superLarge">Infomation</Typography>
-                    <Form>
-                      <Label>
-                        <Typography size="large">Title</Typography>
-                        <SecondaryInput
-                          type="text"
-                          placeholder="Title"
-                          value={circuit?.title}
-                          onChange={(ev) => changeTitle(CircuitTitle.from(ev.target.value))}
-                        />
-                      </Label>
-                      <Label>
-                        <Typography size="large">Description</Typography>
-                        <SecondaryTextarea
-                          placeholder="Description"
-                          value={circuit?.description}
-                          onChange={(ev) => changeDescription(CircuitDescription.from(ev.target.value))}
-                        />
-                      </Label>
-                    </Form>
-                  </Flex>
-                );
-              case "circuitDiagram":
-                return (
-                  <Grid xfs={8} container grow={1}>
-                    <Grid xs={1} grow={1}>
-                      <ElementSideBar viewBox={viewBox} addCircuitNode={addCircuitNode} />
-                    </Grid>
-                    <Grid
-                      xs={5}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        background: "var(--color-bg)",
+        {(() => {
+          switch (uiState.activityBarMenu.open) {
+            case "infomation":
+              return (
+                <SafePending
+                  data={circuit}
+                  isLoading={!circuit}
+                  isError={isInCriticalError}
+                  fallback={{
+                    onLoading: () => <LoadingPuls />,
+                    onError: () => <Typography>Something went wrong</Typography>,
+                  }}
+                >
+                  {(circuit) => (
+                    <Flex direction="column" grow={1} style={{ width: "100%", height: "100%", padding: 10 }}>
+                      <Typography size="superLarge">Infomation</Typography>
+                      <Form>
+                        <Label>
+                          <Typography size="large">Title</Typography>
+                          <SecondaryInput
+                            type="text"
+                            placeholder="Title"
+                            value={circuit.title}
+                            onChange={(ev) => changeTitle(CircuitTitle.from(ev.target.value))}
+                          />
+                        </Label>
+                        <Label>
+                          <Typography size="large">Description</Typography>
+                          <SecondaryTextarea
+                            placeholder="Description"
+                            value={circuit.description}
+                            onChange={(ev) => changeDescription(CircuitDescription.from(ev.target.value))}
+                          />
+                        </Label>
+                      </Form>
+                    </Flex>
+                  )}
+                </SafePending>
+              );
+            case "circuitDiagram":
+              return (
+                <Grid xfs={8} container grow={1}>
+                  <Grid xs={1} grow={1}>
+                    <ElementSideBar viewBox={viewBox} addCircuitNode={addCircuitNode} />
+                  </Grid>
+                  <Grid
+                    xs={5}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: "var(--color-bg)",
+                    }}
+                  >
+                    <SafePending
+                      data={guiData}
+                      isLoading={!guiData}
+                      isError={isInCriticalError}
+                      fallback={{
+                        onLoading: () => <LoadingPuls />,
+                        onError: () => <Typography>Something went wrong</Typography>,
                       }}
                     >
-                      <Flex
-                        ref={circuitDiagramContainerRef}
-                        direction="column"
-                        alignItems="center"
-                        justifyContent="center"
-                        grow={1}
-                        style={{ height: "100%", width: "100%", background: "var(--color-circuit-diagram-bg)" }}
-                      >
-                        <Pending isLoading={!viewBox}>
-                          <CircuitDiagram
-                            showTouchableArea
-                            diagramUtilityMenuState={uiState.diagramUtilityMenu}
-                            // biome-ignore lint/style/noNonNullAssertion: guiData is guaranteed to be present when isLoading is false
-                            data={guiData!}
-                            circuitDiagramSvgRef={circuitDiagramSvgRef}
-                            viewBox={viewBox}
-                            panningRef={panningRef}
-                            handleViewBoxMouseDown={handleViewBoxMouseDown}
-                            handleViewBoxMouseMove={handleViewBoxMouseMove}
-                            handleViewBoxMouseUp={handleViewBoxMouseUp}
-                            handleViewBoxZoom={handleViewBoxZoom}
-                            preventBrowserZoom={preventBrowserZoom}
-                            focusedElement={focusedElement}
-                            focusElement={focusElement}
-                            draggingNode={draggingNode}
-                            handleNodeMouseDown={handleNodeMouseDown}
-                            handleNodeMouseMove={handleNodeMouseMove}
-                            handleNodeMouseUp={handleNodeMouseUp}
-                            deleteCircuitNode={deleteCircuitNode}
-                            deleteCircuitEdge={deleteCircuitEdge}
-                            draggingNodePin={draggingNodePin}
-                            handleNodePinMouseDown={handleNodePinMouseDown}
-                            handleNodePinMouseMove={handleNodePinMouseMove}
-                            handleNodePinMouseUp={handleNodePinMouseUp}
-                            tempEdge={tempEdge}
-                            addEdgeWaypoint={addEdgeWaypoint}
-                            deleteEdgeWaypoint={deleteEdgeWaypoint}
-                            draggingWaypoint={draggingWaypoint}
-                            handleWaypointMouseDown={handleWaypointMouseDown}
-                            handleWaypointMouseMove={handleWaypointMouseMove}
-                            handleWaypointMouseUp={handleWaypointMouseUp}
-                            openUtilityMenu={openUtilityMenu}
-                            closeUtilityMenu={closeUtilityMenu}
-                          />
-                        </Pending>
-                      </Flex>
-                    </Grid>
-                    <Grid xs={2} grow={1}>
-                      <FormatSideBar data={focusedElement} />
-                    </Grid>
+                      {(guiData) => (
+                        <CircuitDiagram
+                          showTouchableArea
+                          diagramUtilityMenuState={uiState.diagramUtilityMenu}
+                          data={guiData}
+                          circuitDiagramContainerRef={circuitDiagramContainerRef}
+                          circuitDiagramSvgRef={circuitDiagramSvgRef}
+                          viewBox={viewBox}
+                          panningRef={panningRef}
+                          handleViewBoxMouseDown={handleViewBoxMouseDown}
+                          handleViewBoxMouseMove={handleViewBoxMouseMove}
+                          handleViewBoxMouseUp={handleViewBoxMouseUp}
+                          handleViewBoxZoom={handleViewBoxZoom}
+                          preventBrowserZoom={preventBrowserZoom}
+                          focusedElement={focusedElement}
+                          focusElement={focusElement}
+                          draggingNode={draggingNode}
+                          handleNodeMouseDown={handleNodeMouseDown}
+                          handleNodeMouseMove={handleNodeMouseMove}
+                          handleNodeMouseUp={handleNodeMouseUp}
+                          deleteCircuitNode={deleteCircuitNode}
+                          deleteCircuitEdge={deleteCircuitEdge}
+                          draggingNodePin={draggingNodePin}
+                          handleNodePinMouseDown={handleNodePinMouseDown}
+                          handleNodePinMouseMove={handleNodePinMouseMove}
+                          handleNodePinMouseUp={handleNodePinMouseUp}
+                          tempEdge={tempEdge}
+                          addEdgeWaypoint={addEdgeWaypoint}
+                          deleteEdgeWaypoint={deleteEdgeWaypoint}
+                          draggingWaypoint={draggingWaypoint}
+                          handleWaypointMouseDown={handleWaypointMouseDown}
+                          handleWaypointMouseMove={handleWaypointMouseMove}
+                          handleWaypointMouseUp={handleWaypointMouseUp}
+                          openUtilityMenu={openUtilityMenu}
+                          closeUtilityMenu={closeUtilityMenu}
+                        />
+                      )}
+                    </SafePending>
                   </Grid>
-                );
-              case "rowCircuitData":
-                return (
-                  <Flex
-                    direction="column"
-                    alignItems="center"
-                    justifyContent="center"
-                    grow={1}
-                    style={{ width: "100%", height: "100%" }}
-                  >
-                    <Typography>Not Implemented yet.</Typography>
-                  </Flex>
-                );
-            }
-          })()}
-        </Pending>
+                  <Grid xs={2} grow={1}>
+                    <FormatSideBar data={focusedElement} />
+                  </Grid>
+                </Grid>
+              );
+            case "rowCircuitData":
+              return (
+                <Flex
+                  direction="column"
+                  alignItems="center"
+                  justifyContent="center"
+                  grow={1}
+                  style={{ width: "100%", height: "100%" }}
+                >
+                  <Typography>Not Implemented yet.</Typography>
+                </Flex>
+              );
+          }
+        })()}
       </BaseCircuitPageLayout>
     </LayoutContainer>
   );

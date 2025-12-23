@@ -1,9 +1,9 @@
 import type { ComponentProps } from "react";
-import Flex from "@/components/atoms/Flex";
 import Grid from "@/components/atoms/Grid";
 import LoadingPuls from "@/components/atoms/LoadingPuls";
-import Pending from "@/components/atoms/Pending";
 import Typography from "@/components/atoms/Typography";
+import Pending from "@/components/atoms/utils/Pending";
+import { SafePending } from "@/components/atoms/utils/SafePending";
 import LayoutContainer from "@/components/layouts/LayoutContainer";
 import { useCircuitEmulationPageControllerContext } from "@/contexts/CircuitEmulationPageControllerContext";
 import CircuitDiagram from "../../../common/circuitDiagram";
@@ -36,8 +36,6 @@ export default function CircuitEmulationPageLayout() {
     closeToolBarMenu,
     changeActivityBarMenu,
   } = useCircuitEmulationPageControllerContext();
-
-  const isInCriticalError = error.emulationEnvironmentCreationError;
 
   const toolBarOptions: ComponentProps<typeof BaseCircuitPageLayout>["toolBarOptions"] = [
     {
@@ -79,46 +77,42 @@ export default function CircuitEmulationPageLayout() {
   return (
     <LayoutContainer>
       <BaseCircuitPageLayout toolBarOptions={toolBarOptions} activityBarOptions={activityBarOptions}>
-        <Pending
-          isLoading={!circuit || (!guiData && !isInCriticalError)}
-          fallback={<LoadingPuls />}
-          error={isInCriticalError}
-          onFailure={<Typography>Failed to load circuit data.</Typography>}
-        >
-          <Grid xfs={5} container grow={1}>
-            <Grid xs={2} xfs={5}>
-              {(() => {
-                switch (uiState.activityBarMenu.open) {
-                  case "evalMenu": {
-                    return (
-                      <EvalMenu
-                        error={error}
-                        currentTick={currentTick}
-                        evalDuration={evalDuration}
-                        entryInputs={entryInputs}
-                        outputs={outputs}
-                        updateEntryInputs={updateEntryInputs}
-                        evalCircuit={evalCircuit}
-                        changeEvalDuration={changeEvalDuration}
-                      />
-                    );
-                  }
+        <Grid xfs={5} container grow={1}>
+          <Grid xs={2} xfs={5}>
+            {(() => {
+              switch (uiState.activityBarMenu.open) {
+                case "evalMenu": {
+                  return (
+                    <EvalMenu
+                      error={error}
+                      currentTick={currentTick}
+                      evalDuration={evalDuration}
+                      entryInputs={entryInputs}
+                      outputs={outputs}
+                      updateEntryInputs={updateEntryInputs}
+                      evalCircuit={evalCircuit}
+                      changeEvalDuration={changeEvalDuration}
+                    />
+                  );
                 }
-              })()}
-            </Grid>
-            <Grid xs={3} xfs={5} grow={1}>
-              <Flex
-                ref={circuitDiagramContainerRef}
-                direction="column"
-                alignItems="center"
-                justifyContent="center"
-                grow={1}
-                style={{ height: "100%", width: "100%", background: "var(--color-circuit-diagram-bg)" }}
-              >
+              }
+            })()}
+          </Grid>
+          <Grid xs={3} xfs={5} grow={1}>
+            <SafePending
+              data={guiData}
+              isLoading={!guiData}
+              isError={error.guiRenderError}
+              fallback={{
+                onLoading: () => <LoadingPuls />,
+                onError: () => <Typography>Failed to load circuit data.</Typography>,
+              }}
+            >
+              {(guiData) => (
                 <CircuitDiagram
-                  // biome-ignore lint/style/noNonNullAssertion: guiData is guaranteed to be present when isLoading is false
-                  data={guiData!}
+                  data={guiData}
                   outputRecord={outputs}
+                  circuitDiagramContainerRef={circuitDiagramContainerRef}
                   circuitDiagramSvgRef={circuitDiagramSvgRef}
                   viewBox={viewBox}
                   panningRef={panningRef}
@@ -128,10 +122,10 @@ export default function CircuitEmulationPageLayout() {
                   handleViewBoxZoom={handleViewBoxZoom}
                   preventBrowserZoom={preventBrowserZoom}
                 />
-              </Flex>
-            </Grid>
+              )}
+            </SafePending>
           </Grid>
-        </Pending>
+        </Grid>
       </BaseCircuitPageLayout>
     </LayoutContainer>
   );

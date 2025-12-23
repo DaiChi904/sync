@@ -9,11 +9,13 @@ import type { Tick } from "../valueObject/tick";
 import type { ViewBox } from "../valueObject/viewBox";
 
 export interface CircuitEmulationPageErrorModel {
+  guiRenderError: boolean;
   emulationEnvironmentCreationError: boolean;
   failedToEvalCircuitError: boolean;
 }
 
 export const initialCircuitEmulationPageError: CircuitEmulationPageErrorModel = {
+  guiRenderError: false,
   emulationEnvironmentCreationError: false,
   failedToEvalCircuitError: false,
 };

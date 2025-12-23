@@ -1,3 +1,4 @@
+import Flex from "@/components/atoms/Flex";
 import { Svg, SvgRect, SvgTitle } from "@/components/atoms/svg";
 import type { CircuitGuiEdge } from "@/domain/model/entity/circuitGuiEdge";
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
@@ -25,6 +26,7 @@ interface CircuitDiagramProps {
   };
   data: CircuitGuiData;
   outputRecord?: Record<CircuitNodeId, EvalResult>;
+  circuitDiagramContainerRef?: React.RefObject<HTMLDivElement | null>;
   circuitDiagramSvgRef?: React.RefObject<SVGSVGElement | null>;
   viewBox?: ViewBox;
   panningRef?: React.RefObject<boolean>;
@@ -83,6 +85,7 @@ export default function CircuitDiagram({
   diagramUtilityMenuState = { open: "none", at: null },
   data,
   outputRecord,
+  circuitDiagramContainerRef,
   circuitDiagramSvgRef,
   viewBox,
   panningRef,
@@ -129,157 +132,166 @@ export default function CircuitDiagram({
   const viewHeight = maxY - minY;
 
   return (
-    <Svg
-      ref={circuitDiagramSvgRef}
-      viewBox={viewBox ? ViewBox.toHtmlFormat(viewBox) : `${minX} ${minY} ${viewWidth} ${viewHeight}`}
-      style={{ background: "var(--color-circuit-diagram-bg)", cursor: panningRef?.current ? "grabbing" : "default" }}
-      onContextMenu={disableContextMenu}
-      onWheel={handleViewBoxZoom}
-      onMouseDown={handleViewBoxMouseDown}
-      onMouseMove={handleViewBoxMouseMove}
-      onMouseUp={handleViewBoxMouseUp}
+    <Flex
+      ref={circuitDiagramContainerRef}
+      direction="column"
+      alignItems="center"
+      justifyContent="center"
+      grow={1}
+      style={{ height: "100%", width: "100%", background: "var(--color-circuit-diagram-bg)" }}
     >
-      <SvgTitle>Circuit Diagram</SvgTitle>
+      <Svg
+        ref={circuitDiagramSvgRef}
+        viewBox={viewBox ? ViewBox.toHtmlFormat(viewBox) : `${minX} ${minY} ${viewWidth} ${viewHeight}`}
+        style={{ background: "var(--color-circuit-diagram-bg)", cursor: panningRef?.current ? "grabbing" : "default" }}
+        onContextMenu={disableContextMenu}
+        onWheel={handleViewBoxZoom}
+        onMouseDown={handleViewBoxMouseDown}
+        onMouseMove={handleViewBoxMouseMove}
+        onMouseUp={handleViewBoxMouseUp}
+      >
+        <SvgTitle>Circuit Diagram</SvgTitle>
 
-      {showTouchableArea && (
-        // biome-ignore lint/correctness/useUniqueElementIds: No need for unique id.
-        <SvgRect
-          id="circuit-diagram-area"
-          x={minX}
-          y={minY}
-          width={viewWidth}
-          height={viewHeight}
-          fill="none"
-          stroke="#555"
-          strokeDasharray="4 2"
+        {showTouchableArea && (
+          // biome-ignore lint/correctness/useUniqueElementIds: No need for unique id.
+          <SvgRect
+            id="circuit-diagram-area"
+            x={minX}
+            y={minY}
+            width={viewWidth}
+            height={viewHeight}
+            fill="none"
+            stroke="#555"
+            strokeDasharray="4 2"
+          />
+        )}
+
+        <Edges
+          data={data}
+          outputRecord={outputRecord}
+          focusedElement={focusedElement}
+          focusElement={focusElement?.("edge")}
+          handleNodePinMouseDown={handleNodePinMouseDown}
+          handleWaypointMouseDown={handleWaypointMouseDown}
+          openEdgeUtilityMenu={openUtilityMenu?.("edge")}
         />
-      )}
 
-      <Edges
-        data={data}
-        outputRecord={outputRecord}
-        focusedElement={focusedElement}
-        focusElement={focusElement?.("edge")}
-        handleNodePinMouseDown={handleNodePinMouseDown}
-        handleWaypointMouseDown={handleWaypointMouseDown}
-        openEdgeUtilityMenu={openUtilityMenu?.("edge")}
-      />
+        <Nodes
+          data={data}
+          focusedElement={focusedElement}
+          focusElement={focusElement?.("node")}
+          handleNodeMouseDown={handleNodeMouseDown}
+          handleNodePinMouseDown={handleNodePinMouseDown}
+          openNodeUtilityMenu={openUtilityMenu?.("node")}
+        />
 
-      <Nodes
-        data={data}
-        focusedElement={focusedElement}
-        focusElement={focusElement?.("node")}
-        handleNodeMouseDown={handleNodeMouseDown}
-        handleNodePinMouseDown={handleNodePinMouseDown}
-        openNodeUtilityMenu={openUtilityMenu?.("node")}
-      />
+        <NodePinDragInteractionLayer
+          isActive={!!draggingNodePin}
+          onMouseMove={handleNodePinMouseMove}
+          onMouseUp={handleNodePinMouseUp}
+          tempEdge={tempEdge}
+          viewBoxX={viewBox?.x}
+          viewBoxY={viewBox?.y}
+        />
 
-      <NodePinDragInteractionLayer
-        isActive={!!draggingNodePin}
-        onMouseMove={handleNodePinMouseMove}
-        onMouseUp={handleNodePinMouseUp}
-        tempEdge={tempEdge}
-        viewBoxX={viewBox?.x}
-        viewBoxY={viewBox?.y}
-      />
+        <WaypointDragInteractionLayer
+          isActive={!!draggingWaypoint}
+          onMouseMove={handleWaypointMouseMove}
+          onMouseUp={handleWaypointMouseUp}
+          viewBoxX={viewBox?.x}
+          viewBoxY={viewBox?.y}
+        />
 
-      <WaypointDragInteractionLayer
-        isActive={!!draggingWaypoint}
-        onMouseMove={handleWaypointMouseMove}
-        onMouseUp={handleWaypointMouseUp}
-        viewBoxX={viewBox?.x}
-        viewBoxY={viewBox?.y}
-      />
+        <NodeDragInteractionLayer
+          isActive={!!draggingNode}
+          onMouseMove={handleNodeMouseMove}
+          onMouseUp={handleNodeMouseUp}
+          viewBoxX={viewBox?.x}
+          viewBoxY={viewBox?.y}
+        />
 
-      <NodeDragInteractionLayer
-        isActive={!!draggingNode}
-        onMouseMove={handleNodeMouseMove}
-        onMouseUp={handleNodeMouseUp}
-        viewBoxX={viewBox?.x}
-        viewBoxY={viewBox?.y}
-      />
+        {diagramUtilityMenuState.open === "edge" &&
+          focusedElement?.kind === "edge" &&
+          (() => {
+            const at = diagramUtilityMenuState.at;
+            if (at === null) {
+              closeUtilityMenu?.();
+              return null;
+            }
 
-      {diagramUtilityMenuState.open === "edge" &&
-        focusedElement?.kind === "edge" &&
-        (() => {
-          const at = diagramUtilityMenuState.at;
-          if (at === null) {
-            closeUtilityMenu?.();
-            return null;
-          }
-
-          return (
-            <>
-              {/** biome-ignore lint/correctness/useUniqueElementIds: No need for unique id. */}
-              <DiagramUtilityMenuBackdrop
-                id="edge-utility-menu-backdrop"
-                viewBoxX={viewBox?.x}
-                viewBoxY={viewBox?.y}
-                onClick={() => closeUtilityMenu?.()}
-              />
-              <EdgeUtilityMenu
-                at={at}
-                menuOptions={[
-                  {
-                    label: "Delete",
-                    onClickController: () => {
-                      deleteCircuitEdge?.(focusedElement.value.id);
-                      closeUtilityMenu?.();
+            return (
+              <>
+                {/** biome-ignore lint/correctness/useUniqueElementIds: No need for unique id. */}
+                <DiagramUtilityMenuBackdrop
+                  id="edge-utility-menu-backdrop"
+                  viewBoxX={viewBox?.x}
+                  viewBoxY={viewBox?.y}
+                  onClick={() => closeUtilityMenu?.()}
+                />
+                <EdgeUtilityMenu
+                  at={at}
+                  menuOptions={[
+                    {
+                      label: "Delete",
+                      onClickController: () => {
+                        deleteCircuitEdge?.(focusedElement.value.id);
+                        closeUtilityMenu?.();
+                      },
                     },
-                  },
-                  {
-                    label: "Add Waypoint",
-                    onClickController: () => {
-                      addEdgeWaypoint?.(focusedElement.value.id)(at, focusedElement.value.waypointIdx);
-                      closeUtilityMenu?.();
+                    {
+                      label: "Add Waypoint",
+                      onClickController: () => {
+                        addEdgeWaypoint?.(focusedElement.value.id)(at, focusedElement.value.waypointIdx);
+                        closeUtilityMenu?.();
+                      },
                     },
-                  },
-                  {
-                    label: "Delete Waypoint",
-                    onClickController: () => {
-                      deleteEdgeWaypoint?.(focusedElement.value.id)(focusedElement.value.waypointIdx);
-                      closeUtilityMenu?.();
+                    {
+                      label: "Delete Waypoint",
+                      onClickController: () => {
+                        deleteEdgeWaypoint?.(focusedElement.value.id)(focusedElement.value.waypointIdx);
+                        closeUtilityMenu?.();
+                      },
                     },
-                  },
-                ]}
-              />
-            </>
-          );
-        })()}
+                  ]}
+                />
+              </>
+            );
+          })()}
 
-      {diagramUtilityMenuState.open === "node" &&
-        focusedElement?.kind === "node" &&
-        (() => {
-          const at = diagramUtilityMenuState.at;
-          if (at === null) {
-            closeUtilityMenu?.();
-            return null;
-          }
+        {diagramUtilityMenuState.open === "node" &&
+          focusedElement?.kind === "node" &&
+          (() => {
+            const at = diagramUtilityMenuState.at;
+            if (at === null) {
+              closeUtilityMenu?.();
+              return null;
+            }
 
-          return (
-            <>
-              {/** biome-ignore lint/correctness/useUniqueElementIds: No need for unique id. */}
-              <DiagramUtilityMenuBackdrop
-                id="node-utility-menu-backdrop"
-                viewBoxX={viewBox?.x}
-                viewBoxY={viewBox?.y}
-                onClick={() => closeUtilityMenu?.()}
-              />
-              <NodeUtilityMenu
-                at={at}
-                menuOptions={[
-                  {
-                    label: "Delete",
-                    onClickController: () => {
-                      deleteCircuitNode?.(focusedElement.value.id);
-                      closeUtilityMenu?.();
+            return (
+              <>
+                {/** biome-ignore lint/correctness/useUniqueElementIds: No need for unique id. */}
+                <DiagramUtilityMenuBackdrop
+                  id="node-utility-menu-backdrop"
+                  viewBoxX={viewBox?.x}
+                  viewBoxY={viewBox?.y}
+                  onClick={() => closeUtilityMenu?.()}
+                />
+                <NodeUtilityMenu
+                  at={at}
+                  menuOptions={[
+                    {
+                      label: "Delete",
+                      onClickController: () => {
+                        deleteCircuitNode?.(focusedElement.value.id);
+                        closeUtilityMenu?.();
+                      },
                     },
-                  },
-                ]}
-              />
-            </>
-          );
-        })()}
-    </Svg>
+                  ]}
+                />
+              </>
+            );
+          })()}
+      </Svg>
+    </Flex>
   );
 }

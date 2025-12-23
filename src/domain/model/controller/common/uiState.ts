@@ -22,10 +22,12 @@ export interface EmulationActivityBarMenuState {
     open: "evalMenu";
 }
 
+import type { Coordinate } from "@/domain/model/valueObject/coordinate";
+
 /** Diagram utility menu state (right-click menu) */
 export interface DiagramUtilityMenuState {
     open: "none" | "edge" | "node";
-    at: { x: number; y: number } | null;
+    at: Coordinate | null;
 }
 
 /** Initial state for DiagramUtilityMenu */

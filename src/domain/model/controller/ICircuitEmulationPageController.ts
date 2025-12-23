@@ -7,6 +7,7 @@ import type { EvalResult } from "../valueObject/evalResult";
 import type { InputRecord } from "../valueObject/inputRecord";
 import type { Tick } from "../valueObject/tick";
 import type { ViewBox } from "../valueObject/viewBox";
+import type { ToolBarMenuState, EmulationActivityBarMenuState } from "./common/uiState";
 
 export interface CircuitEmulationPageErrorModel {
   guiRenderError: boolean;
@@ -21,12 +22,8 @@ export const initialCircuitEmulationPageError: CircuitEmulationPageErrorModel = 
 };
 
 export interface CircuitEmulationPageUiStateModel {
-  toolBarMenu: {
-    open: "none" | "file" | "view" | "goTo" | "help";
-  };
-  activityBarMenu: {
-    open: "evalMenu";
-  };
+  toolBarMenu: ToolBarMenuState;
+  activityBarMenu: EmulationActivityBarMenuState;
 }
 
 export class CircuitEmulationPageControllerError extends Error {

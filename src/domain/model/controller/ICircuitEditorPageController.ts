@@ -11,6 +11,11 @@ import type { CircuitNodePinId } from "../valueObject/circuitNodePinId";
 import type { CircuitTitle } from "../valueObject/circuitTitle";
 import type { Coordinate } from "../valueObject/coordinate";
 import type { ViewBox } from "../valueObject/viewBox";
+import type {
+  ToolBarMenuState,
+  CircuitActivityBarMenuState,
+  DiagramUtilityMenuState,
+} from "./common/uiState";
 
 export interface CircuitEditorPageErrorModel {
   failedToGetCircuitDetailError: boolean;
@@ -29,9 +34,9 @@ export const initialCircuitEditorPageError: CircuitEditorPageErrorModel = {
 };
 
 export interface CircuitEditorPageUiStateModel {
-  diagramUtilityMenu: { open: "none" | "edge" | "node"; at: Coordinate | null };
-  toolBarMenu: { open: "none" | "file" | "view" | "goTo" | "help" };
-  activityBarMenu: { open: "infomation" | "circuitDiagram" | "rowCircuitData" };
+  diagramUtilityMenu: DiagramUtilityMenuState;
+  toolBarMenu: ToolBarMenuState;
+  activityBarMenu: CircuitActivityBarMenuState;
 }
 
 export class CircuitEditorPageControllerError extends Error {

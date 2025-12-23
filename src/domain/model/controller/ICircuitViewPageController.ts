@@ -2,6 +2,7 @@ import type { RefObject } from "react";
 import type { CircuitOverview } from "../entity/circuitOverview";
 import type { CircuitGuiData } from "../valueObject/circuitGuiData";
 import type { ViewBox } from "../valueObject/viewBox";
+import type { ToolBarMenuState } from "./common/uiState";
 
 export interface CircuitViewPageErrorModel {
   failedToGetCircuitDetailError: boolean;
@@ -14,9 +15,7 @@ export const initialCircuitViewPageError: CircuitViewPageErrorModel = {
 };
 
 export interface CircuitViewPageUiStateModel {
-  toolBarMenu: {
-    open: "none" | "file" | "view" | "goTo" | "help";
-  };
+  toolBarMenu: ToolBarMenuState;
   activityBarMenu: {
     open: "infomation" | "circuitDiagram";
   };

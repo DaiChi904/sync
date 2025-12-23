@@ -29,7 +29,7 @@ export default function CircuitViewPageLayout() {
     changeActivityBarMenu,
   } = useCircuitViewPageControllerContext();
 
-  const isInError = error.failedToGetCircuitDetailError || error.failedToParseCircuitDataError;
+  const isInError = error.hasError("failedToGetCircuitDetailError") || error.hasError("failedToParseCircuitDataError");
 
   const toolBarOptions: ComponentProps<typeof BaseCircuitPageLayout>["toolBarOptions"] = [
     {

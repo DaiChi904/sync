@@ -17,21 +17,23 @@ import type {
   DiagramUtilityMenuState,
 } from "./common/uiState";
 
-export interface CircuitEditorPageErrorModel {
-  failedToGetCircuitDetailError: boolean;
-  failedToParseCircuitDataError: boolean;
-  failedToUpdateCircuitDataError: boolean;
-  failedToRenderCircuitError: boolean;
-  failedToSaveCircuitError: boolean;
-}
+/** Error kinds for Circuit Editor page */
+export const CIRCUIT_EDITOR_ERROR_KINDS = [
+  "failedToGetCircuitDetailError",
+  "failedToParseCircuitDataError",
+  "failedToUpdateCircuitDataError",
+  "failedToRenderCircuitError",
+  "failedToSaveCircuitError",
+] as const;
 
-export const initialCircuitEditorPageError: CircuitEditorPageErrorModel = {
-  failedToGetCircuitDetailError: false,
-  failedToParseCircuitDataError: false,
-  failedToUpdateCircuitDataError: false,
-  failedToRenderCircuitError: false,
-  failedToSaveCircuitError: false,
-};
+export type CircuitEditorErrorKind = typeof CIRCUIT_EDITOR_ERROR_KINDS[number];
+
+/** Page error state interface */
+export interface PageErrorState<TErrorKind extends string> {
+  hasError: (kind: TErrorKind) => boolean;
+  hasAnyError: () => boolean;
+  getErrorMessage: (kind: TErrorKind) => string | null;
+}
 
 export interface CircuitEditorPageUiStateModel {
   diagramUtilityMenu: DiagramUtilityMenuState;
@@ -48,7 +50,7 @@ export class CircuitEditorPageControllerError extends Error {
 }
 
 export interface ICircuitEditorPageController {
-  error: CircuitEditorPageErrorModel;
+  error: PageErrorState<CircuitEditorErrorKind>;
   uiState: CircuitEditorPageUiStateModel;
   circuit: Circuit | undefined;
   guiData: CircuitGuiData | undefined;

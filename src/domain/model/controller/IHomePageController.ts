@@ -1,12 +1,12 @@
 import type { CircuitOverview } from "../entity/circuitOverview";
+import type { PageErrorState } from "./ICircuitEditorPageController";
 
-export interface HomePageErrorModel {
-  failedToGetCircuitOverviewsError: boolean;
-}
+/** Error kinds for Home page */
+export const HOME_ERROR_KINDS = [
+  "failedToGetCircuitOverviewsError",
+] as const;
 
-export const initialHomePageError: HomePageErrorModel = {
-  failedToGetCircuitOverviewsError: false,
-};
+export type HomeErrorKind = typeof HOME_ERROR_KINDS[number];
 
 export interface HomePageUiStateModel {
   tab: { open: "home" | "new" };
@@ -21,7 +21,7 @@ export class HomePageControllerError extends Error {
 }
 
 export interface IHomePageController {
-  error: HomePageErrorModel;
+  error: PageErrorState<HomeErrorKind>;
   uiState: HomePageUiStateModel;
   circuitOverviews: Array<CircuitOverview> | undefined;
   changeActivityBarMenu: (kind: "home" | "new") => void;

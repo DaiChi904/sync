@@ -3,16 +3,15 @@ import type { CircuitOverview } from "../entity/circuitOverview";
 import type { CircuitGuiData } from "../valueObject/circuitGuiData";
 import type { ViewBox } from "../valueObject/viewBox";
 import type { ToolBarMenuState } from "./common/uiState";
+import type { PageErrorState } from "./ICircuitEditorPageController";
 
-export interface CircuitViewPageErrorModel {
-  failedToGetCircuitDetailError: boolean;
-  failedToParseCircuitDataError: boolean;
-}
+/** Error kinds for Circuit View page */
+export const CIRCUIT_VIEW_ERROR_KINDS = [
+  "failedToGetCircuitDetailError",
+  "failedToParseCircuitDataError",
+] as const;
 
-export const initialCircuitViewPageError: CircuitViewPageErrorModel = {
-  failedToGetCircuitDetailError: false,
-  failedToParseCircuitDataError: false,
-};
+export type CircuitViewErrorKind = typeof CIRCUIT_VIEW_ERROR_KINDS[number];
 
 export interface CircuitViewPageUiStateModel {
   toolBarMenu: ToolBarMenuState;
@@ -30,7 +29,7 @@ export class CircuitViewPageControllerError extends Error {
 }
 
 export interface ICircuitViewPageController {
-  error: CircuitViewPageErrorModel;
+  error: PageErrorState<CircuitViewErrorKind>;
   uiState: CircuitViewPageUiStateModel;
   overview: CircuitOverview | undefined;
   guiData: CircuitGuiData | undefined;

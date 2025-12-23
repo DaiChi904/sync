@@ -8,18 +8,16 @@ import type { InputRecord } from "../valueObject/inputRecord";
 import type { Tick } from "../valueObject/tick";
 import type { ViewBox } from "../valueObject/viewBox";
 import type { ToolBarMenuState, EmulationActivityBarMenuState } from "./common/uiState";
+import type { PageErrorState } from "./ICircuitEditorPageController";
 
-export interface CircuitEmulationPageErrorModel {
-  guiRenderError: boolean;
-  emulationEnvironmentCreationError: boolean;
-  failedToEvalCircuitError: boolean;
-}
+/** Error kinds for Circuit Emulation page */
+export const CIRCUIT_EMULATION_ERROR_KINDS = [
+  "guiRenderError",
+  "emulationEnvironmentCreationError",
+  "failedToEvalCircuitError",
+] as const;
 
-export const initialCircuitEmulationPageError: CircuitEmulationPageErrorModel = {
-  guiRenderError: false,
-  emulationEnvironmentCreationError: false,
-  failedToEvalCircuitError: false,
-};
+export type CircuitEmulationErrorKind = typeof CIRCUIT_EMULATION_ERROR_KINDS[number];
 
 export interface CircuitEmulationPageUiStateModel {
   toolBarMenu: ToolBarMenuState;
@@ -35,7 +33,7 @@ export class CircuitEmulationPageControllerError extends Error {
 }
 
 export interface ICircuitEmulationPageController {
-  error: CircuitEmulationPageErrorModel;
+  error: PageErrorState<CircuitEmulationErrorKind>;
   uiState: CircuitEmulationPageUiStateModel;
   circuit: Circuit | undefined;
   guiData: CircuitGuiData | undefined;

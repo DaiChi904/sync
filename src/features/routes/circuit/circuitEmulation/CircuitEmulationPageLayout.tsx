@@ -102,7 +102,7 @@ export default function CircuitEmulationPageLayout() {
             <SafePending
               data={guiData}
               isLoading={!guiData}
-              isError={error.guiRenderError}
+              isError={error.hasError("guiRenderError")}
               fallback={{
                 onLoading: () => <LoadingPuls />,
                 onError: () => <Typography>Failed to load circuit data.</Typography>,

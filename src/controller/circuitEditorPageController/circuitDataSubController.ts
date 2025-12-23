@@ -2,7 +2,6 @@
 
 import { useCallback, useState } from "react";
 import { Circuit } from "@/domain/model/aggregate/circuit";
-import { CircuitEditorPageControllerError } from "@/domain/model/controller/ICircuitEditorPageController";
 import { CircuitEdge } from "@/domain/model/entity/circuitEdge";
 import type { CircuitNode } from "@/domain/model/entity/circuitNode";
 import type { IGetCircuitDetailUsecase } from "@/domain/model/usecase/IGetCircuitDetailUsecase";
@@ -16,14 +15,17 @@ import type { CircuitEdgeId } from "@/domain/model/valueObject/circuitEdgeId";
 import type { CircuitTitle } from "@/domain/model/valueObject/circuitTitle";
 import { Coordinate } from "@/domain/model/valueObject/coordinate";
 import { Waypoint } from "@/domain/model/valueObject/waypoint";
-import type { CircuitEditorPageErrorModel } from "@/domain/model/controller/ICircuitEditorPageController";
+import {
+    CircuitEditorPageControllerError,
+    type CircuitEditorErrorKind,
+} from "@/domain/model/controller/ICircuitEditorPageController";
 
 export interface CircuitDataSubControllerDeps {
     query: CircuitId;
     getCircuitDetailUsecase: IGetCircuitDetailUsecase;
     updateCircuitUsecase: IUpdateCircuitUsecase;
     deleteCircuitUsecase: IDeleteCircuitUsecase;
-    setError: <K extends keyof CircuitEditorPageErrorModel>(key: K, value: CircuitEditorPageErrorModel[K]) => void;
+    setError: (kind: CircuitEditorErrorKind, message?: string) => void;
     router: { push: (path: string) => void };
 }
 
@@ -45,7 +47,7 @@ export const useCircuitDataSubController = ({
             });
             console.error(err);
 
-            setError("failedToGetCircuitDetailError", true);
+            setError("failedToGetCircuitDetailError");
             return;
         }
 
@@ -57,7 +59,7 @@ export const useCircuitDataSubController = ({
             const err = new CircuitEditorPageControllerError("Unable to save. Circuit is not defined.");
             console.error(err);
 
-            setError("failedToSaveCircuitError", true);
+            setError("failedToSaveCircuitError");
             return;
         }
 
@@ -68,11 +70,11 @@ export const useCircuitDataSubController = ({
             });
             console.error(err);
 
-            setError("failedToSaveCircuitError", true);
+            setError("failedToSaveCircuitError");
             return;
         }
 
-        setError("failedToSaveCircuitError", false);
+        // Success - no need to call setError
     }, [circuit, updateCircuitUsecase, setError]);
 
     const deleteCircuit = useCallback(async () => {

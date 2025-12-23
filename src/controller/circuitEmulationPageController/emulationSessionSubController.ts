@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import type { Circuit } from "@/domain/model/aggregate/circuit";
-import type { CircuitEmulationPageErrorModel } from "@/domain/model/controller/ICircuitEmulationPageController";
+import type { CircuitEmulationErrorKind } from "@/domain/model/controller/ICircuitEmulationPageController";
 import type {
     ICreateEmulationSessionUsecase,
     IEmulationSession,
@@ -24,7 +24,7 @@ export interface EmulationSessionSubControllerDeps {
     getCircuitDetailUsecase: IGetCircuitDetailUsecase;
     createEmulationSessionUsecase: ICreateEmulationSessionUsecase;
     circuitParserUsecase: CircuitParserService;
-    setError: <K extends keyof CircuitEmulationPageErrorModel>(key: K, value: CircuitEmulationPageErrorModel[K]) => void;
+    setError: (kind: CircuitEmulationErrorKind, message?: string) => void;
 }
 
 export const useEmulationSessionSubController = ({
@@ -47,7 +47,7 @@ export const useEmulationSessionSubController = ({
         const res = await getCircuitDetailUsecase.getById(query);
         if (!res.ok) {
             console.error(res.error);
-            setError("emulationEnvironmentCreationError", true);
+            setError("emulationEnvironmentCreationError");
             return;
         }
 
@@ -63,7 +63,7 @@ export const useEmulationSessionSubController = ({
         const gui = circuitParserUsecase.parseToGuiData(circuit.circuitData);
         if (!gui.ok) {
             console.error(gui.error);
-            setError("guiRenderError", true);
+            setError("guiRenderError");
             return;
         }
 
@@ -80,14 +80,14 @@ export const useEmulationSessionSubController = ({
             const graph = circuitParserUsecase.parseToGraphData(circuit.circuitData);
             if (!graph.ok) {
                 console.error(graph.error);
-                setError("emulationEnvironmentCreationError", true);
+                setError("emulationEnvironmentCreationError");
                 return;
             }
 
             const sessionResult = createEmulationSessionUsecase.createSession(graph.value, config);
             if (!sessionResult.ok) {
                 console.error(sessionResult.error);
-                setError("emulationEnvironmentCreationError", true);
+                setError("emulationEnvironmentCreationError");
                 return;
             }
 
@@ -142,7 +142,7 @@ export const useEmulationSessionSubController = ({
         const res = session.eval(entryInputs, evalDuration);
         if (!res.ok) {
             console.log(res.error);
-            setError("failedToEvalCircuitError", true);
+            setError("failedToEvalCircuitError");
             return;
         }
 

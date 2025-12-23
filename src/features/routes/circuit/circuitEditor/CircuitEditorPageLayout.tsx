@@ -64,7 +64,7 @@ export default function CircuitEditorPageLayout() {
   } = useCircuitEditorPageControllerContext();
 
   const isInCriticalError =
-    error.failedToGetCircuitDetailError || error.failedToParseCircuitDataError || error.failedToRenderCircuitError;
+    error.hasError("failedToGetCircuitDetailError") || error.hasError("failedToParseCircuitDataError") || error.hasError("failedToRenderCircuitError");
 
   const toolBarOptions: ComponentProps<typeof BaseCircuitPageLayout>["toolBarOptions"] = [
     {

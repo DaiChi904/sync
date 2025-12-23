@@ -2,15 +2,16 @@
 
 import { useEffect } from "react";
 import {
-    type CircuitEmulationPageErrorModel,
+    CIRCUIT_EMULATION_ERROR_KINDS,
+    type CircuitEmulationErrorKind,
     type ICircuitEmulationPageController,
-    initialCircuitEmulationPageError,
 } from "@/domain/model/controller/ICircuitEmulationPageController";
 import type { ICreateEmulationSessionUsecase } from "@/domain/model/usecase/ICreateEmulationSessionUsecase";
 import type { IGetCircuitDetailUsecase } from "@/domain/model/usecase/IGetCircuitDetailUsecase";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 import type { CircuitParserService } from "@/domain/service/circuitParserService";
 import { useCircuitDiagram } from "@/hooks/circuitDiagram";
+import { usePageError } from "@/hooks/usePageError";
 import { usePartialState } from "@/hooks/partialState";
 import { useViewBox } from "@/hooks/viewBox";
 import { useEmulationSessionSubController } from "./emulationSessionSubController";
@@ -29,7 +30,7 @@ export const useCircuitEmulationPageController = ({
     createEmulationSessionUsecase,
     circuitParserUsecase,
 }: CircuitEmulationPageControllerDependencies): ICircuitEmulationPageController => {
-    const [error, setError] = usePartialState<CircuitEmulationPageErrorModel>(initialCircuitEmulationPageError);
+    const pageError = usePageError<CircuitEmulationErrorKind>([...CIRCUIT_EMULATION_ERROR_KINDS]);
     const [uiState, setUiState] = usePartialState<ICircuitEmulationPageController["uiState"]>({
         toolBarMenu: { open: "none" },
         activityBarMenu: { open: "evalMenu" },
@@ -55,7 +56,7 @@ export const useCircuitEmulationPageController = ({
         getCircuitDetailUsecase,
         createEmulationSessionUsecase,
         circuitParserUsecase,
-        setError,
+        setError: pageError.setError,
     });
 
     // UI State Sub-Controller
@@ -82,7 +83,7 @@ export const useCircuitEmulationPageController = ({
     }, [emulationSession.initializeSession]);
 
     return {
-        error,
+        error: pageError,
         uiState,
         circuit: emulationSession.circuit,
         guiData: emulationSession.guiData,

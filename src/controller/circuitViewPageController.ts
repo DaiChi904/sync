@@ -3,10 +3,10 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   CircuitViewPageControllerError,
-  type CircuitViewPageErrorModel,
+  CIRCUIT_VIEW_ERROR_KINDS,
+  type CircuitViewErrorKind,
   type CircuitViewPageUiStateModel,
   type ICircuitViewPageController,
-  initialCircuitViewPageError,
 } from "@/domain/model/controller/ICircuitViewPageController";
 import { CircuitOverview } from "@/domain/model/entity/circuitOverview";
 import type { ICircuitParserService } from "@/domain/model/service/ICircuitParserService";
@@ -14,6 +14,7 @@ import type { IGetCircuitDetailUsecase } from "@/domain/model/usecase/IGetCircui
 import type { CircuitGuiData } from "@/domain/model/valueObject/circuitGuiData";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 import { useCircuitDiagram } from "@/hooks/circuitDiagram";
+import { usePageError } from "@/hooks/usePageError";
 import { usePartialState } from "@/hooks/partialState";
 import { useViewBox } from "@/hooks/viewBox";
 
@@ -28,7 +29,7 @@ export const useCircuitViewPageController = ({
   getCircuitDetailUsecase,
   circuitParserUsecase,
 }: CircuitViewPageControllerDependencies): ICircuitViewPageController => {
-  const [error, setError] = usePartialState<CircuitViewPageErrorModel>(initialCircuitViewPageError);
+  const pageError = usePageError<CircuitViewErrorKind>([...CIRCUIT_VIEW_ERROR_KINDS]);
   const [uiState, setUiState] = usePartialState<CircuitViewPageUiStateModel>({
     toolBarMenu: { open: "none" },
     activityBarMenu: { open: "infomation" },
@@ -59,8 +60,8 @@ export const useCircuitViewPageController = ({
       });
       console.error(err);
 
-      setError("failedToGetCircuitDetailError", true);
-      setError("failedToParseCircuitDataError", true);
+      pageError.setError("failedToGetCircuitDetailError");
+      pageError.setError("failedToParseCircuitDataError");
       return;
     }
 
@@ -81,12 +82,12 @@ export const useCircuitViewPageController = ({
       });
       console.error(err);
 
-      setError("failedToParseCircuitDataError", true);
+      pageError.setError("failedToParseCircuitDataError");
       return;
     }
 
     setGuiData(circuitGuiData.value);
-  }, [query, getCircuitDetailUsecase, setError, circuitParserUsecase]);
+  }, [query, getCircuitDetailUsecase, pageError.setError, circuitParserUsecase]);
 
   const openToolBarMenu = useCallback(
     (kind: "file" | "view" | "goTo" | "help") => {
@@ -118,7 +119,7 @@ export const useCircuitViewPageController = ({
   }, [isViewBoxInitialized, initViewBox, guiData]);
 
   return {
-    error,
+    error: pageError,
     uiState,
     overview,
     guiData,

@@ -4,10 +4,10 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import {
     CircuitEditorPageControllerError,
-    type CircuitEditorPageErrorModel,
+    CIRCUIT_EDITOR_ERROR_KINDS,
+    type CircuitEditorErrorKind,
     type CircuitEditorPageUiStateModel,
     type ICircuitEditorPageController,
-    initialCircuitEditorPageError,
 } from "@/domain/model/controller/ICircuitEditorPageController";
 import type { ICircuitRepository } from "@/domain/model/infrastructure/repository/ICircuitRepository";
 import type { ICircuitParserService } from "@/domain/model/service/ICircuitParserService";
@@ -17,6 +17,7 @@ import type { IUpdateCircuitUsecase } from "@/domain/model/usecase/IUpdateCircui
 import type { CircuitGuiData } from "@/domain/model/valueObject/circuitGuiData";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 import { useCircuitDiagram } from "@/hooks/circuitDiagram";
+import { usePageError } from "@/hooks/usePageError";
 import { usePartialState } from "@/hooks/partialState";
 import { useViewBox } from "@/hooks/viewBox";
 import { useCircuitDataSubController } from "./circuitDataSubController";
@@ -41,7 +42,7 @@ export const useCircuitEditorPageController = ({
 }: CircuitEditorPageControllerDependencies): ICircuitEditorPageController => {
     const router = useRouter();
 
-    const [error, setError] = usePartialState<CircuitEditorPageErrorModel>(initialCircuitEditorPageError);
+    const pageError = usePageError<CircuitEditorErrorKind>([...CIRCUIT_EDITOR_ERROR_KINDS]);
     const [uiState, setUiState] = usePartialState<CircuitEditorPageUiStateModel>({
         diagramUtilityMenu: { open: "none", at: null },
         toolBarMenu: { open: "none" },
@@ -71,7 +72,7 @@ export const useCircuitEditorPageController = ({
         getCircuitDetailUsecase,
         updateCircuitUsecase,
         deleteCircuitUsecase,
-        setError,
+        setError: pageError.setError,
         router,
     });
 
@@ -98,7 +99,7 @@ export const useCircuitEditorPageController = ({
             const err = new CircuitEditorPageControllerError("Unable to update gui data. Circuit is not defined.");
             console.error(err);
 
-            setError("failedToParseCircuitDataError", true);
+            pageError.setError("failedToParseCircuitDataError");
             return;
         }
 
@@ -110,7 +111,7 @@ export const useCircuitEditorPageController = ({
             );
             console.error(err);
 
-            setError("failedToParseCircuitDataError", true);
+            pageError.setError("failedToParseCircuitDataError");
             return;
         }
 
@@ -119,7 +120,7 @@ export const useCircuitEditorPageController = ({
         if (!isViewBoxInitialized || circuitGuiData.value) {
             initViewBox(circuitGuiData.value);
         }
-    }, [circuitData.circuit, circuitParserUsecase, setError, isViewBoxInitialized, initViewBox]);
+    }, [circuitData.circuit, circuitParserUsecase, pageError.setError, isViewBoxInitialized, initViewBox]);
 
     const openUtilityMenu = useCallback(
         (kind: "node" | "edge") => (ev: React.MouseEvent) => {
@@ -165,7 +166,7 @@ export const useCircuitEditorPageController = ({
     }, [circuitData.circuit, uiState.activityBarMenu.open]);
 
     return {
-        error,
+        error: pageError,
         circuit: circuitData.circuit,
         guiData,
         viewBox,

@@ -44,12 +44,12 @@ export default function EvalMenu({
       >
         <Typography size="mediumPlus">{`Eval >>>`}</Typography>
       </SecondaryButton>
-      {error.emulationEnvironmentCreationError && (
+      {error.hasError("emulationEnvironmentCreationError") && (
         <Typography size="medium" style={{ color: "red", marginTop: 10 }}>
           Creation emulation environment failed.
         </Typography>
       )}
-      {error.failedToEvalCircuitError && (
+      {error.hasError("failedToEvalCircuitError") && (
         <Typography size="medium" style={{ color: "red", marginTop: 10 }}>
           Failed to evaluate the circuit.
         </Typography>

@@ -5,10 +5,10 @@ import { useCallback, useEffect, useState } from "react";
 import { Circuit } from "@/domain/model/aggregate/circuit";
 import {
   HomePageControllerError,
-  type HomePageErrorModel,
+  HOME_ERROR_KINDS,
+  type HomeErrorKind,
   type HomePageUiStateModel,
   type IHomePageController,
-  initialHomePageError,
 } from "@/domain/model/controller/IHomePageController";
 import type { CircuitOverview } from "@/domain/model/entity/circuitOverview";
 import type { IAddCircuitUsecase } from "@/domain/model/usecase/IAddCircuitUsecase";
@@ -18,6 +18,7 @@ import { CircuitDescription } from "@/domain/model/valueObject/circuitDescriptio
 import { CircuitId } from "@/domain/model/valueObject/circuitId";
 import { CircuitTitle } from "@/domain/model/valueObject/circuitTitle";
 import { UpdatedDateTime } from "@/domain/model/valueObject/updatedDateTime";
+import { usePageError } from "@/hooks/usePageError";
 import { usePartialState } from "@/hooks/partialState";
 import { CreatedDateTime } from "../domain/model/valueObject/createdDateTime";
 
@@ -32,7 +33,7 @@ export const useHomePageController = ({
 }: HomePageControllerDependencies): IHomePageController => {
   const router = useRouter();
 
-  const [error, setError] = usePartialState<HomePageErrorModel>(initialHomePageError);
+  const pageError = usePageError<HomeErrorKind>([...HOME_ERROR_KINDS]);
   const [uiState, setUiState] = usePartialState<HomePageUiStateModel>({
     tab: { open: "home" },
   });
@@ -51,9 +52,9 @@ export const useHomePageController = ({
       setCircuitOverviews(circuitOverviews.value);
     } catch (err: unknown) {
       console.error(err);
-      setError("failedToGetCircuitOverviewsError", true);
+      pageError.setError("failedToGetCircuitOverviewsError");
     }
-  }, [getCircuitOverviewsUsecase, setError]);
+  }, [getCircuitOverviewsUsecase, pageError.setError]);
 
   const addNewCircuit = useCallback(
     async (kind: "empty") => {
@@ -100,10 +101,11 @@ export const useHomePageController = ({
   }, [fetch]);
 
   return {
-    error,
+    error: pageError,
     uiState,
     circuitOverviews,
     changeActivityBarMenu,
     addNewCircuit,
   };
 };
+

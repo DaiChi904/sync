@@ -16,13 +16,14 @@ import type { CircuitEdgeId } from "@/domain/model/valueObject/circuitEdgeId";
 import type { CircuitTitle } from "@/domain/model/valueObject/circuitTitle";
 import { Coordinate } from "@/domain/model/valueObject/coordinate";
 import { Waypoint } from "@/domain/model/valueObject/waypoint";
+import type { CircuitEditorPageErrorModel } from "@/domain/model/controller/ICircuitEditorPageController";
 
 export interface CircuitDataSubControllerDeps {
     query: CircuitId;
     getCircuitDetailUsecase: IGetCircuitDetailUsecase;
     updateCircuitUsecase: IUpdateCircuitUsecase;
     deleteCircuitUsecase: IDeleteCircuitUsecase;
-    setError: <K extends string>(key: K, value: boolean) => void;
+    setError: <K extends keyof CircuitEditorPageErrorModel>(key: K, value: CircuitEditorPageErrorModel[K]) => void;
     router: { push: (path: string) => void };
 }
 

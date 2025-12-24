@@ -9,6 +9,7 @@ import {
   type CircuitEditorPageUiStateModel,
   type ICircuitEditorPageController,
 } from "@/domain/model/controller/ICircuitEditorPageController";
+import { CircuitNode } from "@/domain/model/entity/circuitNode";
 import type { ICircuitRepository } from "@/domain/model/infrastructure/repository/ICircuitRepository";
 import type { ICircuitParserService } from "@/domain/model/service/ICircuitParserService";
 import type { IDeleteCircuitUsecase } from "@/domain/model/usecase/IDeleteCircuitUsecase";
@@ -16,6 +17,11 @@ import type { IGetCircuitDetailUsecase } from "@/domain/model/usecase/IGetCircui
 import type { IUpdateCircuitUsecase } from "@/domain/model/usecase/IUpdateCircuitUsecase";
 import type { CircuitGuiData } from "@/domain/model/valueObject/circuitGuiData";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
+import { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
+import { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
+import { CircuitNodeSize } from "@/domain/model/valueObject/circuitNodeSize";
+import type { CircuitNodeType } from "@/domain/model/valueObject/circuitNodeType";
+import type { Coordinate } from "@/domain/model/valueObject/coordinate";
 import { useCircuitDiagram } from "@/hooks/circuitDiagram";
 import { usePartialState } from "@/hooks/partialState";
 import { usePageError } from "@/hooks/usePageError";
@@ -93,6 +99,28 @@ export const useCircuitEditorPageController = ({
     updateCircuitEdge: circuitData.updateCircuitEdge,
     reattachFocusedElement: nodeDrag.reattachFocusedElement,
   });
+
+  // Node creation configuration
+  const NODE_PIN_CONFIG: Record<string, { inputs: number; outputs: number }> = {
+    AND: { inputs: 2, outputs: 1 },
+    OR: { inputs: 2, outputs: 1 },
+    NOT: { inputs: 1, outputs: 1 },
+    JUNCTION: { inputs: 1, outputs: 1 },
+    ENTRY: { inputs: 0, outputs: 1 },
+    EXIT: { inputs: 1, outputs: 0 },
+  };
+
+  const createCircuitNode = useCallback((type: CircuitNodeType, coordinate: Coordinate): CircuitNode => {
+    const config = NODE_PIN_CONFIG[type.toString()] ?? { inputs: 1, outputs: 1 };
+    return CircuitNode.from({
+      id: CircuitNodeId.generate(),
+      type,
+      inputs: Array.from({ length: config.inputs }, () => CircuitNodePinId.generate()),
+      outputs: Array.from({ length: config.outputs }, () => CircuitNodePinId.generate()),
+      coordinate,
+      size: CircuitNodeSize.from({ x: 60, y: 40 }),
+    });
+  }, []);
 
   const updateCircuitGuiData = useCallback((): void => {
     if (!circuitData.circuit) {
@@ -181,6 +209,7 @@ export const useCircuitEditorPageController = ({
     changeTitle: circuitData.changeTitle,
     changeDescription: circuitData.changeDescription,
     addCircuitNode: circuitData.addCircuitNode,
+    createCircuitNode,
     deleteCircuitNode: circuitData.deleteCircuitNode,
     deleteCircuitEdge: circuitData.deleteCircuitEdge,
     circuitDiagramContainerRef,

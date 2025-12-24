@@ -2,13 +2,12 @@ import type { ComponentProps } from "react";
 import Grid from "@/components/atoms/Grid";
 import LoadingPuls from "@/components/atoms/LoadingPuls";
 import Typography from "@/components/atoms/Typography";
-import Pending from "@/components/atoms/utils/Pending";
 import { SafePending } from "@/components/atoms/utils/SafePending";
 import LayoutContainer from "@/components/layouts/LayoutContainer";
 import { useCircuitEmulationPageControllerContext } from "@/contexts/CircuitEmulationPageControllerContext";
 import CircuitDiagram from "../../../common/circuitDiagram";
 import BaseCircuitPageLayout from "../common/BaseCircuitPageLayout";
-import EvalMenu from "./evalMenu";
+import EvalMenu from "./EvalMenu";
 
 export default function CircuitEmulationPageLayout() {
   const {

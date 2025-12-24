@@ -1,20 +1,5 @@
 import { SvgCircle, SvgGroup, SvgPath, SvgRect } from "@/components/atoms/svg";
-import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
-import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
-
-interface OrNodeProps {
-  node: CircuitGuiNode;
-  isInFocus?: boolean;
-  focusElement?: (value: CircuitGuiNode) => void;
-  handleNodeMouseDown?: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
-  handleNodePinMouseDown?: (
-    ev: React.MouseEvent,
-    id: CircuitNodePinId,
-    kind: "from" | "to",
-    method: "ADD" | "UPDATE",
-  ) => void;
-  openNodeUtilityMenu?: (ev: React.MouseEvent) => void;
-}
+import type { LogicGateNodeProps } from "./types";
 
 export default function OrNode({
   node,
@@ -23,7 +8,7 @@ export default function OrNode({
   handleNodeMouseDown,
   handleNodePinMouseDown,
   openNodeUtilityMenu,
-}: OrNodeProps) {
+}: LogicGateNodeProps) {
   // The Or node has a slight depression at the input, so if it is drawn as it is, the connection points cannot be connected neatly to the edge in the GUI, so a little play is made with this value.
   const extraInputWidth = node.size.x * 0.1;
   return (

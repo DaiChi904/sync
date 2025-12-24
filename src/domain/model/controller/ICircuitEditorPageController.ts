@@ -8,6 +8,7 @@ import type { CircuitEdgeId } from "../valueObject/circuitEdgeId";
 import type { CircuitGuiData } from "../valueObject/circuitGuiData";
 import type { CircuitNodeId } from "../valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "../valueObject/circuitNodePinId";
+import type { CircuitNodeType } from "../valueObject/circuitNodeType";
 import type { CircuitTitle } from "../valueObject/circuitTitle";
 import type { Coordinate } from "../valueObject/coordinate";
 import type { ViewBox } from "../valueObject/viewBox";
@@ -62,6 +63,7 @@ export interface ICircuitEditorPageController {
   changeTitle: (title: CircuitTitle) => void;
   changeDescription: (description: CircuitDescription) => void;
   addCircuitNode: (newNode: CircuitNode) => void;
+  createCircuitNode: (type: CircuitNodeType, coordinate: Coordinate) => CircuitNode;
   deleteCircuitNode: (nodeId: CircuitNodeId) => void;
   deleteCircuitEdge: (edgeId: CircuitEdgeId) => void;
   circuitDiagramContainerRef: RefObject<HTMLDivElement | null>;

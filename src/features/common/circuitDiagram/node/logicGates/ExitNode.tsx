@@ -1,20 +1,5 @@
 import { SvgCircle, SvgGroup } from "@/components/atoms/svg";
-import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
-import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
-
-interface ExitNodeProps {
-  node: CircuitGuiNode;
-  isInFocus?: boolean;
-  focusElement?: (value: CircuitGuiNode) => void;
-  handleNodeMouseDown?: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
-  handleNodePinMouseDown?: (
-    ev: React.MouseEvent,
-    id: CircuitNodePinId,
-    kind: "from" | "to",
-    method: "ADD" | "UPDATE",
-  ) => void;
-  openNodeUtilityMenu?: (ev: React.MouseEvent) => void;
-}
+import type { LogicGateNodeProps } from "./types";
 
 export default function ExitNode({
   node,
@@ -23,7 +8,7 @@ export default function ExitNode({
   handleNodeMouseDown,
   handleNodePinMouseDown,
   openNodeUtilityMenu,
-}: ExitNodeProps) {
+}: LogicGateNodeProps) {
   return (
     <SvgGroup
       onClick={() => focusElement?.(node)}

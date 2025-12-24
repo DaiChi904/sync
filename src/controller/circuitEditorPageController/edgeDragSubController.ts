@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { LEFT_CLICK } from "@/constants/mouseEvent";
 import type { Circuit } from "@/domain/model/aggregate/circuit";
 import { CircuitEdge } from "@/domain/model/entity/circuitEdge";

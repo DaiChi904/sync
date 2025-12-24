@@ -1,81 +1,27 @@
 import SecondaryButton from "@/components/atoms/buttons/SecondaryButton";
 import Flex from "@/components/atoms/Flex";
 import Typography from "@/components/atoms/Typography";
-import { CircuitNode } from "@/domain/model/entity/circuitNode";
-import { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
-import { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
-import { CircuitNodeSize } from "@/domain/model/valueObject/circuitNodeSize";
+import type { CircuitNode } from "@/domain/model/entity/circuitNode";
 import { CircuitNodeType } from "@/domain/model/valueObject/circuitNodeType";
 import { Coordinate } from "@/domain/model/valueObject/coordinate";
 
 interface ElementSideBarProps {
   viewBox?: { x: number; y: number; w: number; h: number };
+  createCircuitNode: (type: CircuitNodeType, coordinate: Coordinate) => CircuitNode;
   addCircuitNode: (newNode: CircuitNode) => void;
 }
 
 type NodeType = "AND" | "ENTRY" | "EXIT" | "JUNCTION" | "OR" | "NOT";
 const nodes: Array<NodeType> = ["AND", "ENTRY", "EXIT", "JUNCTION", "OR", "NOT"];
 
-export default function ElementSideBar({ viewBox, addCircuitNode }: ElementSideBarProps) {
-  const centerX = viewBox ? viewBox?.x + viewBox?.w / 2 : 0;
-  const centerY = viewBox ? viewBox?.y + viewBox?.h / 2 : 0;
+export default function ElementSideBar({ viewBox, createCircuitNode, addCircuitNode }: ElementSideBarProps) {
+  const centerX = viewBox ? viewBox.x + viewBox.w / 2 : 0;
+  const centerY = viewBox ? viewBox.y + viewBox.h / 2 : 0;
 
   const add = (type: NodeType) => {
-    switch (type) {
-      case "AND":
-      case "OR": {
-        addCircuitNode(
-          CircuitNode.from({
-            id: CircuitNodeId.generate(),
-            type: CircuitNodeType.from(type),
-            inputs: [CircuitNodePinId.generate(), CircuitNodePinId.generate()],
-            outputs: [CircuitNodePinId.generate()],
-            coordinate: Coordinate.from({ x: centerX, y: centerY }),
-            size: CircuitNodeSize.from({ x: 60, y: 40 }),
-          }),
-        );
-        break;
-      }
-      case "NOT":
-      case "JUNCTION": {
-        addCircuitNode(
-          CircuitNode.from({
-            id: CircuitNodeId.generate(),
-            type: CircuitNodeType.from(type),
-            inputs: [CircuitNodePinId.generate()],
-            outputs: [CircuitNodePinId.generate()],
-            coordinate: Coordinate.from({ x: centerX, y: centerY }),
-            size: CircuitNodeSize.from({ x: 60, y: 40 }),
-          }),
-        );
-        break;
-      }
-      case "ENTRY": {
-        addCircuitNode(
-          CircuitNode.from({
-            id: CircuitNodeId.generate(),
-            type: CircuitNodeType.from(type),
-            inputs: [],
-            outputs: [CircuitNodePinId.generate()],
-            coordinate: Coordinate.from({ x: centerX, y: centerY }),
-            size: CircuitNodeSize.from({ x: 60, y: 40 }),
-          }),
-        );
-        break;
-      }
-      case "EXIT": {
-        addCircuitNode(
-          CircuitNode.from({
-            id: CircuitNodeId.generate(),
-            type: CircuitNodeType.from(type),
-            inputs: [CircuitNodePinId.generate()],
-            outputs: [],
-            coordinate: Coordinate.from({ x: centerX, y: centerY }),
-            size: CircuitNodeSize.from({ x: 60, y: 40 }),
-          }),
-        );
-      }
-    }
+    const coordinate = Coordinate.from({ x: centerX, y: centerY });
+    const newNode = createCircuitNode(CircuitNodeType.from(type), coordinate);
+    addCircuitNode(newNode);
   };
 
   return (

@@ -3,13 +3,11 @@ import { Svg, SvgRect, SvgTitle } from "@/components/atoms/svg";
 import type { CircuitDiagramProps } from "@/domain/model/controller/common/circuitDiagramProps";
 import { ViewBox } from "@/domain/model/valueObject/viewBox";
 import Edges from "./edge/Edges";
-import DiagramUtilityMenuBackdrop from "./eventCaptureLayer/DiagramUtilityMenuBackdrop";
 import NodeDragInteractionLayer from "./eventCaptureLayer/NodeDragInteractionLayer";
 import NodePinDragInteractionLayer from "./eventCaptureLayer/NodePinDragInteractionLayer";
 import WaypointDragInteractionLayer from "./eventCaptureLayer/WaypointDragInteractionLayer";
 import Nodes from "./node/Nodes";
-import EdgeUtilityMenu from "./utilityMenu/EdgeUtilityMenu";
-import NodeUtilityMenu from "./utilityMenu/NodeUtilityMenu";
+import DiagramUtilityMenuLayer from "./utilityMenu/DiagramUtilityMenuLayer";
 
 /**
  * CircuitDiagram component with structured props
@@ -181,87 +179,15 @@ export default function CircuitDiagram({
           viewBoxY={viewBox?.y}
         />
 
-        {diagramUtilityMenuState.open === "edge" &&
-          focusedElement?.kind === "edge" &&
-          (() => {
-            const at = diagramUtilityMenuState.at;
-            if (at === null) {
-              closeUtilityMenu?.();
-              return null;
-            }
-
-            return (
-              <>
-                {/** biome-ignore lint/correctness/useUniqueElementIds: No need for unique id. */}
-                <DiagramUtilityMenuBackdrop
-                  id="edge-utility-menu-backdrop"
-                  viewBoxX={viewBox?.x}
-                  viewBoxY={viewBox?.y}
-                  onClick={() => closeUtilityMenu?.()}
-                />
-                <EdgeUtilityMenu
-                  at={at}
-                  menuOptions={[
-                    {
-                      label: "Delete",
-                      onClickController: () => {
-                        deleteCircuitEdge?.(focusedElement.value.id);
-                        closeUtilityMenu?.();
-                      },
-                    },
-                    {
-                      label: "Add Waypoint",
-                      onClickController: () => {
-                        addEdgeWaypoint?.(focusedElement.value.id)(at, focusedElement.value.waypointIdx);
-                        closeUtilityMenu?.();
-                      },
-                    },
-                    {
-                      label: "Delete Waypoint",
-                      onClickController: () => {
-                        deleteEdgeWaypoint?.(focusedElement.value.id)(focusedElement.value.waypointIdx);
-                        closeUtilityMenu?.();
-                      },
-                    },
-                  ]}
-                />
-              </>
-            );
-          })()}
-
-        {diagramUtilityMenuState.open === "node" &&
-          focusedElement?.kind === "node" &&
-          (() => {
-            const at = diagramUtilityMenuState.at;
-            if (at === null) {
-              closeUtilityMenu?.();
-              return null;
-            }
-
-            return (
-              <>
-                {/** biome-ignore lint/correctness/useUniqueElementIds: No need for unique id. */}
-                <DiagramUtilityMenuBackdrop
-                  id="node-utility-menu-backdrop"
-                  viewBoxX={viewBox?.x}
-                  viewBoxY={viewBox?.y}
-                  onClick={() => closeUtilityMenu?.()}
-                />
-                <NodeUtilityMenu
-                  at={at}
-                  menuOptions={[
-                    {
-                      label: "Delete",
-                      onClickController: () => {
-                        deleteCircuitNode?.(focusedElement.value.id);
-                        closeUtilityMenu?.();
-                      },
-                    },
-                  ]}
-                />
-              </>
-            );
-          })()}
+        <DiagramUtilityMenuLayer
+          state={diagramUtilityMenuState}
+          focusedElement={focusedElement}
+          viewBoxX={viewBox?.x}
+          viewBoxY={viewBox?.y}
+          closeUtilityMenu={closeUtilityMenu}
+          edgeActions={{ deleteCircuitEdge, addEdgeWaypoint, deleteEdgeWaypoint }}
+          nodeActions={{ deleteCircuitNode }}
+        />
       </Svg>
     </Flex>
   );

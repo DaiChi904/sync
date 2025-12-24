@@ -1,4 +1,4 @@
-import { CircuitDiagramDataProps, ViewBoxHandlers } from "@/domain/model/controller/common/circuitDiagramProps";
+import type { CircuitDiagramDataProps, ViewBoxHandlers } from "@/domain/model/controller/common/circuitDiagramProps";
 import CircuitDiagram from "@/features/common/circuitDiagram";
 
 interface CircuitDiagramDisplayProps {

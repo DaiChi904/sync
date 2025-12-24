@@ -2,11 +2,9 @@ import type { ComponentProps } from "react";
 import Flex from "@/components/atoms/Flex";
 import LoadingPuls from "@/components/atoms/LoadingPuls";
 import Typography from "@/components/atoms/Typography";
-import { Table, TableBody, TableCaption, TableCell, TableRow } from "@/components/atoms/table";
 import { SafePending } from "@/components/atoms/utils/SafePending";
 import LayoutContainer from "@/components/layouts/LayoutContainer";
 import { useCircuitViewPageControllerContext } from "@/contexts/CircuitViewPageControllerContext";
-import CircuitDiagram from "../../../common/circuitDiagram";
 import BaseCircuitPageLayout from "../common/BaseCircuitPageLayout";
 import CircuitDiagramDisplay from "./CircuitDiagramDisplay";
 import CircuitInfomationDisplay from "./CircuitInfomationDisplay";
@@ -88,9 +86,7 @@ export default function CircuitViewPageLayout() {
                       onError: () => <Typography>Failed to load circuit data.</Typography>,
                     }}
                   >
-                    {(overview) => (
-                      <CircuitInfomationDisplay overview={overview} />
-                    )}
+                    {(overview) => <CircuitInfomationDisplay overview={overview} />}
                   </SafePending>
                 );
               }

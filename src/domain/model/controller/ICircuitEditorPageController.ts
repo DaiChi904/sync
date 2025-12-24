@@ -14,7 +14,6 @@ import type { Coordinate } from "../valueObject/coordinate";
 import type { ViewBox } from "../valueObject/viewBox";
 import type { CircuitActivityBarMenuState, DiagramUtilityMenuState, ToolBarMenuState } from "./common/uiState";
 
-/** Error kinds for Circuit Editor page */
 export const CIRCUIT_EDITOR_ERROR_KINDS = [
   "failedToGetCircuitDetailError",
   "failedToParseCircuitDataError",
@@ -25,7 +24,6 @@ export const CIRCUIT_EDITOR_ERROR_KINDS = [
 
 export type CircuitEditorErrorKind = (typeof CIRCUIT_EDITOR_ERROR_KINDS)[number];
 
-/** Page error state interface */
 export interface PageErrorState<TErrorKind extends string> {
   hasError: (kind: TErrorKind) => boolean;
   hasAnyError: () => boolean;

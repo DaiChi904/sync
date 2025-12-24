@@ -1,6 +1,6 @@
 import Flex from "@/components/atoms/Flex";
 
-export default function CircuitListHeader() {
+export default function CircuitOverviewsHeader() {
   return (
     <Flex
       style={{ padding: 5, borderBottom: "1px solid var(--color-black)", backgroundColor: "var(--color-light-gray)" }}

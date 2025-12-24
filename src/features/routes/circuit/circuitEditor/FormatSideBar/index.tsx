@@ -11,9 +11,17 @@ interface FormatSideBarProps {
 
 export default function FormatSideBar({ data }: FormatSideBarProps) {
   const renderContent = () => {
-    if (!data) return <EmptyState />;
-    if (data.kind === "node") return <NodeFormatPanel node={data.value} />;
-    return <EdgeFormatPanel edge={data.value} />;
+    switch (data?.kind) {
+      case "edge": {
+        return <EdgeFormatPanel edge={data.value} />;
+      }
+      case "node": {
+        return <NodeFormatPanel node={data.value} />;
+      }
+      default: {
+        return <EmptyState />;
+      }
+    }
   };
 
   return (

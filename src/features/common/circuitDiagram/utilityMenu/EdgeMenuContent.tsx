@@ -1,8 +1,8 @@
 import type { CircuitGuiEdge } from "@/domain/model/entity/circuitGuiEdge";
 import type { CircuitEdgeId } from "@/domain/model/valueObject/circuitEdgeId";
 import type { Coordinate } from "@/domain/model/valueObject/coordinate";
-import DiagramUtilityMenuBackdrop from "../../eventCaptureLayer/DiagramUtilityMenuBackdrop";
-import EdgeUtilityMenu from "../EdgeUtilityMenu";
+import DiagramUtilityMenuBackdrop from "../eventCaptureLayer/DiagramUtilityMenuBackdrop";
+import EdgeUtilityMenu from "./EdgeUtilityMenu";
 
 interface EdgeMenuContentProps {
   at: Coordinate;

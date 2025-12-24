@@ -10,7 +10,6 @@ import type { ViewBox } from "../valueObject/viewBox";
 import type { EmulationActivityBarMenuState, ToolBarMenuState } from "./common/uiState";
 import type { PageErrorState } from "./ICircuitEditorPageController";
 
-/** Error kinds for Circuit Emulation page */
 export const CIRCUIT_EMULATION_ERROR_KINDS = [
   "guiRenderError",
   "emulationEnvironmentCreationError",

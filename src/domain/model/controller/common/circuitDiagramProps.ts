@@ -9,24 +9,15 @@ import type { Coordinate } from "@/domain/model/valueObject/coordinate";
 import type { EvalResult } from "@/domain/model/valueObject/evalResult";
 import type { ViewBox } from "@/domain/model/valueObject/viewBox";
 
-/**
- * Core circuit data for rendering
- */
 export interface CircuitDiagramDataProps {
   guiData: CircuitGuiData;
   outputRecord?: Record<CircuitNodeId, EvalResult>;
 }
 
-/**
- * Display options for the diagram
- */
 export interface DiagramDisplayOptions {
   showTouchableArea?: boolean;
 }
 
-/**
- * Selection state and handlers (shared across node/edge)
- */
 export interface SelectionHandlers {
   focusedElement?:
     | { kind: "node"; value: CircuitGuiNode }
@@ -38,9 +29,6 @@ export interface SelectionHandlers {
   };
 }
 
-/**
- * ViewBox and panning/zooming handlers
- */
 export interface ViewBoxHandlers {
   viewBox?: ViewBox;
   panningRef?: RefObject<boolean>;
@@ -64,9 +52,6 @@ export interface NodeInteractionHandlers {
   deleteCircuitNode?: (nodeId: CircuitNodeId) => void;
 }
 
-/**
- * Edge interaction state and handlers (including pin dragging)
- */
 export interface EdgeInteractionHandlers {
   draggingNodePin?: {
     id: CircuitNodePinId;
@@ -86,9 +71,6 @@ export interface EdgeInteractionHandlers {
   deleteCircuitEdge?: (edgeId: CircuitEdgeId) => void;
 }
 
-/**
- * Waypoint interaction state and handlers
- */
 export interface WaypointInteractionHandlers {
   addEdgeWaypoint?: (id: CircuitEdgeId) => (at: Coordinate, index: number) => void;
   deleteEdgeWaypoint?: (id: CircuitEdgeId) => (index: number) => void;
@@ -104,9 +86,6 @@ export interface WaypointInteractionHandlers {
   handleWaypointMouseUp?: () => void;
 }
 
-/**
- * Utility menu state and handlers (right-click menu)
- */
 export interface UtilityMenuHandlers {
   diagramUtilityMenuState?: {
     open: "none" | "node" | "edge";
@@ -116,9 +95,6 @@ export interface UtilityMenuHandlers {
   closeUtilityMenu?: () => void;
 }
 
-/**
- * CircuitDiagram component props - structured with grouped handlers
- */
 export interface CircuitDiagramProps {
   data: CircuitDiagramDataProps;
   display?: DiagramDisplayOptions;

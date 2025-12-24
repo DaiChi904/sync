@@ -72,7 +72,6 @@ export const useCircuitEditorPageController = ({
     preventBrowserZoom,
   } = useCircuitDiagram(useViewBox());
 
-  // Circuit Data Sub-Controller
   const circuitData = useCircuitDataSubController({
     query,
     getCircuitDetailUsecase,
@@ -82,7 +81,6 @@ export const useCircuitEditorPageController = ({
     router,
   });
 
-  // Node Drag Sub-Controller
   const nodeDrag = useNodeDragSubController({
     getSvgCoords,
     circuit: circuitData.circuit,
@@ -90,7 +88,6 @@ export const useCircuitEditorPageController = ({
     updateCircuitNode: circuitData.updateCircuitNode,
   });
 
-  // Edge Drag Sub-Controller
   const edgeDrag = useEdgeDragSubController({
     getSvgCoords,
     circuit: circuitData.circuit,
@@ -100,7 +97,6 @@ export const useCircuitEditorPageController = ({
     reattachFocusedElement: nodeDrag.reattachFocusedElement,
   });
 
-  // Node creation configuration
   const NODE_PIN_CONFIG: Record<string, { inputs: number; outputs: number }> = {
     AND: { inputs: 2, outputs: 1 },
     OR: { inputs: 2, outputs: 1 },

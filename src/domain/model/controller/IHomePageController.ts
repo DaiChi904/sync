@@ -1,7 +1,6 @@
 import type { CircuitOverview } from "../entity/circuitOverview";
 import type { PageErrorState } from "./ICircuitEditorPageController";
 
-/** Error kinds for Home page */
 export const HOME_ERROR_KINDS = ["failedToGetCircuitOverviewsError"] as const;
 
 export type HomeErrorKind = (typeof HOME_ERROR_KINDS)[number];

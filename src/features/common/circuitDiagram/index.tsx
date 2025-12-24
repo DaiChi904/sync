@@ -7,7 +7,7 @@ import NodeDragInteractionLayer from "./eventCaptureLayer/NodeDragInteractionLay
 import NodePinDragInteractionLayer from "./eventCaptureLayer/NodePinDragInteractionLayer";
 import WaypointDragInteractionLayer from "./eventCaptureLayer/WaypointDragInteractionLayer";
 import Nodes from "./node/Nodes";
-import DiagramUtilityMenuLayer from "./utilityMenu/DiagramUtilityMenuLayer";
+import DiagramUtilityMenu from "./utilityMenu";
 
 /**
  * CircuitDiagram component with structured props
@@ -179,7 +179,7 @@ export default function CircuitDiagram({
           viewBoxY={viewBox?.y}
         />
 
-        <DiagramUtilityMenuLayer
+        <DiagramUtilityMenu
           state={diagramUtilityMenuState}
           focusedElement={focusedElement}
           viewBoxX={viewBox?.x}

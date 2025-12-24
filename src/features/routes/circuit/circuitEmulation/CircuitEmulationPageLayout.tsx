@@ -8,6 +8,7 @@ import { useCircuitEmulationPageControllerContext } from "@/contexts/CircuitEmul
 import CircuitDiagram from "../../../common/circuitDiagram";
 import BaseCircuitPageLayout from "../common/BaseCircuitPageLayout";
 import EvalMenu from "./EvalMenu";
+import CircuitDiagramDisplay from "./CircuitDiagaramDisplay";
 
 export default function CircuitEmulationPageLayout() {
   const {
@@ -108,12 +109,12 @@ export default function CircuitEmulationPageLayout() {
               }}
             >
               {(guiData) => (
-                <CircuitDiagram
+                <CircuitDiagramDisplay
                   data={{
                     guiData,
                     outputRecord: outputs,
                   }}
-                  viewBox={{
+                  viewBoxHandlers={{
                     viewBox,
                     panningRef,
                     circuitDiagramContainerRef,

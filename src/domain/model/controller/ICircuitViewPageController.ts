@@ -5,7 +5,6 @@ import type { ViewBox } from "../valueObject/viewBox";
 import type { ToolBarMenuState } from "./common/uiState";
 import type { PageErrorState } from "./ICircuitEditorPageController";
 
-/** Error kinds for Circuit View page */
 export const CIRCUIT_VIEW_ERROR_KINDS = ["failedToGetCircuitDetailError", "failedToParseCircuitDataError"] as const;
 
 export type CircuitViewErrorKind = (typeof CIRCUIT_VIEW_ERROR_KINDS)[number];

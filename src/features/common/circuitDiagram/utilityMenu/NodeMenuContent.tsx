@@ -1,8 +1,8 @@
 import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
 import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import type { Coordinate } from "@/domain/model/valueObject/coordinate";
-import DiagramUtilityMenuBackdrop from "../../eventCaptureLayer/DiagramUtilityMenuBackdrop";
-import NodeUtilityMenu from "../NodeUtilityMenu";
+import DiagramUtilityMenuBackdrop from "../eventCaptureLayer/DiagramUtilityMenuBackdrop";
+import NodeUtilityMenu from "./NodeUtilityMenu";
 
 interface NodeMenuContentProps {
   at: Coordinate;

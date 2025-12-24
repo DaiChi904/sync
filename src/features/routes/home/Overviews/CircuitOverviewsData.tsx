@@ -5,16 +5,16 @@ import Typography from "@/components/atoms/Typography";
 import { SafePending } from "@/components/atoms/utils/SafePending";
 import type { CircuitOverview } from "@/domain/model/entity/circuitOverview";
 
-interface CircuitListProps {
-  circuitList?: Array<CircuitOverview>;
+interface CircuitOverviewsProps {
+  overviews?: Array<CircuitOverview>;
   error: boolean;
 }
 
-export default function CircuitListItems({ circuitList, error }: CircuitListProps) {
+export default function CircuitOverviewsData({ overviews, error }: CircuitOverviewsProps) {
   return (
     <SafePending
-      data={circuitList}
-      isLoading={!circuitList}
+      data={overviews}
+      isLoading={!overviews}
       isError={error}
       fallback={{
         onLoading: () => (
@@ -29,27 +29,27 @@ export default function CircuitListItems({ circuitList, error }: CircuitListProp
         ),
       }}
     >
-      {(circuitList) => (
+      {(overviews) => (
         <Flex direction="column" grow={1}>
-          {circuitList.map((c) => (
+          {overviews.map((overview) => (
             <Link
-              key={c.id}
+              key={overview.id}
               className="button-primary-link button-animation-push no-style-link"
               style={{ display: "block", textDecoration: "none", color: "inherit" }}
-              href={`/circuit/${c.id}`}
+              href={`/circuit/${overview.id}`}
             >
               <Flex style={{ padding: 5, borderBottom: "1px solid #ccc", gap: 5 }}>
                 <Flex style={{ width: "20%" }} alignItems="center">
-                  {c.title}
+                  {overview.title}
                 </Flex>
                 <Flex style={{ width: "40%" }} alignItems="center">
-                  {c.description}
+                  {overview.description}
                 </Flex>
                 <Flex style={{ width: "20%" }} alignItems="center">
-                  {c.createdAt}
+                  {overview.createdAt}
                 </Flex>
                 <Flex style={{ width: "20%" }} alignItems="center">
-                  {c.updatedAt}
+                  {overview.updatedAt}
                 </Flex>
               </Flex>
             </Link>

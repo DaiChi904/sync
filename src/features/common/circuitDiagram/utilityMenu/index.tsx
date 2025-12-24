@@ -7,7 +7,7 @@ import type { Coordinate } from "@/domain/model/valueObject/coordinate";
 import EdgeMenuContent from "./EdgeMenuContent";
 import NodeMenuContent from "./NodeMenuContent";
 
-interface DiagramUtilityMenuLayerProps {
+interface DiagramUtilityMenuProps {
   state: DiagramUtilityMenuState;
   focusedElement:
     | { kind: "node"; value: CircuitGuiNode }
@@ -27,7 +27,7 @@ interface DiagramUtilityMenuLayerProps {
   };
 }
 
-export default function DiagramUtilityMenuLayer({
+export default function DiagramUtilityMenu({
   state,
   focusedElement,
   viewBoxX,
@@ -35,15 +35,13 @@ export default function DiagramUtilityMenuLayer({
   closeUtilityMenu,
   edgeActions,
   nodeActions,
-}: DiagramUtilityMenuLayerProps) {
-  // Early return if menu is not open or at position is null
+}: DiagramUtilityMenuProps) {
   if (state.open === "none" || state.at === null) {
     return null;
   }
 
   const at = state.at;
 
-  // Handle edge menu
   if (state.open === "edge" && focusedElement?.kind === "edge") {
     if (
       !closeUtilityMenu ||
@@ -67,7 +65,6 @@ export default function DiagramUtilityMenuLayer({
     );
   }
 
-  // Handle node menu
   if (state.open === "node" && focusedElement?.kind === "node") {
     if (!closeUtilityMenu || !nodeActions?.deleteCircuitNode) {
       return null;

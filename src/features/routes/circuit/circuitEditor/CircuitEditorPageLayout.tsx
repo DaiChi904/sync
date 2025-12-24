@@ -64,7 +64,9 @@ export default function CircuitEditorPageLayout() {
   } = useCircuitEditorPageControllerContext();
 
   const isInCriticalError =
-    error.hasError("failedToGetCircuitDetailError") || error.hasError("failedToParseCircuitDataError") || error.hasError("failedToRenderCircuitError");
+    error.hasError("failedToGetCircuitDetailError") ||
+    error.hasError("failedToParseCircuitDataError") ||
+    error.hasError("failedToRenderCircuitError");
 
   const toolBarOptions: ComponentProps<typeof BaseCircuitPageLayout>["toolBarOptions"] = [
     {
@@ -190,39 +192,48 @@ export default function CircuitEditorPageLayout() {
                     >
                       {(guiData) => (
                         <CircuitDiagram
-                          showTouchableArea
-                          diagramUtilityMenuState={uiState.diagramUtilityMenu}
-                          data={guiData}
-                          circuitDiagramContainerRef={circuitDiagramContainerRef}
-                          circuitDiagramSvgRef={circuitDiagramSvgRef}
-                          viewBox={viewBox}
-                          panningRef={panningRef}
-                          handleViewBoxMouseDown={handleViewBoxMouseDown}
-                          handleViewBoxMouseMove={handleViewBoxMouseMove}
-                          handleViewBoxMouseUp={handleViewBoxMouseUp}
-                          handleViewBoxZoom={handleViewBoxZoom}
-                          preventBrowserZoom={preventBrowserZoom}
-                          focusedElement={focusedElement}
-                          focusElement={focusElement}
-                          draggingNode={draggingNode}
-                          handleNodeMouseDown={handleNodeMouseDown}
-                          handleNodeMouseMove={handleNodeMouseMove}
-                          handleNodeMouseUp={handleNodeMouseUp}
-                          deleteCircuitNode={deleteCircuitNode}
-                          deleteCircuitEdge={deleteCircuitEdge}
-                          draggingNodePin={draggingNodePin}
-                          handleNodePinMouseDown={handleNodePinMouseDown}
-                          handleNodePinMouseMove={handleNodePinMouseMove}
-                          handleNodePinMouseUp={handleNodePinMouseUp}
-                          tempEdge={tempEdge}
-                          addEdgeWaypoint={addEdgeWaypoint}
-                          deleteEdgeWaypoint={deleteEdgeWaypoint}
-                          draggingWaypoint={draggingWaypoint}
-                          handleWaypointMouseDown={handleWaypointMouseDown}
-                          handleWaypointMouseMove={handleWaypointMouseMove}
-                          handleWaypointMouseUp={handleWaypointMouseUp}
-                          openUtilityMenu={openUtilityMenu}
-                          closeUtilityMenu={closeUtilityMenu}
+                          data={{ guiData }}
+                          display={{ showTouchableArea: true }}
+                          selection={{ focusedElement, focusElement }}
+                          viewBox={{
+                            viewBox,
+                            panningRef,
+                            circuitDiagramContainerRef,
+                            circuitDiagramSvgRef,
+                            handleViewBoxMouseDown,
+                            handleViewBoxMouseMove,
+                            handleViewBoxMouseUp,
+                            handleViewBoxZoom,
+                            preventBrowserZoom,
+                          }}
+                          nodeInteraction={{
+                            draggingNode,
+                            handleNodeMouseDown,
+                            handleNodeMouseMove,
+                            handleNodeMouseUp,
+                            deleteCircuitNode,
+                          }}
+                          edgeInteraction={{
+                            draggingNodePin,
+                            handleNodePinMouseDown,
+                            handleNodePinMouseMove,
+                            handleNodePinMouseUp,
+                            tempEdge,
+                            deleteCircuitEdge,
+                          }}
+                          waypointInteraction={{
+                            addEdgeWaypoint,
+                            deleteEdgeWaypoint,
+                            draggingWaypoint,
+                            handleWaypointMouseDown,
+                            handleWaypointMouseMove,
+                            handleWaypointMouseUp,
+                          }}
+                          utilityMenu={{
+                            diagramUtilityMenuState: uiState.diagramUtilityMenu,
+                            openUtilityMenu,
+                            closeUtilityMenu,
+                          }}
                         />
                       )}
                     </SafePending>

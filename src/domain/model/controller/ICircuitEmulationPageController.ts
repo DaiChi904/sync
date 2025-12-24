@@ -7,7 +7,7 @@ import type { EvalResult } from "../valueObject/evalResult";
 import type { InputRecord } from "../valueObject/inputRecord";
 import type { Tick } from "../valueObject/tick";
 import type { ViewBox } from "../valueObject/viewBox";
-import type { ToolBarMenuState, EmulationActivityBarMenuState } from "./common/uiState";
+import type { EmulationActivityBarMenuState, ToolBarMenuState } from "./common/uiState";
 import type { PageErrorState } from "./ICircuitEditorPageController";
 
 /** Error kinds for Circuit Emulation page */
@@ -17,7 +17,7 @@ export const CIRCUIT_EMULATION_ERROR_KINDS = [
   "failedToEvalCircuitError",
 ] as const;
 
-export type CircuitEmulationErrorKind = typeof CIRCUIT_EMULATION_ERROR_KINDS[number];
+export type CircuitEmulationErrorKind = (typeof CIRCUIT_EMULATION_ERROR_KINDS)[number];
 
 export interface CircuitEmulationPageUiStateModel {
   toolBarMenu: ToolBarMenuState;

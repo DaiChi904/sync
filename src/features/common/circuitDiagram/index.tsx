@@ -1,13 +1,6 @@
 import Flex from "@/components/atoms/Flex";
 import { Svg, SvgRect, SvgTitle } from "@/components/atoms/svg";
-import type { CircuitGuiEdge } from "@/domain/model/entity/circuitGuiEdge";
-import type { CircuitGuiNode } from "@/domain/model/entity/circuitGuiNode";
-import type { CircuitEdgeId } from "@/domain/model/valueObject/circuitEdgeId";
-import type { CircuitGuiData } from "@/domain/model/valueObject/circuitGuiData";
-import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
-import type { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
-import type { Coordinate } from "@/domain/model/valueObject/coordinate";
-import type { EvalResult } from "@/domain/model/valueObject/evalResult";
+import type { CircuitDiagramProps } from "@/domain/model/controller/common/circuitDiagramProps";
 import { ViewBox } from "@/domain/model/valueObject/viewBox";
 import Edges from "./edge/Edges";
 import DiagramUtilityMenuBackdrop from "./eventCaptureLayer/DiagramUtilityMenuBackdrop";
@@ -18,104 +11,74 @@ import Nodes from "./node/Nodes";
 import EdgeUtilityMenu from "./utilityMenu/EdgeUtilityMenu";
 import NodeUtilityMenu from "./utilityMenu/NodeUtilityMenu";
 
-interface CircuitDiagramProps {
-  showTouchableArea?: boolean;
-  diagramUtilityMenuState?: {
-    open: "none" | "node" | "edge";
-    at: Coordinate | null;
-  };
-  data: CircuitGuiData;
-  outputRecord?: Record<CircuitNodeId, EvalResult>;
-  circuitDiagramContainerRef?: React.RefObject<HTMLDivElement | null>;
-  circuitDiagramSvgRef?: React.RefObject<SVGSVGElement | null>;
-  viewBox?: ViewBox;
-  panningRef?: React.RefObject<boolean>;
-  handleViewBoxMouseDown?: (ev: React.MouseEvent) => void;
-  handleViewBoxMouseMove?: (ev: React.MouseEvent) => void;
-  handleViewBoxMouseUp?: () => void;
-  handleViewBoxZoom?: (ev: React.WheelEvent) => void;
-  preventBrowserZoom?: (ref: React.RefObject<SVGSVGElement | null>) => void;
-  focusedElement?:
-    | { kind: "node"; value: CircuitGuiNode }
-    | { kind: "edge"; value: CircuitGuiEdge & { waypointIdx: number } }
-    | null;
-  focusElement?: {
-    (kind: "node"): (value: CircuitGuiNode) => void;
-    (kind: "edge"): (value: CircuitGuiEdge & { waypointIdx: number }) => void;
-  };
-  draggingNode?: CircuitGuiNode | null;
-  handleNodeMouseDown?: (ev: React.MouseEvent, node: CircuitGuiNode) => void;
-  handleNodeMouseMove?: (ev: React.MouseEvent) => void;
-  deleteCircuitNode?: (nodeId: CircuitNodeId) => void;
-  deleteCircuitEdge?: (edgeId: CircuitEdgeId) => void;
-  handleNodeMouseUp?: () => void;
-  draggingNodePin?: {
-    id: CircuitNodePinId;
-    offset: Coordinate;
-    kind: "from" | "to";
-    method: "ADD" | "UPDATE";
-  } | null;
-  handleNodePinMouseDown?: (
-    ev: React.MouseEvent,
-    id: CircuitNodePinId,
-    kind: "from" | "to",
-    method: "ADD" | "UPDATE",
-  ) => void;
-  handleNodePinMouseMove?: (ev: React.MouseEvent) => void;
-  handleNodePinMouseUp?: (ev: React.MouseEvent) => void;
-  tempEdge?: { from: Coordinate; to: Coordinate } | null;
-  addEdgeWaypoint?: (id: CircuitEdgeId) => (at: Coordinate, index: number) => void;
-  deleteEdgeWaypoint?: (id: CircuitEdgeId) => (index: number) => void;
-  handleWaypointMouseDown?: (
-    id: CircuitEdgeId,
-  ) => (offset: Coordinate, index: number) => (ev: React.MouseEvent) => void;
-  draggingWaypoint?: {
-    id: CircuitEdgeId;
-    offset: Coordinate;
-    index: number;
-  } | null;
-  handleWaypointMouseMove?: (ev: React.MouseEvent) => void;
-  handleWaypointMouseUp?: () => void;
-  openUtilityMenu?: (kind: "node" | "edge") => (ev: React.MouseEvent) => void;
-  closeUtilityMenu?: () => void;
-}
-
+/**
+ * CircuitDiagram component with structured props
+ *
+ * Props are organized into logical groups:
+ * - data: Core circuit data (guiData, outputRecord)
+ * - display: Display options (showTouchableArea)
+ * - selection: Selection state (focusedElement, focusElement)
+ * - viewBox: ViewBox and panning/zooming handlers
+ * - nodeInteraction: Node dragging
+ * - edgeInteraction: Edge and pin handling
+ * - waypointInteraction: Waypoint operations
+ * - utilityMenu: Right-click context menus
+ */
 export default function CircuitDiagram({
-  showTouchableArea = false,
-  diagramUtilityMenuState = { open: "none", at: null },
   data,
-  outputRecord,
-  circuitDiagramContainerRef,
-  circuitDiagramSvgRef,
-  viewBox,
-  panningRef,
-  handleViewBoxMouseDown,
-  handleViewBoxMouseMove,
-  handleViewBoxMouseUp,
-  handleViewBoxZoom,
-  preventBrowserZoom,
-  focusedElement,
-  focusElement,
-  draggingNode,
-  handleNodeMouseDown,
-  handleNodeMouseMove,
-  handleNodeMouseUp,
-  deleteCircuitNode,
-  deleteCircuitEdge,
-  draggingNodePin,
-  handleNodePinMouseDown,
-  handleNodePinMouseMove,
-  handleNodePinMouseUp,
-  tempEdge,
-  addEdgeWaypoint,
-  deleteEdgeWaypoint,
-  draggingWaypoint,
-  handleWaypointMouseDown,
-  handleWaypointMouseMove,
-  handleWaypointMouseUp,
-  openUtilityMenu,
-  closeUtilityMenu,
+  display,
+  selection,
+  viewBox: viewBoxHandlers,
+  nodeInteraction,
+  edgeInteraction,
+  waypointInteraction,
+  utilityMenu,
 }: CircuitDiagramProps) {
+  const { guiData: circuitData, outputRecord } = data;
+
+  const { showTouchableArea = false } = display ?? {};
+
+  const { focusedElement, focusElement } = selection ?? {};
+
+  const {
+    viewBox,
+    panningRef,
+    circuitDiagramContainerRef,
+    circuitDiagramSvgRef,
+    handleViewBoxMouseDown,
+    handleViewBoxMouseMove,
+    handleViewBoxMouseUp,
+    handleViewBoxZoom,
+    preventBrowserZoom,
+  } = viewBoxHandlers ?? {};
+
+  const { draggingNode, handleNodeMouseDown, handleNodeMouseMove, handleNodeMouseUp, deleteCircuitNode } =
+    nodeInteraction ?? {};
+
+  const {
+    draggingNodePin,
+    handleNodePinMouseDown,
+    handleNodePinMouseMove,
+    handleNodePinMouseUp,
+    tempEdge,
+    deleteCircuitEdge,
+  } = edgeInteraction ?? {};
+
+  const {
+    addEdgeWaypoint,
+    deleteEdgeWaypoint,
+    handleWaypointMouseDown,
+    draggingWaypoint,
+    handleWaypointMouseMove,
+    handleWaypointMouseUp,
+  } = waypointInteraction ?? {};
+
+  const {
+    diagramUtilityMenuState = { open: "none" as const, at: null },
+    openUtilityMenu,
+    closeUtilityMenu,
+  } = utilityMenu ?? {};
+
   circuitDiagramSvgRef && preventBrowserZoom && preventBrowserZoom(circuitDiagramSvgRef);
 
   const disableContextMenu = (ev: React.MouseEvent) => {
@@ -123,11 +86,19 @@ export default function CircuitDiagram({
   };
 
   const MARRGIN = 20;
-  const hasNodes = data.nodes.length > 0;
-  const minX = hasNodes ? Math.min(...data.nodes.map((node) => node.coordinate.x - node.size.x / 2)) - MARRGIN : 0;
-  const minY = hasNodes ? Math.min(...data.nodes.map((node) => node.coordinate.y - node.size.y / 2)) - MARRGIN : 0;
-  const maxX = hasNodes ? Math.max(...data.nodes.map((node) => node.coordinate.x + node.size.x / 2)) + MARRGIN : 0;
-  const maxY = hasNodes ? Math.max(...data.nodes.map((node) => node.coordinate.y + node.size.y / 2)) + MARRGIN : 0;
+  const hasNodes = circuitData.nodes.length > 0;
+  const minX = hasNodes
+    ? Math.min(...circuitData.nodes.map((node) => node.coordinate.x - node.size.x / 2)) - MARRGIN
+    : 0;
+  const minY = hasNodes
+    ? Math.min(...circuitData.nodes.map((node) => node.coordinate.y - node.size.y / 2)) - MARRGIN
+    : 0;
+  const maxX = hasNodes
+    ? Math.max(...circuitData.nodes.map((node) => node.coordinate.x + node.size.x / 2)) + MARRGIN
+    : 0;
+  const maxY = hasNodes
+    ? Math.max(...circuitData.nodes.map((node) => node.coordinate.y + node.size.y / 2)) + MARRGIN
+    : 0;
   const viewWidth = maxX - minX;
   const viewHeight = maxY - minY;
 
@@ -167,7 +138,7 @@ export default function CircuitDiagram({
         )}
 
         <Edges
-          data={data}
+          data={circuitData}
           outputRecord={outputRecord}
           focusedElement={focusedElement}
           focusElement={focusElement?.("edge")}
@@ -177,7 +148,7 @@ export default function CircuitDiagram({
         />
 
         <Nodes
-          data={data}
+          data={circuitData}
           focusedElement={focusedElement}
           focusElement={focusElement?.("node")}
           handleNodeMouseDown={handleNodeMouseDown}

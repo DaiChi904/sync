@@ -148,16 +148,20 @@ export default function CircuitViewPageLayout() {
                   >
                     {(guiData) => (
                       <CircuitDiagram
-                        data={guiData}
-                        viewBox={viewBox}
-                        circuitDiagramContainerRef={circuitDiagramContainerRef}
-                        circuitDiagramSvgRef={circuitDiagramSvgRef}
-                        panningRef={panningRef}
-                        handleViewBoxMouseDown={handleViewBoxMouseDown}
-                        handleViewBoxMouseMove={handleViewBoxMouseMove}
-                        handleViewBoxMouseUp={handleViewBoxMouseUp}
-                        handleViewBoxZoom={handleViewBoxZoom}
-                        preventBrowserZoom={preventBrowserZoom}
+                        data={{
+                          guiData,
+                        }}
+                        viewBox={{
+                          viewBox,
+                          panningRef,
+                          circuitDiagramContainerRef,
+                          circuitDiagramSvgRef,
+                          handleViewBoxMouseDown,
+                          handleViewBoxMouseMove,
+                          handleViewBoxMouseUp,
+                          handleViewBoxZoom,
+                          preventBrowserZoom,
+                        }}
                       />
                     )}
                   </SafePending>

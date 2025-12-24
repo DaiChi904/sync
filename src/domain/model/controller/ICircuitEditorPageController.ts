@@ -11,11 +11,7 @@ import type { CircuitNodePinId } from "../valueObject/circuitNodePinId";
 import type { CircuitTitle } from "../valueObject/circuitTitle";
 import type { Coordinate } from "../valueObject/coordinate";
 import type { ViewBox } from "../valueObject/viewBox";
-import type {
-  ToolBarMenuState,
-  CircuitActivityBarMenuState,
-  DiagramUtilityMenuState,
-} from "./common/uiState";
+import type { CircuitActivityBarMenuState, DiagramUtilityMenuState, ToolBarMenuState } from "./common/uiState";
 
 /** Error kinds for Circuit Editor page */
 export const CIRCUIT_EDITOR_ERROR_KINDS = [
@@ -26,7 +22,7 @@ export const CIRCUIT_EDITOR_ERROR_KINDS = [
   "failedToSaveCircuitError",
 ] as const;
 
-export type CircuitEditorErrorKind = typeof CIRCUIT_EDITOR_ERROR_KINDS[number];
+export type CircuitEditorErrorKind = (typeof CIRCUIT_EDITOR_ERROR_KINDS)[number];
 
 /** Page error state interface */
 export interface PageErrorState<TErrorKind extends string> {
@@ -71,9 +67,9 @@ export interface ICircuitEditorPageController {
   circuitDiagramContainerRef: RefObject<HTMLDivElement | null>;
   circuitDiagramSvgRef: RefObject<SVGSVGElement | null>;
   focusedElement:
-  | { kind: "node"; value: CircuitGuiNode }
-  | { kind: "edge"; value: CircuitGuiEdge & { waypointIdx: number } }
-  | null;
+    | { kind: "node"; value: CircuitGuiNode }
+    | { kind: "edge"; value: CircuitGuiEdge & { waypointIdx: number } }
+    | null;
   focusElement: {
     (kind: "node"): (value: CircuitGuiNode) => void;
     (kind: "edge"): (value: CircuitGuiEdge & { waypointIdx: number }) => void;

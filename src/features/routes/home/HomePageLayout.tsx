@@ -34,7 +34,12 @@ export default function HomePageLayout() {
           {(() => {
             switch (uiState.tab.open) {
               case "home":
-                return <CircuitList circuitList={circuitOverviews} error={error.hasError("failedToGetCircuitOverviewsError")} />;
+                return (
+                  <CircuitList
+                    circuitList={circuitOverviews}
+                    error={error.hasError("failedToGetCircuitOverviewsError")}
+                  />
+                );
               case "new":
                 return (
                   <Flex direction="column" style={{ padding: 10, width: "100%", height: "100%" }}>

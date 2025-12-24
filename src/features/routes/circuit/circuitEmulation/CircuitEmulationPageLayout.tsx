@@ -110,17 +110,21 @@ export default function CircuitEmulationPageLayout() {
             >
               {(guiData) => (
                 <CircuitDiagram
-                  data={guiData}
-                  outputRecord={outputs}
-                  circuitDiagramContainerRef={circuitDiagramContainerRef}
-                  circuitDiagramSvgRef={circuitDiagramSvgRef}
-                  viewBox={viewBox}
-                  panningRef={panningRef}
-                  handleViewBoxMouseDown={handleViewBoxMouseDown}
-                  handleViewBoxMouseMove={handleViewBoxMouseMove}
-                  handleViewBoxMouseUp={handleViewBoxMouseUp}
-                  handleViewBoxZoom={handleViewBoxZoom}
-                  preventBrowserZoom={preventBrowserZoom}
+                  data={{
+                    guiData,
+                    outputRecord: outputs,
+                  }}
+                  viewBox={{
+                    viewBox,
+                    panningRef,
+                    circuitDiagramContainerRef,
+                    circuitDiagramSvgRef,
+                    handleViewBoxMouseDown,
+                    handleViewBoxMouseMove,
+                    handleViewBoxMouseUp,
+                    handleViewBoxZoom,
+                    preventBrowserZoom,
+                  }}
                 />
               )}
             </SafePending>

@@ -1,8 +1,14 @@
 {
 	"name": "sync",
 	"build": {
-    	"dockerfile": "Dockerfile"
+    	"dockerfile": "Dockerfile",
+		"args": {
+			"DEBIAN_VERSION": "bullseye-slim"
+		}
   	},
+	"runArgs": [
+		"--name", "sync-devcontainer"
+	],
   	"postCreateCommand": "pnpm install",
 	"forwardPorts": [3000],
 	"portsAttributes": {
@@ -28,7 +34,9 @@
       		},
       		"extensions": [
 				"ecmel.vscode-html-css",
-				"biomejs.biome"
+				"biomejs.biome",
+				"dbaeumer.vscode-eslint",
+				"steoates.autoimport"
       		]
     	}
   	},
@@ -36,7 +44,11 @@
 		"ghcr.io/devcontainers/features/common-utils": {
 			"upgradePackages": true,
 			"username": "vscode"
-		}
+		},
+		"ghcr.io/devcontainers/features/node:1": {
+            "version": "24.12.0",
+            "pnpm": "10.26.1"
+        }
 	},
 	"remoteUser": "vscode"
 }

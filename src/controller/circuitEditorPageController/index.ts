@@ -1,0 +1,237 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import {
+  CIRCUIT_EDITOR_ERROR_KINDS,
+  type CircuitEditorErrorKind,
+  CircuitEditorPageControllerError,
+  type CircuitEditorPageUiStateModel,
+  type ICircuitEditorPageController,
+} from "@/domain/model/controller/ICircuitEditorPageController";
+import { CircuitNode } from "@/domain/model/entity/circuitNode";
+import type { ICircuitRepository } from "@/domain/model/infrastructure/repository/ICircuitRepository";
+import type { ICircuitParserService } from "@/domain/model/service/ICircuitParserService";
+import type { IDeleteCircuitUsecase } from "@/domain/model/usecase/IDeleteCircuitUsecase";
+import type { IGetCircuitDetailUsecase } from "@/domain/model/usecase/IGetCircuitDetailUsecase";
+import type { IUpdateCircuitUsecase } from "@/domain/model/usecase/IUpdateCircuitUsecase";
+import type { CircuitGuiData } from "@/domain/model/valueObject/circuitGuiData";
+import type { CircuitId } from "@/domain/model/valueObject/circuitId";
+import { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
+import { CircuitNodePinId } from "@/domain/model/valueObject/circuitNodePinId";
+import { CircuitNodeSize } from "@/domain/model/valueObject/circuitNodeSize";
+import type { CircuitNodeType } from "@/domain/model/valueObject/circuitNodeType";
+import type { Coordinate } from "@/domain/model/valueObject/coordinate";
+import { useCircuitDiagram } from "@/hooks/circuitDiagram";
+import { usePartialState } from "@/hooks/partialState";
+import { usePageError } from "@/hooks/usePageError";
+import { useViewBox } from "@/hooks/viewBox";
+import { useCircuitDataSubController } from "./circuitDataSubController";
+import { useEdgeDragSubController } from "./edgeDragSubController";
+import { useNodeDragSubController } from "./nodeDragSubController";
+
+export interface CircuitEditorPageControllerDependencies {
+  query: CircuitId;
+  getCircuitDetailUsecase: IGetCircuitDetailUsecase;
+  circuitParserUsecase: ICircuitParserService;
+  updateCircuitUsecase: IUpdateCircuitUsecase;
+  deleteCircuitUsecase: IDeleteCircuitUsecase;
+  circuitRepository: ICircuitRepository;
+}
+
+export const useCircuitEditorPageController = ({
+  query,
+  getCircuitDetailUsecase,
+  circuitParserUsecase,
+  updateCircuitUsecase,
+  deleteCircuitUsecase,
+}: CircuitEditorPageControllerDependencies): ICircuitEditorPageController => {
+  const router = useRouter();
+
+  const pageError = usePageError<CircuitEditorErrorKind>([...CIRCUIT_EDITOR_ERROR_KINDS]);
+  const [uiState, setUiState] = usePartialState<CircuitEditorPageUiStateModel>({
+    diagramUtilityMenu: { open: "none", at: null },
+    toolBarMenu: { open: "none" },
+    activityBarMenu: { open: "infomation" },
+  });
+
+  const [guiData, setGuiData] = useState<CircuitGuiData | undefined>(undefined);
+
+  const {
+    isViewBoxInitialized,
+    viewBox,
+    circuitDiagramContainerRef,
+    circuitDiagramSvgRef,
+    panningRef,
+    initViewBox,
+    getSvgCoords,
+    handleViewBoxMouseDown,
+    handleViewBoxMouseMove,
+    handleViewBoxMouseUp,
+    handleViewBoxZoom,
+    preventBrowserZoom,
+  } = useCircuitDiagram(useViewBox());
+
+  const circuitData = useCircuitDataSubController({
+    query,
+    getCircuitDetailUsecase,
+    updateCircuitUsecase,
+    deleteCircuitUsecase,
+    setError: pageError.setError,
+    router,
+  });
+
+  const nodeDrag = useNodeDragSubController({
+    getSvgCoords,
+    circuit: circuitData.circuit,
+    guiData,
+    updateCircuitNode: circuitData.updateCircuitNode,
+  });
+
+  const edgeDrag = useEdgeDragSubController({
+    getSvgCoords,
+    circuit: circuitData.circuit,
+    guiData,
+    addCircuitEdge: circuitData.addCircuitEdge,
+    updateCircuitEdge: circuitData.updateCircuitEdge,
+    reattachFocusedElement: nodeDrag.reattachFocusedElement,
+  });
+
+  const NODE_PIN_CONFIG: Record<string, { inputs: number; outputs: number }> = {
+    AND: { inputs: 2, outputs: 1 },
+    OR: { inputs: 2, outputs: 1 },
+    NOT: { inputs: 1, outputs: 1 },
+    JUNCTION: { inputs: 1, outputs: 1 },
+    ENTRY: { inputs: 0, outputs: 1 },
+    EXIT: { inputs: 1, outputs: 0 },
+  };
+
+  const createCircuitNode = useCallback((type: CircuitNodeType, coordinate: Coordinate): CircuitNode => {
+    const config = NODE_PIN_CONFIG[type.toString()] ?? { inputs: 1, outputs: 1 };
+    return CircuitNode.from({
+      id: CircuitNodeId.generate(),
+      type,
+      inputs: Array.from({ length: config.inputs }, () => CircuitNodePinId.generate()),
+      outputs: Array.from({ length: config.outputs }, () => CircuitNodePinId.generate()),
+      coordinate,
+      size: CircuitNodeSize.from({ x: 60, y: 40 }),
+    });
+  }, []);
+
+  const updateCircuitGuiData = useCallback((): void => {
+    if (!circuitData.circuit) {
+      const err = new CircuitEditorPageControllerError("Unable to update gui data. Circuit is not defined.");
+      console.error(err);
+
+      pageError.setError("failedToParseCircuitDataError");
+      return;
+    }
+
+    const circuitGuiData = circuitParserUsecase.parseToGuiData(circuitData.circuit.circuitData);
+    if (!circuitGuiData.ok) {
+      const err = new CircuitEditorPageControllerError(
+        "Failed to update gui data. Failed to parse circuit data to gui data.",
+        { cause: circuitGuiData.error },
+      );
+      console.error(err);
+
+      pageError.setError("failedToParseCircuitDataError");
+      return;
+    }
+
+    setGuiData(circuitGuiData.value);
+
+    if (!isViewBoxInitialized || circuitGuiData.value) {
+      initViewBox(circuitGuiData.value);
+    }
+  }, [circuitData.circuit, circuitParserUsecase, pageError.setError, isViewBoxInitialized, initViewBox]);
+
+  const openUtilityMenu = useCallback(
+    (kind: "node" | "edge") => (ev: React.MouseEvent) => {
+      const svgCoordinate = getSvgCoords(ev);
+      if (!svgCoordinate.ok) return;
+
+      setUiState("diagramUtilityMenu", { open: kind, at: svgCoordinate.value });
+    },
+    [getSvgCoords, setUiState],
+  );
+
+  const closeUtilityMenu = useCallback(() => {
+    setUiState("diagramUtilityMenu", { open: "none", at: null });
+  }, [setUiState]);
+
+  const openToolBarMenu = useCallback(
+    (kind: "file" | "view" | "goTo" | "help") => {
+      setUiState("toolBarMenu", { open: kind });
+    },
+    [setUiState],
+  );
+
+  const closeToolBarMenu = useCallback(() => {
+    setUiState("toolBarMenu", { open: "none" });
+  }, [setUiState]);
+
+  const changeActivityBarMenu = useCallback(
+    (kind: "infomation" | "circuitDiagram" | "rowCircuitData") => {
+      setUiState("activityBarMenu", { open: kind });
+    },
+    [setUiState],
+  );
+
+  useEffect(() => {
+    circuitData.fetch();
+  }, [circuitData.fetch]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: With guiData, it causes infinite rendering. Without current activityBarMenu state, it cannot display circuit diagram when activityBarMenu is changed.
+  useEffect(() => {
+    if (!circuitData.circuit) return;
+
+    updateCircuitGuiData();
+  }, [circuitData.circuit, uiState.activityBarMenu.open]);
+
+  return {
+    error: pageError,
+    circuit: circuitData.circuit,
+    guiData,
+    viewBox,
+    panningRef,
+    handleViewBoxMouseDown,
+    handleViewBoxMouseMove,
+    handleViewBoxMouseUp,
+    handleViewBoxZoom,
+    preventBrowserZoom,
+    save: circuitData.save,
+    deleteCircuit: circuitData.deleteCircuit,
+    changeTitle: circuitData.changeTitle,
+    changeDescription: circuitData.changeDescription,
+    addCircuitNode: circuitData.addCircuitNode,
+    createCircuitNode,
+    deleteCircuitNode: circuitData.deleteCircuitNode,
+    deleteCircuitEdge: circuitData.deleteCircuitEdge,
+    circuitDiagramContainerRef,
+    circuitDiagramSvgRef,
+    focusedElement: nodeDrag.focusedElement,
+    focusElement: nodeDrag.focusElement,
+    draggingNode: nodeDrag.draggingNode,
+    handleNodeMouseDown: nodeDrag.handleNodeMouseDown,
+    handleNodeMouseMove: nodeDrag.handleNodeMouseMove,
+    handleNodeMouseUp: nodeDrag.handleNodeMouseUp,
+    draggingNodePin: edgeDrag.draggingNodePin,
+    handleNodePinMouseDown: edgeDrag.handleNodePinMouseDown,
+    handleNodePinMouseMove: edgeDrag.handleNodePinMouseMove,
+    handleNodePinMouseUp: edgeDrag.handleNodePinMouseUp,
+    tempEdge: edgeDrag.tempEdge,
+    addEdgeWaypoint: circuitData.addEdgeWaypoint,
+    deleteEdgeWaypoint: circuitData.deleteEdgeWaypoint,
+    draggingWaypoint: edgeDrag.draggingWaypoint,
+    handleWaypointMouseDown: edgeDrag.handleWaypointMouseDown,
+    handleWaypointMouseMove: edgeDrag.handleWaypointMouseMove,
+    handleWaypointMouseUp: edgeDrag.handleWaypointMouseUp,
+    uiState,
+    openUtilityMenu,
+    closeUtilityMenu,
+    openToolBarMenu,
+    closeToolBarMenu,
+    changeActivityBarMenu,
+  };
+};

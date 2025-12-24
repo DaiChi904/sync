@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import { useSeedPageController } from "@/Controller/seedPageController";
 import { SeedPageControllerContext } from "@/contexts/SeedPageControllerContext";
+import { useSeedPageController } from "@/controller/seedPageController";
 import SeedPageLayout from "@/features/routes/dev/seed/SeedPageLayout";
 import { CircuitOverviewsQueryService } from "@/infrastructure/queryService/circuitOverviewsQueryService";
 import { CircuitRepository } from "@/infrastructure/repository/circuitRepository";
@@ -15,8 +15,8 @@ export default function SeedPage() {
   const localStorage = useMemo(() => new LocalStorage("circuit"), []);
   const circuitRepository = useMemo(() => new CircuitRepository({ localStorage }), [localStorage]);
   const circuitOverviewsQueryService = useMemo(
-    () => new CircuitOverviewsQueryService({ circuitRepository }),
-    [circuitRepository],
+    () => new CircuitOverviewsQueryService({ localStorage }),
+    [localStorage],
   );
   const getCircuitOverviewsUsecase = useMemo(
     () => new GetCircuitOverviewsUsecase({ circuitOverviewsQueryService }),

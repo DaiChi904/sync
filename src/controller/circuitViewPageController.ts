@@ -2,18 +2,21 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
+  CIRCUIT_VIEW_ERROR_KINDS,
+  type CircuitViewErrorKind,
   CircuitViewPageControllerError,
-  type CircuitViewPageErrorModel,
   type CircuitViewPageUiStateModel,
   type ICircuitViewPageController,
-  initialCircuitViewPageError,
 } from "@/domain/model/controller/ICircuitViewPageController";
 import { CircuitOverview } from "@/domain/model/entity/circuitOverview";
 import type { ICircuitParserService } from "@/domain/model/service/ICircuitParserService";
 import type { IGetCircuitDetailUsecase } from "@/domain/model/usecase/IGetCircuitDetailUsecase";
 import type { CircuitGuiData } from "@/domain/model/valueObject/circuitGuiData";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
+import { useCircuitDiagram } from "@/hooks/circuitDiagram";
 import { usePartialState } from "@/hooks/partialState";
+import { usePageError } from "@/hooks/usePageError";
+import { useViewBox } from "@/hooks/viewBox";
 
 interface CircuitViewPageControllerDependencies {
   query: CircuitId;
@@ -26,14 +29,28 @@ export const useCircuitViewPageController = ({
   getCircuitDetailUsecase,
   circuitParserUsecase,
 }: CircuitViewPageControllerDependencies): ICircuitViewPageController => {
-  const [error, setError] = usePartialState<CircuitViewPageErrorModel>(initialCircuitViewPageError);
+  const pageError = usePageError<CircuitViewErrorKind>([...CIRCUIT_VIEW_ERROR_KINDS]);
   const [uiState, setUiState] = usePartialState<CircuitViewPageUiStateModel>({
     toolBarMenu: { open: "none" },
     activityBarMenu: { open: "infomation" },
   });
 
-  const [overview, setOverview] = useState<CircuitOverview | undefined>(undefined);
-  const [guiData, setGuiData] = useState<CircuitGuiData | undefined>(undefined);
+  const {
+    isViewBoxInitialized,
+    viewBox,
+    circuitDiagramContainerRef,
+    circuitDiagramSvgRef,
+    panningRef,
+    initViewBox,
+    handleViewBoxMouseDown,
+    handleViewBoxMouseMove,
+    handleViewBoxMouseUp,
+    handleViewBoxZoom,
+    preventBrowserZoom,
+  } = useCircuitDiagram(useViewBox());
+
+  const [overview, setOverview] = useState<CircuitOverview>();
+  const [guiData, setGuiData] = useState<CircuitGuiData>();
 
   const fetch = useCallback(async (): Promise<void> => {
     const circuitDetail = await getCircuitDetailUsecase.getById(query);
@@ -43,8 +60,8 @@ export const useCircuitViewPageController = ({
       });
       console.error(err);
 
-      setError("failedToGetCircuitDetailError", true);
-      setError("failedToParseCircuitDataError", true);
+      pageError.setError("failedToGetCircuitDetailError");
+      pageError.setError("failedToParseCircuitDataError");
       return;
     }
 
@@ -65,12 +82,12 @@ export const useCircuitViewPageController = ({
       });
       console.error(err);
 
-      setError("failedToParseCircuitDataError", true);
+      pageError.setError("failedToParseCircuitDataError");
       return;
     }
 
     setGuiData(circuitGuiData.value);
-  }, [query, getCircuitDetailUsecase, setError, circuitParserUsecase]);
+  }, [query, getCircuitDetailUsecase, pageError.setError, circuitParserUsecase]);
 
   const openToolBarMenu = useCallback(
     (kind: "file" | "view" | "goTo" | "help") => {
@@ -90,15 +107,31 @@ export const useCircuitViewPageController = ({
     [setUiState],
   );
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: If dependencies are not exhaustive, it will cause infinite rendering.
   useEffect(() => {
     fetch();
-  }, [fetch]);
+  }, []);
+
+  useEffect(() => {
+    if (!isViewBoxInitialized && guiData) {
+      initViewBox(guiData);
+    }
+  }, [isViewBoxInitialized, initViewBox, guiData]);
 
   return {
-    error,
+    error: pageError,
     uiState,
     overview,
     guiData,
+    viewBox,
+    circuitDiagramContainerRef,
+    circuitDiagramSvgRef,
+    panningRef,
+    handleViewBoxMouseDown,
+    handleViewBoxMouseMove,
+    handleViewBoxMouseUp,
+    handleViewBoxZoom,
+    preventBrowserZoom,
     openToolBarMenu,
     closeToolBarMenu,
     changeActivityBarMenu,

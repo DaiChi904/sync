@@ -1,3 +1,4 @@
+import type { RefObject } from "react";
 import type { Circuit } from "../aggregate/circuit";
 import type { CircuitGuiEdge } from "../entity/circuitGuiEdge";
 import type { CircuitGuiNode } from "../entity/circuitGuiNode";
@@ -7,30 +8,32 @@ import type { CircuitEdgeId } from "../valueObject/circuitEdgeId";
 import type { CircuitGuiData } from "../valueObject/circuitGuiData";
 import type { CircuitNodeId } from "../valueObject/circuitNodeId";
 import type { CircuitNodePinId } from "../valueObject/circuitNodePinId";
+import type { CircuitNodeType } from "../valueObject/circuitNodeType";
 import type { CircuitTitle } from "../valueObject/circuitTitle";
 import type { Coordinate } from "../valueObject/coordinate";
+import type { ViewBox } from "../valueObject/viewBox";
+import type { CircuitActivityBarMenuState, DiagramUtilityMenuState, ToolBarMenuState } from "./common/uiState";
 
-export interface CircuitEditorPageErrorModel {
-  failedToGetCircuitDetailError: boolean;
-  failedToParseCircuitDataError: boolean;
-  failedToUpdateCircuitDataError: boolean;
-  failedToRenderCircuitError: boolean;
-  failedToSaveCircuitError: boolean;
+export const CIRCUIT_EDITOR_ERROR_KINDS = [
+  "failedToGetCircuitDetailError",
+  "failedToParseCircuitDataError",
+  "failedToUpdateCircuitDataError",
+  "failedToRenderCircuitError",
+  "failedToSaveCircuitError",
+] as const;
+
+export type CircuitEditorErrorKind = (typeof CIRCUIT_EDITOR_ERROR_KINDS)[number];
+
+export interface PageErrorState<TErrorKind extends string> {
+  hasError: (kind: TErrorKind) => boolean;
+  hasAnyError: () => boolean;
+  getErrorMessage: (kind: TErrorKind) => string | null;
 }
 
-export const initialCircuitEditorPageError: CircuitEditorPageErrorModel = {
-  failedToGetCircuitDetailError: false,
-  failedToParseCircuitDataError: false,
-  failedToUpdateCircuitDataError: false,
-  failedToRenderCircuitError: false,
-  failedToSaveCircuitError: false,
-};
-
 export interface CircuitEditorPageUiStateModel {
-  toolbarMenu: { open: "none" | "file" | "view" | "help" };
-  diagramUtilityMenu: { open: "none" | "edge" | "node"; at: Coordinate | null };
-  toolBarMenu: { open: "none" | "file" | "view" | "goTo" | "help" };
-  activityBarMenu: { open: "infomation" | "circuitDiagram" | "rowCircuitData" };
+  diagramUtilityMenu: DiagramUtilityMenuState;
+  toolBarMenu: ToolBarMenuState;
+  activityBarMenu: CircuitActivityBarMenuState;
 }
 
 export class CircuitEditorPageControllerError extends Error {
@@ -42,26 +45,27 @@ export class CircuitEditorPageControllerError extends Error {
 }
 
 export interface ICircuitEditorPageController {
-  error: CircuitEditorPageErrorModel;
+  error: PageErrorState<CircuitEditorErrorKind>;
   uiState: CircuitEditorPageUiStateModel;
   circuit: Circuit | undefined;
   guiData: CircuitGuiData | undefined;
-  viewBox: { x: number; y: number; w: number; h: number } | undefined;
-  isPanningRef: React.RefObject<boolean>;
+  viewBox: ViewBox;
+  panningRef: React.RefObject<boolean>;
   handleViewBoxMouseDown: (ev: React.MouseEvent) => void;
   handleViewBoxMouseMove: (ev: React.MouseEvent) => void;
   handleViewBoxMouseUp: () => void;
   handleViewBoxZoom: (ev: React.WheelEvent) => void;
-  preventBrowserZoom: (ref: React.RefObject<SVGSVGElement | null>) => void;
+  preventBrowserZoom: (ref: RefObject<SVGSVGElement | null>) => void;
   save: () => void;
   deleteCircuit: () => void;
   changeTitle: (title: CircuitTitle) => void;
   changeDescription: (description: CircuitDescription) => void;
   addCircuitNode: (newNode: CircuitNode) => void;
+  createCircuitNode: (type: CircuitNodeType, coordinate: Coordinate) => CircuitNode;
   deleteCircuitNode: (nodeId: CircuitNodeId) => void;
   deleteCircuitEdge: (edgeId: CircuitEdgeId) => void;
-  circuitDiagramContainer: React.RefObject<HTMLDivElement | null>;
-  svgRef: React.RefObject<SVGSVGElement | null>;
+  circuitDiagramContainerRef: RefObject<HTMLDivElement | null>;
+  circuitDiagramSvgRef: RefObject<SVGSVGElement | null>;
   focusedElement:
     | { kind: "node"; value: CircuitGuiNode }
     | { kind: "edge"; value: CircuitGuiEdge & { waypointIdx: number } }

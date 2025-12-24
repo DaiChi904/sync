@@ -1,3 +1,4 @@
+import type { RefObject } from "react";
 import type { Circuit } from "../aggregate/circuit";
 import type { CircuitGuiData } from "../valueObject/circuitGuiData";
 import type { CircuitNodeId } from "../valueObject/circuitNodeId";
@@ -5,24 +6,21 @@ import type { EvalDuration } from "../valueObject/evalDuration";
 import type { EvalResult } from "../valueObject/evalResult";
 import type { InputRecord } from "../valueObject/inputRecord";
 import type { Tick } from "../valueObject/tick";
+import type { ViewBox } from "../valueObject/viewBox";
+import type { EmulationActivityBarMenuState, ToolBarMenuState } from "./common/uiState";
+import type { PageErrorState } from "./ICircuitEditorPageController";
 
-export interface CircuitEmulationPageErrorModel {
-  emulationEnvironmentCreationError: boolean;
-  failedToEvalCircuitError: boolean;
-}
+export const CIRCUIT_EMULATION_ERROR_KINDS = [
+  "guiRenderError",
+  "emulationEnvironmentCreationError",
+  "failedToEvalCircuitError",
+] as const;
 
-export const initialCircuitEmulationPageError: CircuitEmulationPageErrorModel = {
-  emulationEnvironmentCreationError: false,
-  failedToEvalCircuitError: false,
-};
+export type CircuitEmulationErrorKind = (typeof CIRCUIT_EMULATION_ERROR_KINDS)[number];
 
 export interface CircuitEmulationPageUiStateModel {
-  toolBarMenu: {
-    open: "none" | "file" | "view" | "goTo" | "help";
-  };
-  activityBarMenu: {
-    open: "evalMenu";
-  };
+  toolBarMenu: ToolBarMenuState;
+  activityBarMenu: EmulationActivityBarMenuState;
 }
 
 export class CircuitEmulationPageControllerError extends Error {
@@ -34,7 +32,7 @@ export class CircuitEmulationPageControllerError extends Error {
 }
 
 export interface ICircuitEmulationPageController {
-  error: CircuitEmulationPageErrorModel;
+  error: PageErrorState<CircuitEmulationErrorKind>;
   uiState: CircuitEmulationPageUiStateModel;
   circuit: Circuit | undefined;
   guiData: CircuitGuiData | undefined;
@@ -42,6 +40,15 @@ export interface ICircuitEmulationPageController {
   evalDuration: EvalDuration;
   entryInputs: InputRecord;
   outputs: Record<CircuitNodeId, EvalResult>;
+  viewBox: ViewBox;
+  circuitDiagramContainerRef: RefObject<HTMLDivElement | null>;
+  circuitDiagramSvgRef: RefObject<SVGSVGElement | null>;
+  panningRef: RefObject<boolean>;
+  handleViewBoxMouseDown: (ev: React.MouseEvent) => void;
+  handleViewBoxMouseMove: (ev: React.MouseEvent) => void;
+  handleViewBoxMouseUp: () => void;
+  handleViewBoxZoom: (ev: React.WheelEvent) => void;
+  preventBrowserZoom: (ref: RefObject<SVGSVGElement | null>) => void;
   updateEntryInputs: (nodeID: CircuitNodeId, value: EvalResult) => void;
   evalCircuit: () => void;
   changeEvalDuration: (duration: EvalDuration) => void;

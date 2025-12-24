@@ -1,16 +1,15 @@
-import Box from "@/components/atoms/Box";
-import Button from "@/components/atoms/buttons/Button";
 import SecondaryButton from "@/components/atoms/buttons/SecondaryButton";
 import Flex from "@/components/atoms/Flex";
 import SecondaryInput from "@/components/atoms/input/SecondaryInput";
 import Typography from "@/components/atoms/Typography";
-import { Table, TableBody, TableCaption, TableCell, TableRow } from "@/components/atoms/table";
 import type { ICircuitEmulationPageController } from "@/domain/model/controller/ICircuitEmulationPageController";
-import { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
+import type { CircuitNodeId } from "@/domain/model/valueObject/circuitNodeId";
 import { EvalDuration } from "@/domain/model/valueObject/evalDuration";
-import { EvalResult } from "@/domain/model/valueObject/evalResult";
+import type { EvalResult } from "@/domain/model/valueObject/evalResult";
 import type { InputRecord } from "@/domain/model/valueObject/inputRecord";
 import type { Tick } from "@/domain/model/valueObject/tick";
+import EntryInputsTable from "./tables/EntryInputsTable";
+import OutputsTable from "./tables/OutputsTable";
 
 interface EvalMenuProps {
   error: ICircuitEmulationPageController["error"];
@@ -44,12 +43,12 @@ export default function EvalMenu({
       >
         <Typography size="mediumPlus">{`Eval >>>`}</Typography>
       </SecondaryButton>
-      {error.emulationEnvironmentCreationError && (
+      {error.hasError("emulationEnvironmentCreationError") && (
         <Typography size="medium" style={{ color: "red", marginTop: 10 }}>
           Creation emulation environment failed.
         </Typography>
       )}
-      {error.failedToEvalCircuitError && (
+      {error.hasError("failedToEvalCircuitError") && (
         <Typography size="medium" style={{ color: "red", marginTop: 10 }}>
           Failed to evaluate the circuit.
         </Typography>
@@ -67,75 +66,8 @@ export default function EvalMenu({
         }}
       />
 
-      <Table style={{ width: "400px" }}>
-        <TableCaption>
-          <Typography size="medium">Entry Inputs</Typography>
-        </TableCaption>
-        <TableBody>
-          {entryInputs &&
-            Object.entries(entryInputs).map(([nodeId, input]) => (
-              <TableRow key={nodeId}>
-                <TableCell style={{ width: "300px" }}>
-                  <Typography size="defaultPlus" style={{ marginRight: 10 }}>
-                    Node ID: {nodeId}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Button
-                    className="button-animation-push"
-                    style={{
-                      color: "white",
-                      cursor: "pointer",
-                      width: "100px",
-                      height: "30px",
-                      padding: 5,
-                      backgroundColor: input ? "var(--color-circuit-state-high)" : "var(--color-circuit-state-low)",
-                      border: "none",
-                    }}
-                    onClick={() => updateEntryInputs(CircuitNodeId.from(nodeId), EvalResult.from(!input))}
-                  >
-                    <Typography>{input ? "True" : "False"}</Typography>
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-        </TableBody>
-      </Table>
-
-      <Table style={{ width: "400px" }}>
-        <TableCaption>
-          <Typography size="medium">Outputs</Typography>
-        </TableCaption>
-        <TableBody>
-          {entryInputs &&
-            Object.entries(outputs).map(([nodeId, input]) => (
-              <TableRow key={nodeId}>
-                <TableCell style={{ width: "300px" }}>
-                  <Typography size="defaultPlus" style={{ marginRight: 10 }}>
-                    Node ID: {nodeId}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Box
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "white",
-                      width: "100px",
-                      height: "30px",
-                      padding: 5,
-                      backgroundColor: input ? "var(--color-circuit-state-high)" : "var(--color-circuit-state-low)",
-                      border: "none",
-                    }}
-                  >
-                    <Typography style={{ textAlign: "center" }}>{input ? "True" : "False"}</Typography>
-                  </Box>
-                </TableCell>
-              </TableRow>
-            ))}
-        </TableBody>
-      </Table>
+      <EntryInputsTable entryInputs={entryInputs} updateEntryInputs={updateEntryInputs} />
+      <OutputsTable outputs={outputs} />
     </Flex>
   );
 }

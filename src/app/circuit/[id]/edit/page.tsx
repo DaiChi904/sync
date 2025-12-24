@@ -2,8 +2,8 @@
 
 import { useParams } from "next/navigation";
 import { useMemo } from "react";
-import { useCircuitEditorPageController } from "@/Controller/circuitEditorPageController";
 import { CircuitEditorPageControllerContext } from "@/contexts/CircuitEditorPageControllerContext";
+import { useCircuitEditorPageController } from "@/controller/circuitEditorPageController";
 import type { CircuitId } from "@/domain/model/valueObject/circuitId";
 import { CircuitParserService } from "@/domain/service/circuitParserService";
 import CircuitEditorPageLayout from "@/features/routes/circuit/circuitEditor/CircuitEditorPageLayout";

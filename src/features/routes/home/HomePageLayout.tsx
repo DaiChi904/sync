@@ -4,7 +4,7 @@ import Grid from "@/components/atoms/Grid";
 import Typography from "@/components/atoms/Typography";
 import LayoutContainer from "@/components/layouts/LayoutContainer";
 import { useHomePageControllerContext } from "@/contexts/HomePageControllerContext";
-import CircuitList from "./circuitList";
+import CircuitOverviews from "./Overviews";
 
 export default function HomePageLayout() {
   const { error, uiState, circuitOverviews, changeActivityBarMenu, addNewCircuit } = useHomePageControllerContext();
@@ -34,7 +34,12 @@ export default function HomePageLayout() {
           {(() => {
             switch (uiState.tab.open) {
               case "home":
-                return <CircuitList circuitList={circuitOverviews} error={error.failedToGetCircuitOverviewsError} />;
+                return (
+                  <CircuitOverviews
+                    overviews={circuitOverviews}
+                    error={error.hasError("failedToGetCircuitOverviewsError")}
+                  />
+                );
               case "new":
                 return (
                   <Flex direction="column" style={{ padding: 10, width: "100%", height: "100%" }}>

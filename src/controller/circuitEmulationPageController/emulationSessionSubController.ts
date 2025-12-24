@@ -1,10 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+"use client";
+
+import { useCallback, useState } from "react";
 import type { Circuit } from "@/domain/model/aggregate/circuit";
-import {
-  type CircuitEmulationPageErrorModel,
-  type ICircuitEmulationPageController,
-  initialCircuitEmulationPageError,
-} from "@/domain/model/controller/ICircuitEmulationPageController";
+import type { CircuitEmulationErrorKind } from "@/domain/model/controller/ICircuitEmulationPageController";
 import type {
   ICreateEmulationSessionUsecase,
   IEmulationSession,
@@ -20,30 +18,25 @@ import { InputRecord } from "@/domain/model/valueObject/inputRecord";
 import { OutputRecord } from "@/domain/model/valueObject/outputRecord";
 import { Tick } from "@/domain/model/valueObject/tick";
 import type { CircuitParserService } from "@/domain/service/circuitParserService";
-import { usePartialState } from "@/hooks/partialState";
 
-interface CircuitEmulationPageControllerDependencies {
+export interface EmulationSessionSubControllerDeps {
   query: CircuitId;
   getCircuitDetailUsecase: IGetCircuitDetailUsecase;
   createEmulationSessionUsecase: ICreateEmulationSessionUsecase;
   circuitParserUsecase: CircuitParserService;
+  setError: (kind: CircuitEmulationErrorKind, message?: string) => void;
 }
 
-export const useCircuitEmulationPageController = ({
+export const useEmulationSessionSubController = ({
   query,
   getCircuitDetailUsecase,
   createEmulationSessionUsecase,
   circuitParserUsecase,
-}: CircuitEmulationPageControllerDependencies): ICircuitEmulationPageController => {
-  const [error, setError] = usePartialState<CircuitEmulationPageErrorModel>(initialCircuitEmulationPageError);
-  const [uiState, setUiState] = usePartialState<ICircuitEmulationPageController["uiState"]>({
-    toolBarMenu: { open: "none" },
-    activityBarMenu: { open: "evalMenu" },
-  });
-
-  const [circuit, setCircuit] = useState<Circuit | undefined>(undefined);
-  const [guiData, setGuiData] = useState<CircuitGuiData | undefined>(undefined);
-  const [session, setSession] = useState<IEmulationSession | undefined>(undefined);
+  setError,
+}: EmulationSessionSubControllerDeps) => {
+  const [circuit, setCircuit] = useState<Circuit>();
+  const [guiData, setGuiData] = useState<CircuitGuiData>();
+  const [session, setSession] = useState<IEmulationSession>();
 
   const [currentTick, setCurrentTick] = useState<Tick>(Tick.from(0));
   const [evalDuration, setEvalDuration] = useState<EvalDuration>(EvalDuration.from(10));
@@ -54,7 +47,7 @@ export const useCircuitEmulationPageController = ({
     const res = await getCircuitDetailUsecase.getById(query);
     if (!res.ok) {
       console.error(res.error);
-      setError("emulationEnvironmentCreationError", true);
+      setError("emulationEnvironmentCreationError");
       return;
     }
 
@@ -70,9 +63,10 @@ export const useCircuitEmulationPageController = ({
     const gui = circuitParserUsecase.parseToGuiData(circuit.circuitData);
     if (!gui.ok) {
       console.error(gui.error);
-      setError("emulationEnvironmentCreationError", true);
+      setError("guiRenderError");
       return;
     }
+
     setGuiData(gui.value);
   }, [circuit, circuitParserUsecase, setError]);
 
@@ -86,18 +80,18 @@ export const useCircuitEmulationPageController = ({
       const graph = circuitParserUsecase.parseToGraphData(circuit.circuitData);
       if (!graph.ok) {
         console.error(graph.error);
-        setError("emulationEnvironmentCreationError", true);
+        setError("emulationEnvironmentCreationError");
         return;
       }
 
-      const session = createEmulationSessionUsecase.createSession(graph.value, config);
-      if (!session.ok) {
-        console.error(session.error);
-        setError("emulationEnvironmentCreationError", true);
+      const sessionResult = createEmulationSessionUsecase.createSession(graph.value, config);
+      if (!sessionResult.ok) {
+        console.error(sessionResult.error);
+        setError("emulationEnvironmentCreationError");
         return;
       }
 
-      setSession(session.value);
+      setSession(sessionResult.value);
     },
     [circuit, createEmulationSessionUsecase, circuitParserUsecase, setError],
   );
@@ -148,7 +142,7 @@ export const useCircuitEmulationPageController = ({
     const res = session.eval(entryInputs, evalDuration);
     if (!res.ok) {
       console.log(res.error);
-      setError("failedToEvalCircuitError", true);
+      setError("failedToEvalCircuitError");
       return;
     }
 
@@ -160,36 +154,7 @@ export const useCircuitEmulationPageController = ({
     setEvalDuration(duration);
   }, []);
 
-  const openToolBarMenu = useCallback(
-    (kind: "file" | "view" | "goTo" | "help") => {
-      setUiState("toolBarMenu", { open: kind });
-    },
-    [setUiState],
-  );
-
-  const closeToolBarMenu = useCallback(() => {
-    setUiState("toolBarMenu", { open: "none" });
-  }, [setUiState]);
-
-  const changeActivityBarMenu = useCallback(
-    (kind: "evalMenu") => {
-      setUiState("activityBarMenu", { open: kind });
-    },
-    [setUiState],
-  );
-
-  useEffect(() => {
-    fetch();
-  }, [fetch]);
-
-  useEffect(() => {
-    if (circuit) {
-      createGuiData();
-      createNewSession({ evalDelay: EvalDelay.from(1) });
-    }
-  }, [circuit, createGuiData, createNewSession]);
-
-  useEffect(() => {
+  const initializeSession = useCallback(() => {
     if (session) {
       session.init();
       registInputNodes();
@@ -197,20 +162,26 @@ export const useCircuitEmulationPageController = ({
     }
   }, [session, registInputNodes, initOutputs]);
 
+  const initializeCircuit = useCallback(() => {
+    if (circuit) {
+      createGuiData();
+      createNewSession({ evalDelay: EvalDelay.from(1) });
+    }
+  }, [circuit, createGuiData, createNewSession]);
+
   return {
-    error,
-    uiState,
     circuit,
     guiData,
+    session,
     currentTick,
     evalDuration,
     entryInputs,
     outputs,
+    fetch,
+    initializeCircuit,
+    initializeSession,
     updateEntryInputs,
     evalCircuit,
     changeEvalDuration,
-    openToolBarMenu,
-    closeToolBarMenu,
-    changeActivityBarMenu,
   };
 };
